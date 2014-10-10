@@ -4,7 +4,7 @@
 ### Finds Google Chrome / Opera / Firefox login database
 ##  and decrypt them.
 #
-##
+##  Generates signatures.
 ###
 ####
 
