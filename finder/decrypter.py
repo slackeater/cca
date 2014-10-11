@@ -9,7 +9,7 @@
 ####
 
 from ctypes import *
-import getpass, platform, sqlite3, os, json, subprocess, base64, glob
+import getpass, platform, sqlite3, os, json, subprocess, base64, glob, hashlib
 
 ### Code from ffpwdcracker.py
 
@@ -26,6 +26,8 @@ class secuPWData(Structure):
 ### End code from ffpwdcracker.py
 
 ### Constants and globals
+
+HASH_SEPARATOR = "|"
 
 GCHROME_LOGIN_FILE = "Login Data"
 MOZ_LOGIN_FILE_DB = "signons.sqlite"
@@ -94,8 +96,10 @@ def getPasswords(loginFile):
 		for row in conn.execute(query):
 			#firefox/thunderbird on linux/windows, use NSS library to decrypt
 			credentials = decryptMozilla(row[1],row[2])
-			data = [row[0], credentials]
+			data = [row[0]] + credentials
 			print data
+			hash_object = hashlib.sha256(data[0] + HASH_SEPARATOR + data[1] + HASH_SEPARATOR + data[2])
+			print "Hash:" + hash_object.hexdigest()
 
 	conn.close()
 		
@@ -151,7 +155,7 @@ def readLoginsJSON(loginFileJSON):
 	data = json.loads(open(loginFileJSON).read())
 
 	credentials = decryptMozilla(data['logins'][0]['encryptedUsername'],data['logins'][0]['encryptedPassword'])
-	data = [data['logins'][0]['hostname'], credentials]
+	data = [data['logins'][0]['hostname']] + credentials
 	print data
 
 def readMozillaLogins(sw, profileDir):
