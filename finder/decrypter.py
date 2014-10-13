@@ -29,9 +29,6 @@ class secuPWData(Structure):
 
 ### Constants and globals
 
-GCHROME_LOGIN_FILE = "Login Data"
-MOZ_LOGIN_FILE_DB = "signons.sqlite"
-MOZ_LOGIN_FILE_JSON = "logins.json"
 WIN_DECRYPTER = "C:\\Users\\John\\Documents\\Visual Studio 2012\\Projects\\ConsoleApplication3\\Debug\\ConsoleApplication3.exe"
 
 ### End Constants and globals
