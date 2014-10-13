@@ -51,37 +51,44 @@ def getPasswords(loginFile, profile):
 			logger.log("Attempting to decrypt Windows Chrome logins")
 
 			query = "SELECT origin_url, username_value, hex(password_value) FROM logins"
+			
+			try:		
+				for row in conn.execute(query):
+					try:
+						pwd = row[2]
+						#execute windows decrypt helper with password as parameter
+						retval = subprocess.check_output([WIN_DECRYPTER, pwd])
 
-			for row in conn.execute(query):
-				try:
-					pwd = row[2]
-					#execute windows decrypt helper with password as parameter
-					retval = subprocess.check_output([WIN_DECRYPTER, pwd])
+						if retval == "<decryption failed>":
+							pwd = ""
+						else:
+							pwd = retval
 
-					if retval == "<decryption failed>":
-						pwd = ""
-					else:
-						pwd = retval
-
-					cred.append(Credentials(row[0], row[1], pwd, profile))
-				except subprocess.CalledProcessError as e:
-					logger.error(format(e.errno, e.strerror))
-
+						cred.append(Credentials(row[0], row[1], pwd, profile))
+					except subprocess.CalledProcessError as e:
+						logger.error(format(e.errno, e.strerror))
+			except sqlite3.OperationalError as e:
+				logger.error(e)
 		#chrome on linux, clear text password or encrypted with key chain, simply return the value we found
 		elif config.OP_SYS == "Linux":
 			query = "SELECT origin_url, username_value, quote(password_value) FROM logins"
-
-			for row in conn.execute(query):
-				cred.append(Credentials(row[0], row[1], row[2], profile))
+			
+			try:
+				for row in conn.execute(query):
+					cred.append(Credentials(row[0], row[1], row[2], profile))
+			except sqlite3.OperationalError as e:
+				logger.error(e)
 
 	elif loginFile is config.MOZ_LOGIN_FILE_DB:
 		query = "SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins"
-		
-		for row in conn.execute(query):
-			  #firefox/thunderbird on linux/windows, use NSS library to decrypt
-			  credentials = decryptMozilla(row[1],row[2], config.LIBNSS)
-			  cred.append(Credentials(row[0], credentials[0], credentials[1], profile))	
-
+	
+		try:
+			for row in conn.execute(query):
+				  #firefox/thunderbird on linux/windows, use NSS library to decrypt
+				  credentials = decryptMozilla(row[1],row[2], config.LIBNSS)
+				  cred.append(Credentials(row[0], credentials[0], credentials[1], profile))	
+		except sqlite3.OperationalError as e:
+			logger.error(e)
 	conn.close()
 	return cred
 		
