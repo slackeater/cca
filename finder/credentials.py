@@ -1,13 +1,13 @@
 import crypto
 
-class Credentials:
+class Credentials(object):
 	""" Holds credentials and signature """
 
 	def __init__(self, hostname, username, password, profile):
-		self.hostname = hostname
-		self.username = username
-		self.password = password
-		self.profile = profile
+		self._hostname = hostname
+		self._username = username
+		self._password = password
+		self._profile = profile
 
 		if self.hostname and self.username and self.password:
 			self._signature = crypto.sha256(self.hostname + crypto.HASH_SEPARATOR + self.username + crypto.HASH_SEPARATOR + self.password)
@@ -20,11 +20,11 @@ class Credentials:
 	
 	@property
 	def username(self):
-		return self._hostname
+		return self._username
 	
 	@property
 	def password(self):
-		return self._hostname
+		return self._password
 	
 	@property
 	def signature(self):

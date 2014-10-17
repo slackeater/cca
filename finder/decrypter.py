@@ -76,8 +76,10 @@ def getPasswords(loginFile, profile):
 			try:
 				for row in conn.execute(query):
 					cred.append(Credentials(row[0], row[1], row[2], profile))
-			except sqlite3.OperationalError as e:
+			except sqlite3.Error as e:
 				logger.error(e)
+			finally:
+				conn.close()
 
 	elif loginFile is config.MOZ_LOGIN_FILE_DB:
 		query = "SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins"
@@ -87,9 +89,12 @@ def getPasswords(loginFile, profile):
 				  #firefox/thunderbird on linux/windows, use NSS library to decrypt
 				  credentials = decryptMozilla(row[1],row[2], config.LIBNSS)
 				  cred.append(Credentials(row[0], credentials[0], credentials[1], profile))	
-		except sqlite3.OperationalError as e:
+		except sqlite3.Error as e:
 			logger.error(e)
-	conn.close()
+		finally:
+			conn.close()
+
+	
 	return cred
 		
 def decryptMozilla(username, password, libnss):
