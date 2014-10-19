@@ -19,10 +19,11 @@ def init():
 	print("Log initialized " + formattedTime())
 
 def log(message, date = "yes"):
+
 	if date != "yes":
 		print(message)
 	else: 
-		msg = formattedTime() + ": " + str(message)
+		msg = formattedTime() + ": " + message
 		print(msg)	
 
 def error(message):

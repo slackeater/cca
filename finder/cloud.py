@@ -11,7 +11,7 @@
 
 import config, crypto, logger
 import os, base64, sqlite3
-
+import xml.etree.ElementTree as ET
 
 def recurseDir(path):
 	""" Recurse into directory """
@@ -80,9 +80,32 @@ def getCloudFileHash(cloudService):
 			conn.close()
 
 	elif cloudService == "OneDrive":
-		print "Microzoz"
+		#parse XML with configuration
+		tree = ET.parse(os.path.join(config.ONEDRIVE,"settings","ApplicationSettings.xml"))
+		root = tree.getroot()
+		cloudHome = ""
+
+		# find user id
+		for setting in root[0][0].findall("setting"):
+			if setting.attrib['name'] == "UserCid":
+				userCid = setting[0].text
+
+		# open file with onedrive path
+		userConf = open(os.path.join(config.ONEDRIVE,"settings",userCid+".ini"),"r").read()
+
+		# file is utf-16 encoded
+		for l in userConf.decode("utf-16").split("\r\n"):
+			if l.startswith("library"):
+				# get the path in the string
+				oneDrivePath = l.strip().split(" ")[-1]
+				cloudHome = oneDrivePath[1:-1]
+		
+		if(os.path.isdir(cloudHome)):
+			res = recurseDir(cloudHome)
+			print res
 
 
 
 getCloudFileHash("Dropbox")
 getCloudFileHash("GDrive")
+getCloudFileHash("OneDrive")
