@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 
 def recurseDir(path):
 	""" Recurse into directory """
-	logger.log("Scanning " + path)
+	logger.log("Scanning " + path, "no")
 
 	if type(path) is str:
 		path = unicode(path)
@@ -29,12 +29,11 @@ def recurseDir(path):
 			sig = crypto.sha256File(open(f, "r"))
 			fName = os.path.abspath(f).encode("UTF-8")
 			entry = {fName:sig}
-			logger.log(fName + ": " + sig, "no")
+			logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
 			globalRes.append(entry)
 		elif os.path.isdir(os.path.abspath(f)):
-			print "\n"
 			globalRes = globalRes + recurseDir(os.path.abspath(f))
-	
+
 	os.chdir(os.path.dirname(os.getcwd()))
 	return globalRes
 
@@ -42,8 +41,9 @@ def recurseDir(path):
 def getCloudFileHash(cloudService):
 	""" Get file in the cloud service sync directory and compute the hash of each one """
 	res = list()
-
-	logger.log("===> Begin scan of " + cloudService)
+	
+	logger.log("\n", "no")
+	logger.log("===> Begin scan of " + cloudService + "<===")
 
 	if cloudService == "Dropbox":
 		if config.OP_SYS == "Linux":
@@ -59,7 +59,7 @@ def getCloudFileHash(cloudService):
 
 			if(os.path.isdir(dec)):
 				res = recurseDir(dec)
-				print res
+				return res
 
 	elif cloudService == "GDrive":
 		conn = sqlite3.connect(config.GDRIVE + "\\sync_config.db")
@@ -73,7 +73,7 @@ def getCloudFileHash(cloudService):
 
 			if(os.path.isdir(cloudHome)):
 				res = recurseDir(cloudHome)
-				print res
+				return res
 		except sqlite3.Error as e:
 			logger.log(e)
 		finally:
@@ -102,10 +102,16 @@ def getCloudFileHash(cloudService):
 		
 		if(os.path.isdir(cloudHome)):
 			res = recurseDir(cloudHome)
-			print res
+			return res
 
+def dropbox():
+	""" Wrapper for Dropbox """
+	return getCloudFileHash("Dropbox")
+	
+def gdrive():
+	""" Wrapper for Google Drive """
+	return getCloudFileHash("GDrive")
 
-
-getCloudFileHash("Dropbox")
-getCloudFileHash("GDrive")
-getCloudFileHash("OneDrive")
+def onedrive():
+	""" Wrapper for OneDrive """
+	return getCloudFileHash("OneDrive")

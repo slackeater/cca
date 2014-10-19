@@ -16,40 +16,38 @@ from profilebrowser import BrowserProfile
 
 #detect os and set profile folders
 if config.OP_SYS == "Linux":
-	chromeProfile = config.GCHROME_PROFILE_LINUX
 	ffProfile = config.FF_PROFILE_LINUX
 	thProfile = config.TH_PROFILE_LINUX
-	libnss = config.LIBNSS_LINUX
 elif config.OP_SYS == "Windows":
-	chromeProfile = config.GCHROME_PROFILE_WIN
 	ffProfile = config.FF_PROFILE_WIN
 	thProfile = config.TH_PROFILE_WIN
-	libnss = config.LIBNSS_WIN
 
 def resPrinter(profileObjects):
 	""" Print in a readable manner the results """ 
 	for obj in profileObjects:
 		logger.log("-> Profile " + obj.profileName,"no")
-		logger.log("Credentials:", "no")
+		logger.log("Credentials", "no")
 		for c in obj.credentialList:
 			logger.log("\t" + c.hostname + ", " + c.username + ", " + c.password + ", " + c.profile,"no")
-			logger.log("\t\t=>" + c.signature,"no")
+			logger.log("\t=>" + c.signature,"no")
+			logger.log("\n", "no")
 		
-		logger.log("Files:","no")
+		logger.log("Files","no")
 
 		for f in obj.fileListHashes:
 			logger.log("\t" + f,"no")
 
 def chromeFinder():
 	""" Find useful file about google chrome """
-	if not os.path.isdir(chromeProfile):
+	if not os.path.isdir(config.GCHROME_PROFILE):
 		logger.log("No google chrome profile folder found")
 
 	objProfiles = list()
 
-	os.chdir(chromeProfile)
+	os.chdir(config.GCHROME_PROFILE)
 
-	logger.log("=== Beginning scan of " + chromeProfile + "===")
+	logger.log("\n", "no")
+	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
 
 	#look in default profile
 	if os.path.isdir("Default"):
@@ -101,16 +99,18 @@ def chromeFinder():
 		os.chdir(os.path.dirname(os.getcwd()))
 
 	resPrinter(objProfiles)
+	return objProfiles
 	
 def mozillaFinder(mozProfile):
 	""" Find useful file about firefox """
 	if not  os.path.isdir(mozProfile):
-		logger.log("No " + mozProfile + "folder found")
+		logger.error("No " + mozProfile + " folder found")
 
 	# look in all profiles
 	os.chdir(mozProfile)
-
-	logger.log("=== Beginning scan of " + mozProfile + "===")
+	
+	logger.log("\n", "no")
+	logger.log("===> Beginning scan of " + mozProfile + " <===")
 
 	objProfiles = list()
 
@@ -141,10 +141,18 @@ def mozillaFinder(mozProfile):
 			os.chdir(os.path.dirname(os.getcwd()))
 			cred = list()
 			usefulFile = list()
+	
+	return objProfiles
 
-	resPrinter(objProfiles)
-			
 
-chromeFinder()
-mozillaFinder(ffProfile)
-mozillaFinder(thProfile)
+def thunderbirdFinder():
+	""" Thudnerbird wrapper for mozillaFinder """
+	res = mozillaFinder(config.TH_PROFILE)
+	resPrinter(res)
+	return res
+
+def firefoxFinder():
+	""" Firefox wrapper for mozillaFinder """
+	res = mozillaFinder(config.FF_PROFILE)
+	resPrinter(res)
+	return res

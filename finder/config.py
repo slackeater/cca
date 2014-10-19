@@ -33,3 +33,9 @@ DROPBOX_WIN = WIN_APPDATA + "Roaming\\Dropbox"
 DROPBOX_LINUX = LINUX_HOME + ".dropbox"
 GDRIVE = WIN_APPDATA + "Local\\Google\\Drive"
 ONEDRIVE = WIN_APPDATA + "Local\\Microsoft\\SkyDrive"
+
+# determine profile directory
+GCHROME_PROFILE = GCHROME_PROFILE_LINUX if OP_SYS == "Linux" else GCHROME_PROFILE_WIN
+FF_PROFILE = FF_PROFILE_LINUX if OP_SYS == "Linux" else FF_PROFILE_WIN
+TH_PROFILE = TH_PROFILE_LINUX if OP_SYS == "Linux" else TH_PROFILE_WIN
+DROPBOX = DROPBOX_LINUX if OP_SYS == "Linux" else DROPBOX_WIN
