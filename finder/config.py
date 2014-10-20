@@ -1,9 +1,12 @@
-import getpass, platform, os
+import getpass, platform, os, sys
 
 UNAME = getpass.getuser()
 OP_SYS = platform.system()
 WIN_APPDATA = "C:\\Users\\" + UNAME + "\\AppData\\"
 LINUX_HOME = "/home/" + UNAME + "/"
+START_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
+PUB_KEY_RSA = os.path.join(START_PATH,"pubkey.pem")
+
 
 # mozilla useful file
 FF_PROFILE_WIN = WIN_APPDATA + "Roaming\Mozilla\Firefox"

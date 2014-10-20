@@ -8,7 +8,8 @@
 ###
 ####
 
-import json
+import json, crypto, platform
+import time
 from profilebrowser import BrowserProfileEncoder
 
 def browserPack(browserDict):
@@ -44,3 +45,41 @@ def cloudContainer(packedCloudList):
 
 	return json.dumps(mainPack, sort_keys=True, indent=4)
 
+def headerPacker():
+	""" Create the header of the JSON with some useful information """
+	
+	reportTime = (time.ctime())
+	machineInfo = platform.uname()
+	reportID = crypto.md5(str(time.time()))
+
+	infoDict = dict()
+	infoDict["id"] = reportID
+	infoDict["info"] = machineInfo
+	infoDict["time"] = reportTime
+	
+	mainPack = dict()
+	mainPack["category"] = "attributes"
+	mainPack["objects"] = infoDict
+
+	return json.dumps(mainPack, sort_keys=True, indent=4)
+
+def mainPacker(browserList, cloudList):
+	jsonFile = "{\n"
+
+	jsonFile += headerPacker()
+
+	# encode each dictionary of each browser
+	packedBrowsersList = list()
+
+	for b in browserList:
+		packedBrowsersList.append(browserPack(b))
+
+	# JSONify browser results
+	jsonFile += browserContainer(packedBrowsersList)
+
+	# JSONify cloud result
+	jsonFile += cloudContainer(cloudList)
+
+	jsonFile += "\n}"
+
+	return jsonFile

