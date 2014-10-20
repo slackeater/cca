@@ -47,13 +47,21 @@ def chromeFinder():
 
 	os.chdir(config.GCHROME_PROFILE)
 	chromeDict = dict()
+	gchromeVersion = "Google Chrome"
+
 	# get chrome version
 	if(config.OP_SYS == "Windows"):
-		gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
-		gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
+		try:
+			gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
+			gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
+		except Error as e:
+			logger.error(e)
 	elif(config.OP_SYS == "Linux"):
-		gchromeVersion = subprocess.check_output("google-chrome-stable --version")
-
+		try:
+			gchromePath = subprocess.check_output(["which", "google-chrome-stable"]).strip(" \n")
+			gchromeVersion = subprocess.check_output([gchromePath, " --version"]).strip(" \n")
+		except Error as e:
+			logger.error(e)
 
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
@@ -114,7 +122,7 @@ def chromeFinder():
 	return chromeDict
 	
 def mozillaFinder(mozProfile):
-	""" Find useful file about firefox """
+	""" Find useful file about mozilla firefox / thunderbird """
 	if not  os.path.isdir(mozProfile):
 		logger.error("No " + mozProfile + " folder found")
 
@@ -155,7 +163,6 @@ def mozillaFinder(mozProfile):
 			cred = list()
 			usefulFile = list()
 
-	browserDict["name"] = "Mozilla"
 	browserDict["profiles"] = objProfiles
 	return browserDict
 
@@ -163,11 +170,30 @@ def mozillaFinder(mozProfile):
 def thunderbirdFinder():
 	""" Thudnerbird wrapper for mozillaFinder """
 	res = mozillaFinder(config.TH_PROFILE)
+	res['name'] = mozillaVersionFinder("thunderbird")
 	resPrinter(res["profiles"])
 	return res
 
 def firefoxFinder():
 	""" Firefox wrapper for mozillaFinder """
 	res = mozillaFinder(config.FF_PROFILE)
+	res['name'] = mozillaVersionFinder("firefox")
 	resPrinter(res["profiles"])
 	return res
+
+def mozillaVersionFinder(sw):
+	""" Find the version of either firefox or thunderbird """
+
+	swName = "Mozilla Firefox" if sw == "firefox" else "Mozilla Thunderbird"
+	mozVersion = swName
+
+	if config.OP_SYS == "Windows":
+		mozVersionToParse = subprocess.check_output("reg query \"HKEY_LOCAL_MACHINE\Software\Mozilla\\" + swName +"\" /v CurrentVersion", shell=True)
+		mozVersion = mozVersion + " " + mozVersionToParse.split("\r\n")[2].split("    ")[-1]
+		return mozVersion
+	elif config.OP_SYS == "Linux":
+		mozPath = subprocess.check_output(["/usr/bin/which", sw]).strip(" \n")
+		mozVersionToParse = subprocess.check_output([mozPath, "--version"]).strip(" \n")
+		return mozVersionToParse
+
+	return mozVersion
