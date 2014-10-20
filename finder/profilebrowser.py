@@ -1,11 +1,19 @@
-import crypto
+import crypto, json
+from credentials import CredentialsEncoder
 
 class BrowserProfile(object):
 	""" Holds browser profile information found """
 
 	def __init__(self, profileName, fileList, credList):
 		self.profileName = profileName
-		self.fileList = fileList
+		hashList = list()
+
+		for f in fileList:
+			fileHandler = open(f, "r")
+			sign = f + ":" + crypto.sha256File(fileHandler)
+			hashList.append(sign)
+
+		self.fileListHashes = hashList
 		self.credentialList = credList
 	
 	@property
@@ -17,26 +25,27 @@ class BrowserProfile(object):
 		self._credentialList = credentialList
 
 	@property
-	def fileList(self):
-		return self._fileList
-
-	@fileList.setter
-	def fileList(self, fileList):
-		self._fileList = fileList
-		hashList = list()
-
-		# compute the signatures of the files
-		for f in fileList:
-			fileHandler = open(f,"r")
-			sign = f + ":" + crypto.sha256File(fileHandler)
-			hashList.append(sign)
-
-		self.fileListHashes = hashList
-
-	@property
 	def fileListHashes(self):
 		return self._fileListHashes
 
 	@fileListHashes.setter
 	def fileListHashes(self, hashList):
 		self._fileListHashes = hashList
+
+class BrowserProfileEncoder(json.JSONEncoder):
+	def default(self, obj):
+		if not isinstance(obj, BrowserProfile):
+			return super(BrowserProfile, self).default(obj)
+
+		val = dict()
+
+		for key, value in obj.__dict__.iteritems():
+			if key == "_credentialList":
+				val[key] = json.dumps(value, cls=CredentialsEncoder)
+			else:
+				val[key] = value
+
+		return val
+
+
+

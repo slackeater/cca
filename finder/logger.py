@@ -23,7 +23,7 @@ def log(message, date = "yes"):
 	if date != "yes":
 		print(message)
 	else: 
-		msg = formattedTime() + ": " + message
+		msg = formattedTime() + ": " + str(message)
 		print(msg)	
 
 def error(message):

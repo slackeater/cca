@@ -10,7 +10,7 @@
 
 import config
 import os, glob
-import decrypter, logger
+import decrypter, logger, crypto, subprocess
 from credentials import Credentials
 from profilebrowser import BrowserProfile
 
@@ -24,7 +24,8 @@ elif config.OP_SYS == "Windows":
 
 def resPrinter(profileObjects):
 	""" Print in a readable manner the results """ 
-	for obj in profileObjects:
+
+	for obj in profileObjects: 
 		logger.log("-> Profile " + obj.profileName,"no")
 		logger.log("Credentials", "no")
 		for c in obj.credentialList:
@@ -45,6 +46,14 @@ def chromeFinder():
 	objProfiles = list()
 
 	os.chdir(config.GCHROME_PROFILE)
+	chromeDict = dict()
+	# get chrome version
+	if(config.OP_SYS == "Windows"):
+		gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
+		gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
+	elif(config.OP_SYS == "Linux"):
+		gchromeVersion = subprocess.check_output("google-chrome-stable --version")
+
 
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
@@ -99,7 +108,10 @@ def chromeFinder():
 		os.chdir(os.path.dirname(os.getcwd()))
 
 	resPrinter(objProfiles)
-	return objProfiles
+
+	chromeDict["name"] = gchromeVersion
+	chromeDict["profiles"] = objProfiles
+	return chromeDict
 	
 def mozillaFinder(mozProfile):
 	""" Find useful file about firefox """
@@ -113,6 +125,7 @@ def mozillaFinder(mozProfile):
 	logger.log("===> Beginning scan of " + mozProfile + " <===")
 
 	objProfiles = list()
+	browserDict = dict()
 
 	for profile in open("profiles.ini", "r"):
 		cred = list()
@@ -141,18 +154,20 @@ def mozillaFinder(mozProfile):
 			os.chdir(os.path.dirname(os.getcwd()))
 			cred = list()
 			usefulFile = list()
-	
-	return objProfiles
+
+	browserDict["name"] = "Mozilla"
+	browserDict["profiles"] = objProfiles
+	return browserDict
 
 
 def thunderbirdFinder():
 	""" Thudnerbird wrapper for mozillaFinder """
 	res = mozillaFinder(config.TH_PROFILE)
-	resPrinter(res)
+	resPrinter(res["profiles"])
 	return res
 
 def firefoxFinder():
 	""" Firefox wrapper for mozillaFinder """
 	res = mozillaFinder(config.FF_PROFILE)
-	resPrinter(res)
+	resPrinter(res["profiles"])
 	return res

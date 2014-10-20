@@ -41,18 +41,13 @@ def recurseDir(path):
 def getCloudFileHash(cloudService):
 	""" Get file in the cloud service sync directory and compute the hash of each one """
 	res = list()
-	
+
 	logger.log("\n", "no")
 	logger.log("===> Begin scan of " + cloudService + "<===")
 
 	if cloudService == "Dropbox":
-		if config.OP_SYS == "Linux":
-			dropfolder = config.DROPBOX_LINUX
-		elif config.OP_SYS == "Windows":
-			dropfolder = config.DROPBOX_WIN
-
 		# get Dropbox file folder
-		cloudHome = open(dropfolder + os.sep + "host.db", "r")
+		cloudHome = open(os.path.join(config.DROPBOX,"host.db"), "r")
 		
 		for line in cloudHome:
 			dec = base64.b64decode(line.strip("\n"))
@@ -69,6 +64,7 @@ def getCloudFileHash(cloudService):
 		try:
 			# select local sync path from gdrive sqlite database
 			cursor.execute(query)
+			# strange charaters are placed in fron of the path, strip them
 			cloudHome = cursor.fetchone()[0].strip("\\\\?\\")
 
 			if(os.path.isdir(cloudHome)):
@@ -106,12 +102,21 @@ def getCloudFileHash(cloudService):
 
 def dropbox():
 	""" Wrapper for Dropbox """
-	return getCloudFileHash("Dropbox")
-	
+	if(os.path.isdir(config.DROPBOX)):
+		return getCloudFileHash("Dropbox")
+	else:
+		logger.error("No Google Drive directory found")
+
 def gdrive():
 	""" Wrapper for Google Drive """
-	return getCloudFileHash("GDrive")
+	if(os.path.isdir(config.GDRIVE)):
+		return getCloudFileHash("GDrive")
+	else:
+		logger.error("No Google Drive directory found")
 
 def onedrive():
 	""" Wrapper for OneDrive """
-	return getCloudFileHash("OneDrive")
+	if(os.path.isdir(config.ONEDRIVE)):
+		return getCloudFileHash("OneDrive")
+	else:
+		logger.error("No OneDrive directory found")

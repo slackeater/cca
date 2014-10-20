@@ -1,4 +1,4 @@
-import crypto
+import crypto, json
 
 class Credentials(object):
 	""" Holds credentials and signature """
@@ -12,7 +12,7 @@ class Credentials(object):
 		if self.hostname and self.username and self.password:
 			self._signature = crypto.sha256(self.hostname + crypto.HASH_SEPARATOR + self.username + crypto.HASH_SEPARATOR + self.password)
 		else:
-			self._signature = "empty signature"
+			self._signature = "<empty signature>"
 
 	@property
 	def hostname(self):
@@ -33,3 +33,11 @@ class Credentials(object):
 	@property
 	def profile(self):
 		return self._profile
+
+class CredentialsEncoder(json.JSONEncoder):
+	def default(self, obj):
+		if not isinstance(obj, Credentials):
+			return super(Credentials, self).default(obj)
+
+		return obj.__dict__
+

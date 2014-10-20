@@ -27,6 +27,9 @@ BOOKMARKS = "Bookmarks"
 GCHROME_COOKIES = "Cookies"
 HISTORY = "History"
 WEB_DATA = "Web Data"
+CHROME_EXEC_WIN = "chrome.exe" 
+CHROME_EXEC_LINUX = "google-chrome-stable"
+#CHROME_EXE = subprocess.check_output(["cd \ & dir /s /b ", CHROME_EXEC_WIN]) if OP_SYS == "Windows" else subprocess.check_output(["which",CHROME_EXEC_LINUX])
 
 # Cloud 
 DROPBOX_WIN = WIN_APPDATA + "Roaming\\Dropbox"
