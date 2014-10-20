@@ -11,7 +11,7 @@
 import json
 from profilebrowser import BrowserProfileEncoder
 
-def browserPack(browserDict, browserName):
+def browserPack(browserDict):
 	""" Encode the list of file for a browser into JSON """
 
 	jsonProfile = ""
@@ -24,5 +24,23 @@ def browserPack(browserDict, browserName):
 
 	browserNewDict["name"] = browserDict['name']
 	browserNewDict["profiles"] = profileEnc
-	print json.dumps(browserNewDict, sort_keys=True, indent=4)
+	return browserNewDict
+
+def browserContainer(packedBrowsersList):
+	""" Put all the browser found together """
+
+	mainPack = dict()
+	mainPack["category"] = "Browser"
+	mainPack["objects"] = packedBrowsersList
+
+	return json.dumps(mainPack, sort_keys=True, indent=4)
+
+def cloudContainer(packedCloudList):
+	""" Encode the list of file for a cloud service into JSON """
+
+	mainPack = dict()
+	mainPack["category"] = "Cloud"
+	mainPack["objects"] = packedCloudList
+
+	return json.dumps(mainPack, sort_keys=True, indent=4)
 

@@ -103,20 +103,29 @@ def getCloudFileHash(cloudService):
 def dropbox():
 	""" Wrapper for Dropbox """
 	if(os.path.isdir(config.DROPBOX)):
-		return getCloudFileHash("Dropbox")
+		dropDict = dict()
+		dropDict["cloudSerivce"] = "Dropbox"
+		dropDict["files"] = getCloudFileHash("Dropbox")
+		return dropDict
 	else:
 		logger.error("No Google Drive directory found")
 
 def gdrive():
 	""" Wrapper for Google Drive """
 	if(os.path.isdir(config.GDRIVE)):
-		return getCloudFileHash("GDrive")
+		gdriveDict = dict()
+		gdriveDict["cloudService"] = "Google Drive"
+		gdriveDict["files"] = getCloudFileHash("GDrive")
+		return gdriveDict
 	else:
 		logger.error("No Google Drive directory found")
 
 def onedrive():
 	""" Wrapper for OneDrive """
 	if(os.path.isdir(config.ONEDRIVE)):
-		return getCloudFileHash("OneDrive")
+		onedriveDict = dict()
+		onedriveDict["cloudService"] = "One Drive"
+		onedriveDict["files"] = getCloudFileHash("OneDrive")
+		return onedriveDict
 	else:
 		logger.error("No OneDrive directory found")

@@ -17,20 +17,28 @@ def main():
 	chrome = browserfile.chromeFinder()
 	ffList = browserfile.firefoxFinder()
 	thList = browserfile.thunderbirdFinder()
+	browserPackList = list()
+	browserPackList.append(packetizer.browserPack(chrome))
+	browserPackList.append(packetizer.browserPack(ffList))
+	browserPackList.append(packetizer.browserPack(thList))
 
 	# find cloud files
+	cloudPackList = list()
 	dropboxList = cloud.dropbox()
+	cloudPackList.append(dropboxList)
 
 	if config.OP_SYS == "Windows":
 		gdriveList = cloud.gdrive()
 		onedriveList = cloud.onedrive()
 
-	#pack all together
+		cloudPackList.append(gdriveList)
+		cloudPackList.append(onedriveList)
 
+	
+	#pack all together
 	print "\n\n====== JSON Formatted Values ======="
-	packetizer.browserPack(chrome, "Chrome")
-	packetizer.browserPack(ffList, "Firefox")
-	packetizer.browserPack(thList, "Thunderbird")
+	print packetizer.browserContainer(browserPackList)
+	print packetizer.cloudContainer(cloudPackList)
 
 if __name__ == "__main__":
 	main()
