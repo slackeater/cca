@@ -9,60 +9,89 @@
 ###
 ####
 
-import cloud, browserfile, config, packetizer, crypto, logger
-import os, subprocess, time, json
+import cloud, browserfile, config, packetizer, crypto, logger, getpass
+import os, subprocess, time, json, zipfile
 
 def main():
-	#try:
-		# create directory used for report files
-		reportName = crypto.md5(str(time.time()))
-		completeReportPath = os.path.join(config.START_PATH, reportName)
-		os.mkdir(completeReportPath)
 
-		# find passwords and browser files
-		chromeReportFolder = os.path.join(completeReportPath, config.GCHROME_COPY_FOLDER)
-		os.mkdir(chromeReportFolder)
-		chrome = browserfile.chromeFinder(chromeReportFolder)
+	# report name and path
+	reportName = crypto.md5(str(time.time()))
+	completeReportPath = os.path.join(config.START_PATH, reportName)
+	
+	# create directory used for report files
+	os.mkdir(completeReportPath)
 
-		ffReportFolder = os.path.join(completeReportPath, config.FF_COPY_FOLDER)
-		os.mkdir(ffReportFolder)
-		ffList = browserfile.firefoxFinder(ffReportFolder)
+	# find passwords and browser files
+	chromeReportFolder = os.path.join(completeReportPath, config.GCHROME_COPY_FOLDER)
+	os.mkdir(chromeReportFolder)
+	chrome = browserfile.chromeFinder(chromeReportFolder)
 
-		thReportFolder = os.path.join(completeReportPath, config.TH_COPY_FOLDER)
-		os.mkdir(thReportFolder)
-		thList = browserfile.thunderbirdFinder(thReportFolder)
+	ffReportFolder = os.path.join(completeReportPath, config.FF_COPY_FOLDER)
+	os.mkdir(ffReportFolder)
+	ffList = browserfile.firefoxFinder(ffReportFolder)
 
-		browserPackList = list()
-		browserPackList.append(chrome)
-		browserPackList.append(ffList)
-		browserPackList.append(thList)
+	thReportFolder = os.path.join(completeReportPath, config.TH_COPY_FOLDER)
+	os.mkdir(thReportFolder)
+	thList = browserfile.thunderbirdFinder(thReportFolder)
 
-		# find cloud files
-		cloudPackList = list()
-		dropboxList = cloud.dropbox()
-		cloudPackList.append(dropboxList)
+	browserPackList = list()
+	browserPackList.append(chrome)
+	browserPackList.append(ffList)
+	browserPackList.append(thList)
 
-		if config.OP_SYS == "Windows":
-			gdriveList = cloud.gdrive()
-			onedriveList = cloud.onedrive()
+	# find cloud files
+	cloudPackList = list()
+	dropboxList = cloud.dropbox()
+	cloudPackList.append(dropboxList)
 
-			cloudPackList.append(gdriveList)
-			cloudPackList.append(onedriveList)
+	if config.OP_SYS == "Windows":
+		gdriveList = cloud.gdrive()
+		onedriveList = cloud.onedrive()
 
-		#pack all together
-		jsontext = packetizer.mainPacker(browserPackList, cloudPackList)
-		print jsontext
-		crypt = crypto.makeReport(crypto.encryptAES(jsontext))
+		cloudPackList.append(gdriveList)
+		cloudPackList.append(onedriveList)
 
-		# save into a file
-		os.chdir(completeReportPath)
-		fileName = reportName + ".report"
-		f = open(fileName,"w+")
-		f.write(json.dumps(crypt, sort_keys=True, indent=4))
-		f.close()
-		logger.log("Report file written to " + os.path.join(config.START_PATH,fileName))
-	#except Exception as e:
-		#logger.log(e)
+	#pack all together
+	jsontext = packetizer.mainPacker(browserPackList, cloudPackList)
+	logger.log(jsontext, "no")
+
+	crypt = crypto.makeReport(crypto.encryptAES(jsontext))
+
+	# save into a file
+	os.chdir(completeReportPath)
+	fileName = reportName + ".report"
+	f = open(fileName,"w+")
+	f.write(json.dumps(crypt, sort_keys=True, indent=4))
+	f.close()
+
+	# change to start directory if not already in it	
+	if os.getcwd() != config.START_PATH:
+		os.chdir(config.START_PATH)
+	
+	# create  ZIP 
+	zipFile = zipfile.ZipFile(reportName + ".zip", "w")
+
+	for dirname, subdirs, files in os.walk(reportName):
+		zipFile.write(dirname)
+
+		for filename in files:
+			zipFile.write(os.path.join(dirname, filename))
+	
+	zipFile.close()
+	
+	logger.log("Report file written to " + os.path.join(config.START_PATH,reportName + ".zip"))
+
+	# hmac signature of zip
+	logger.log("\nInsert password for HMAC signature:", "no")
+	pa = getpass.getpass()
+
+	hmacDigest = crypto.sha256File(open(os.path.join(config.START_PATH,reportName + ".zip")), pa)
+	hmacFile = open(os.path.join(config.START_PATH, reportName + ".zip.sig"), "w+")
+	hmacFile.write(hmacDigest)
+	hmacFile.close()
+
+	# uncomment for final version
+	#os.rmdir(completeReportPath)
 
 if __name__ == "__main__":
 	main()
