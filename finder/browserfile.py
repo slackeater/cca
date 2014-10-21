@@ -14,14 +14,6 @@ import decrypter, logger, crypto, subprocess
 from credentials import Credentials
 from profilebrowser import BrowserProfile
 
-#detect os and set profile folders
-if config.OP_SYS == "Linux":
-	ffProfile = config.FF_PROFILE_LINUX
-	thProfile = config.TH_PROFILE_LINUX
-elif config.OP_SYS == "Windows":
-	ffProfile = config.FF_PROFILE_WIN
-	thProfile = config.TH_PROFILE_WIN
-
 def resPrinter(profileObjects):
 	""" Print in a readable manner the results """ 
 
