@@ -68,57 +68,28 @@ def chromeFinder(reportFolder):
 		logger.log("No google chrome profile folder found")
 
 	objProfiles = list()
-
 	os.chdir(config.GCHROME_PROFILE)
 	chromeDict = dict()
 	gchromeVersion = "Google Chrome"
 
 	# get chrome version
-	if(config.OP_SYS == "Windows"):
-		try:
+	try:
+		if(config.OP_SYS == "Windows"):
 			gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
 			gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
-		except Exception as e:
-			logger.error(e)
-	elif(config.OP_SYS == "Linux"):
-		try:
-			gchromePath = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
+		elif(config.OP_SYS == "Linux"):
+			gchromeVersionToParse = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
 			gchromeVersion = subprocess.check_output([gchromePath, " --version"]).strip(" \n")
-		except Exception as e:
-			logger.error(e)
+	except Exception as e:
+		logger.error(e)
 
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
 
-	chromeUsefulList = list()
-	chromeUsefulList.append(config.BOOKMARKS)
-	chromeUsefulList.append(config.GCHROME_COOKIES)
-	chromeUsefulList.append(config.HISTORY)
-	chromeUsefulList.append(config.WEB_DATA)
+	chromeUsefulList = [config.BOOKMARKS, config.GCHROME_COOKIES, config.HISTORY, config.WEB_DATA]
 
-	#look in default profile
-	if os.path.isdir("Default"):
-		cred = list()
-		usefulFile = list()
-		os.chdir("Default")
-		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, "Default")
-
-		# copy file to report folder and add to browser profile object
-		reportProfile = os.path.join(reportFolder, "Default")
-		os.mkdir(reportProfile)
-
-		for f in chromeUsefulList:
-			absPath = fileCheckerCopy(f, reportProfile) 
-			
-			if absPath is not None:
-				usefulFile.append(absPath)	
-
-		objProfiles.append(BrowserProfile("Default", usefulFile, cred))
-
-		#up one directory
-		os.chdir(os.path.dirname(os.getcwd()))
-
-	profiles = glob.glob("Profile *")
+	profiles = ["Default"]
+	profiles += glob.glob("Profile *")
 
 	for profile in profiles:
 		cred = list()
@@ -126,7 +97,7 @@ def chromeFinder(reportFolder):
 		os.chdir(profile)
 		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, profile)
 		
-		# copy file to report folder and add to browser profile object
+		# copy file to report folder for the profile 
 		reportProfile = os.path.join(reportFolder, profile)
 		os.mkdir(reportProfile)
 
@@ -161,10 +132,7 @@ def mozillaFinder(mozProfile, reportFolder):
 	objProfiles = list()
 	browserDict = dict()
 
-	mozUsefulList = list()
-	mozUsefulList.append(config.FF_COOKIES)
-	mozUsefulList.append(config.PLACES)
-	mozUsefulList.append(config.FORM_HISTORY)
+	mozUsefulList = [config.FF_COOKIES, config.PLACES, config.FORM_HISTORY]
 
 	for profile in open("profiles.ini", "r"):
 		cred = list()
