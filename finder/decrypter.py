@@ -40,7 +40,6 @@ def getPasswords(loginFile, profile):
 	cred = list()
 
 	if not os.path.isfile(loginFile):
-		logger.error("Login file " + loginFile + " does not exists. (" + profile + ")")
 		return cred
 
 	conn = sqlite3.connect(loginFile)
@@ -155,7 +154,6 @@ def readLoginsJSON(loginFileJSON, profile):
 	cred = list()
 
 	if not os.path.isfile(loginFileJSON):
-		logger.error("JSON file " + loginFileJSON + " does not exist. (" + profile + ")" )
 		return cred
 
 	data = json.loads(open(loginFileJSON).read())

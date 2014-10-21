@@ -26,7 +26,7 @@ def resPrinter(profileObjects):
 	""" Print in a readable manner the results """ 
 
 	for obj in profileObjects: 
-		logger.log("-> Profile " + obj.profileName,"no")
+		logger.log("\n-> Profile " + obj.profileName,"no")
 		logger.log("Credentials", "no")
 		for c in obj.credentialList:
 			logger.log("\t" + c.hostname + ", " + c.username + ", " + c.password + ", " + c.profile,"no")
@@ -44,10 +44,33 @@ def fileCheckerCopy(fileName, reportFolder):
 	absPath = os.path.abspath(fileName)
 
 	if os.path.isfile(absPath):
-		shutil.copy(absPath, reportFolder)
-		return absPath
+		dstFile = os.path.join(reportFolder, fileName)
+		logger.log("Copying\n\t" + absPath + "\n\t" + dstFile, "no")
+	
+		# check that the hash if the same
+		fSrc = open(absPath)
+		hashSrc = crypto.sha256File(fSrc)
 
-def chromeFinder(reportFolder)
+		shutil.copy(absPath, os.path.join(reportFolder, fileName))
+
+		fDst = open(dstFile)
+		hashDst = crypto.sha256File(fDst)
+
+		# compare the source and destination file hashes
+		if hashSrc == hashDst:
+			logger.log("\n\t Hash are the same (" + hashSrc + ")", "no")
+			absPath = absPath + ":" + hashSrc
+			return absPath
+		else:
+			logger.log("\n\t Hash do not coincide (" + hashSrc + " != " + hashDst + ")", "no")
+			absPath = absPath + ":<no hash>"
+			return absPath
+
+	else:
+		logger.log("No " + absPath + " found")
+		return None
+
+def chromeFinder(reportFolder):
 	""" Find useful file about google chrome """
 	if not os.path.isdir(config.GCHROME_PROFILE):
 		logger.log("No google chrome profile folder found")
@@ -63,13 +86,13 @@ def chromeFinder(reportFolder)
 		try:
 			gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
 			gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
-		except Error as e:
+		except Exception as e:
 			logger.error(e)
 	elif(config.OP_SYS == "Linux"):
 		try:
-			gchromePath = subprocess.check_output(["which", Config.GCHROME_EXEC_LINUX]).strip(" \n")
+			gchromePath = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
 			gchromeVersion = subprocess.check_output([gchromePath, " --version"]).strip(" \n")
-		except Error as e:
+		except Exception as e:
 			logger.error(e)
 
 	logger.log("\n", "no")
@@ -89,9 +112,14 @@ def chromeFinder(reportFolder)
 		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, "Default")
 
 		# copy file to report folder and add to browser profile object
+		reportProfile = os.path.join(reportFolder, "Default")
+		os.mkdir(reportProfile)
+
 		for f in chromeUsefulList:
-			absPath = fileCheckerCopy(f, os.path.join(reportFolder, config.GCHROME_COPY_FOLDER))
-			usefulFile.append(absPath)	
+			absPath = fileCheckerCopy(f, reportProfile) 
+			
+			if absPath is not None:
+				usefulFile.append(absPath)	
 
 		objProfiles.append(BrowserProfile("Default", usefulFile, cred))
 
@@ -105,18 +133,16 @@ def chromeFinder(reportFolder)
 		usefulFile = list()
 		os.chdir(profile)
 		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, profile)
-
-		if os.path.isfile(config.BOOKMARKS):
-			usefulFile.append(os.path.abspath(config.BOOKMARKS))
 		
-		if os.path.isfile(config.GCHROME_COOKIES):
-			usefulFile.append(os.path.abspath(config.GCHROME_COOKIES))
+		# copy file to report folder and add to browser profile object
+		reportProfile = os.path.join(reportFolder, profile)
+		os.mkdir(reportProfile)
 
-		if os.path.isfile(config.HISTORY):
-			usefulFile.append(os.path.abspath(config.HISTORY))
-
-		if os.path.isfile(config.WEB_DATA):
-			usefulFile.append(os.path.abspath(config.WEB_DATA))
+		for f in chromeUsefulList:
+			absPath = fileCheckerCopy(f, reportProfile) 
+			
+			if absPath is not None:
+				usefulFile.append(absPath)	
 
 		objProfiles.append(BrowserProfile(profile, usefulFile, cred))
 
@@ -129,7 +155,7 @@ def chromeFinder(reportFolder)
 	chromeDict["profiles"] = objProfiles
 	return chromeDict
 	
-def mozillaFinder(mozProfile):
+def mozillaFinder(mozProfile, reportFolder):
 	""" Find useful file about mozilla firefox / thunderbird """
 	if not  os.path.isdir(mozProfile):
 		logger.error("No " + mozProfile + " folder found")
@@ -143,6 +169,11 @@ def mozillaFinder(mozProfile):
 	objProfiles = list()
 	browserDict = dict()
 
+	mozUsefulList = list()
+	mozUsefulList.append(config.FF_COOKIES)
+	mozUsefulList.append(config.PLACES)
+	mozUsefulList.append(config.FORM_HISTORY)
+
 	for profile in open("profiles.ini", "r"):
 		cred = list()
 		usefulFile = list()
@@ -155,15 +186,15 @@ def mozillaFinder(mozProfile):
 			cred = decrypter.getPasswords(config.MOZ_LOGIN_FILE_DB,p)
 			cred = cred + decrypter.readLoginsJSON(config.MOZ_LOGIN_FILE_JSON, p)
 
-			##useful file
-			if os.path.isfile(config.FF_COOKIES):
-				usefulFile.append(os.path.abspath(config.FF_COOKIES))
+			# copy file to report folder and add to browser profile object
+			reportProfile = os.path.join(reportFolder, p)
+			os.mkdir(reportProfile)
 
-			if os.path.isfile(config.PLACES):
-				usefulFile.append(os.path.abspath(config.PLACES))
+			for f in mozUsefulList:
+				absPath = fileCheckerCopy(f, reportProfile) 
 
-			if os.path.isfile(config.FORM_HISTORY):
-				usefulFile.append(os.path.abspath(config.FORM_HISTORY))
+				if absPath is not None:
+					usefulFile.append(absPath)	
 			
 			objProfiles.append(BrowserProfile(p,usefulFile,cred))
 
@@ -175,16 +206,16 @@ def mozillaFinder(mozProfile):
 	return browserDict
 
 
-def thunderbirdFinder():
+def thunderbirdFinder(reportFolder):
 	""" Thudnerbird wrapper for mozillaFinder """
-	res = mozillaFinder(config.TH_PROFILE)
+	res = mozillaFinder(config.TH_PROFILE, reportFolder)
 	res['name'] = mozillaVersionFinder("thunderbird")
 	resPrinter(res["profiles"])
 	return res
 
-def firefoxFinder():
+def firefoxFinder(reportFolder):
 	""" Firefox wrapper for mozillaFinder """
-	res = mozillaFinder(config.FF_PROFILE)
+	res = mozillaFinder(config.FF_PROFILE, reportFolder)
 	res['name'] = mozillaVersionFinder("firefox")
 	resPrinter(res["profiles"])
 	return res
@@ -200,7 +231,7 @@ def mozillaVersionFinder(sw):
 		mozVersion = mozVersion + " " + mozVersionToParse.split("\r\n")[2].split("    ")[-1]
 		return mozVersion
 	elif config.OP_SYS == "Linux":
-		mozPath = subprocess.check_output(["/usr/bin/which", sw]).strip(" \n")
+		mozPath = subprocess.check_output(["which", sw]).strip(" \n")
 		mozVersionToParse = subprocess.check_output([mozPath, "--version"]).strip(" \n")
 		return mozVersionToParse
 

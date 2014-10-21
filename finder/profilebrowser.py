@@ -7,13 +7,7 @@ class BrowserProfile(object):
 	def __init__(self, profileName, fileList, credList):
 		self.profileName = profileName
 		hashList = list()
-
-		for f in fileList:
-			fileHandler = open(f, "r")
-			sign = f + ":" + crypto.sha256File(fileHandler)
-			hashList.append(sign)
-
-		self.fileListHashes = hashList
+		self.fileListHashes = fileList
 		self.credentialList = credList
 	
 	@property
