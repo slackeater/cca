@@ -57,7 +57,7 @@ def getCloudFileHash(cloudService):
 				return res
 
 	elif cloudService == "GDrive":
-		conn = sqlite3.connect(config.GDRIVE + "\\sync_config.db")
+		conn = sqlite3.connect(os.path.join(config.GDRIVE,"sync_config.db")
 		cursor = conn.cursor()
 		query = "SELECT data_value FROM data WHERE entry_key = 'local_sync_root_path'"
 

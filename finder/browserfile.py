@@ -9,7 +9,7 @@
 ####
 
 import config
-import os, glob
+import os, glob, shutil
 import decrypter, logger, crypto, subprocess
 from credentials import Credentials
 from profilebrowser import BrowserProfile
@@ -38,7 +38,16 @@ def resPrinter(profileObjects):
 		for f in obj.fileListHashes:
 			logger.log("\t" + f,"no")
 
-def chromeFinder():
+def fileCheckerCopy(fileName, reportFolder):
+	""" Check if the file exists and copy it to the report folder """
+
+	absPath = os.path.abspath(fileName)
+
+	if os.path.isfile(absPath):
+		shutil.copy(absPath, reportFolder)
+		return absPath
+
+def chromeFinder(reportFolder)
 	""" Find useful file about google chrome """
 	if not os.path.isdir(config.GCHROME_PROFILE):
 		logger.log("No google chrome profile folder found")
@@ -58,13 +67,19 @@ def chromeFinder():
 			logger.error(e)
 	elif(config.OP_SYS == "Linux"):
 		try:
-			gchromePath = subprocess.check_output(["which", "google-chrome-stable"]).strip(" \n")
+			gchromePath = subprocess.check_output(["which", Config.GCHROME_EXEC_LINUX]).strip(" \n")
 			gchromeVersion = subprocess.check_output([gchromePath, " --version"]).strip(" \n")
 		except Error as e:
 			logger.error(e)
 
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
+
+	chromeUsefulList = list()
+	chromeUsefulList.append(config.BOOKMARKS)
+	chromeUsefulList.append(config.GCHROME_COOKIES)
+	chromeUsefulList.append(config.HISTORY)
+	chromeUsefulList.append(config.WEB_DATA)
 
 	#look in default profile
 	if os.path.isdir("Default"):
@@ -73,17 +88,10 @@ def chromeFinder():
 		os.chdir("Default")
 		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, "Default")
 
-		if os.path.isfile(config.BOOKMARKS):
-			usefulFile.append(os.path.abspath(config.BOOKMARKS))
-		
-		if os.path.isfile(config.GCHROME_COOKIES):
-			usefulFile.append(os.path.abspath(config.GCHROME_COOKIES))
-
-		if os.path.isfile(config.HISTORY):
-			usefulFile.append(os.path.abspath(config.HISTORY))
-
-		if os.path.isfile(config.WEB_DATA):
-			usefulFile.append(os.path.abspath(config.WEB_DATA))
+		# copy file to report folder and add to browser profile object
+		for f in chromeUsefulList:
+			absPath = fileCheckerCopy(f, os.path.join(reportFolder, config.GCHROME_COPY_FOLDER))
+			usefulFile.append(absPath)	
 
 		objProfiles.append(BrowserProfile("Default", usefulFile, cred))
 
