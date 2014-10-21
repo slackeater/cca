@@ -51,6 +51,7 @@ def main():
 
 		#pack all together
 		jsontext = packetizer.mainPacker(browserPackList, cloudPackList)
+		print jsontext
 		crypt = crypto.makeReport(crypto.encryptAES(jsontext))
 
 		# save into a file
