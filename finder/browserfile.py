@@ -79,7 +79,7 @@ def chromeFinder(reportFolder):
 			gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
 		elif(config.OP_SYS == "Linux"):
 			gchromeVersionToParse = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
-			gchromeVersion = subprocess.check_output([gchromePath, " --version"]).strip(" \n")
+			gchromeVersion = subprocess.check_output([gchromeVersionToParse, " --version"]).strip(" \n")
 	except Exception as e:
 		logger.error(e)
 
@@ -146,8 +146,10 @@ def mozillaFinder(mozProfile, reportFolder):
 			cred = decrypter.getPasswords(config.MOZ_LOGIN_FILE_DB,p)
 			cred = cred + decrypter.readLoginsJSON(config.MOZ_LOGIN_FILE_JSON, p)
 
+			# windows stores profiles as Profiles\....
+			pNew = p if config.OP_SYS == "Linux" else p.split("/")[1] 
 			# copy file to report folder and add to browser profile object
-			reportProfile = os.path.join(reportFolder, p)
+			reportProfile = os.path.join(reportFolder, pNew)
 			os.mkdir(reportProfile)
 
 			for f in mozUsefulList:

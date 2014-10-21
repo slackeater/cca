@@ -56,7 +56,7 @@ def main():
 	logger.log(jsontext, "no")
 
 	crypt = crypto.makeReport(crypto.encryptAES(jsontext))
-
+	
 	# save into a file
 	os.chdir(completeReportPath)
 	fileName = reportName + ".report"
@@ -64,6 +64,7 @@ def main():
 	f.write(json.dumps(crypt, sort_keys=True, indent=4))
 	f.close()
 
+	
 	# change to start directory if not already in it	
 	if os.getcwd() != config.START_PATH:
 		os.chdir(config.START_PATH)
@@ -78,13 +79,13 @@ def main():
 			zipFile.write(os.path.join(dirname, filename))
 	
 	zipFile.close()
-	
+		
 	logger.log("Report file written to " + os.path.join(config.START_PATH,reportName + ".zip"))
-
+	
+	
 	# hmac signature of zip
-	logger.log("\nInsert password for HMAC signature:", "no")
-	pa = getpass.getpass()
-
+	pa = getpass.getpass("Password:")
+	
 	hmacDigest = crypto.sha256File(open(os.path.join(config.START_PATH,reportName + ".zip")), pa)
 	hmacFile = open(os.path.join(config.START_PATH, reportName + ".zip.sig"), "w+")
 	hmacFile.write(hmacDigest)

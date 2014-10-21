@@ -15,26 +15,27 @@ import xml.etree.ElementTree as ET
 
 def recurseDir(path):
 	""" Recurse into directory """
-	logger.log("Scanning " + path, "no")
 
 	if type(path) is str:
 		path = unicode(path)
 
-	os.chdir(path)
-	files = os.listdir(path)
 	globalRes = list()
 
-	for f in files:
-		if os.path.isfile(f):
-			sig = crypto.sha256File(open(f, "r"))
-			fName = os.path.abspath(f).encode("UTF-8")
-			entry = {fName:sig}
-			logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
-			globalRes.append(entry)
-		elif os.path.isdir(os.path.abspath(f)):
-			globalRes = globalRes + recurseDir(os.path.abspath(f))
+	for root, subdir, files in os.walk(path):
+		logger.log("Scanning " + root, "no")
 
-	os.chdir(os.path.dirname(os.getcwd()))
+		for f in files:
+			try:
+				handler = open(os.path.join(root,f), "r")
+				sig = crypto.sha256File(handler)
+				fName = os.path.join(root,f).encode("UTF-8")
+				entry = {fName:sig}
+				logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
+				globalRes.append(entry)
+				handler.close()
+			except Exception as e:
+				logger.error(e)
+
 	return globalRes
 
 
