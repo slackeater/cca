@@ -20,7 +20,11 @@ def sha256(string):
 	""" Hash of a string """
 
 	#encode string to UTF-8
-	enc = string.encode('utf-8')
+	if type(string) is str:
+		enc = string.decode('iso-8859-1').encode('utf-8')
+	else:
+		enc = string
+
 	return hashlib.sha256(enc).hexdigest() 
 
 def sha256File(fileName, hmacKey = None):
@@ -42,8 +46,11 @@ def sha256File(fileName, hmacKey = None):
 
 def md5(string):
 	""" MD5 hash of a string """
-
-	enc = string.encode("utf-8")
+	
+	if type(string) is str:
+		enc = string.decode('iso-8859-1').encode("utf-8")
+	else:
+		enc = string
 	return hashlib.md5(enc).hexdigest()
 
 def encryptRSA(text):
