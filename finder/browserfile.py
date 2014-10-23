@@ -30,36 +30,31 @@ def resPrinter(profileObjects):
 		for f in obj.fileListHashes:
 			logger.log("\t" + f,"no")
 
-def fileCheckerCopy(fileName, reportFolder):
+def fileCheckerCopy(profileDir, fileName, reportFolder):
 	""" Check if the file exists and copy it to the report folder """
 
-	absPath = os.path.abspath(fileName)
+	wholePath = os.path.join(profileDir, fileName)
 
-	if os.path.isfile(absPath):
+	if os.path.isfile(wholePath):
 		dstFile = os.path.join(reportFolder, fileName)
-		logger.log("Copying\n\t" + absPath + "\n\t" + dstFile, "no")
+		logger.log("Copying\n\t" + wholePath + "\n\t" + dstFile, "no")
 	
-		# check that the hash if the same
-		fSrc = open(absPath)
-		hashSrc = crypto.sha256File(fSrc)
+		# check that the hash is the same
+		hashSrc = crypto.sha256File(wholePath)
 
-		shutil.copy(absPath, os.path.join(reportFolder, fileName))
+		shutil.copy2(wholePath, reportFolder)
 
-		fDst = open(dstFile)
-		hashDst = crypto.sha256File(fDst)
+		hashDst = crypto.sha256File(dstFile)
 
 		# compare the source and destination file hashes
 		if hashSrc == hashDst:
 			logger.log("\n\t Hash are the same (" + hashSrc + ")", "no")
-			absPath = absPath + ":" + hashSrc
-			return absPath
+			return wholePath + ":" + hashSrc
 		else:
 			logger.log("\n\t Hash do not coincide (" + hashSrc + " != " + hashDst + ")", "no")
-			absPath = absPath + ":<no hash>"
-			return absPath
-
+			return wholePath + ":<no hash>" 
 	else:
-		logger.log("No " + absPath + " found")
+		logger.log("No " + wholePath + " found")
 		return None
 
 def chromeFinder(reportFolder):
@@ -68,7 +63,6 @@ def chromeFinder(reportFolder):
 		logger.log("No google chrome profile folder found")
 
 	objProfiles = list()
-	os.chdir(config.GCHROME_PROFILE)
 	chromeDict = dict()
 	gchromeVersion = "Google Chrome"
 
@@ -88,29 +82,30 @@ def chromeFinder(reportFolder):
 
 	chromeUsefulList = [config.BOOKMARKS, config.GCHROME_COOKIES, config.HISTORY, config.WEB_DATA]
 
-	profiles = ["Default"]
-	profiles += glob.glob("Profile *")
-
-	for profile in profiles:
+	profiles = [os.path.join(config.GCHROME_PROFILE,"Default")]
+	profiles += glob.glob(os.path.join(config.GCHROME_PROFILE,"Profile *"))
+	
+	for p in profiles:
 		cred = list()
 		usefulFile = list()
-		os.chdir(profile)
-		cred = decrypter.getPasswords(config.GCHROME_LOGIN_FILE, profile)
+
+		#profile name
+		profile = os.path.basename(os.path.normpath(p))
 		
 		# copy file to report folder for the profile 
 		reportProfile = os.path.join(reportFolder, profile)
 		os.mkdir(reportProfile)
+		
+		logger.log("Now in " + os.path.abspath(p))
+		cred = decrypter.getPasswords(os.path.join(p,config.GCHROME_LOGIN_FILE), profile)
 
 		for f in chromeUsefulList:
-			absPath = fileCheckerCopy(f, reportProfile) 
+			absPath = fileCheckerCopy(p, f, reportProfile) 
 			
 			if absPath is not None:
 				usefulFile.append(absPath)	
 
 		objProfiles.append(BrowserProfile(profile, usefulFile, cred))
-
-		#up one directory
-		os.chdir(os.path.dirname(os.getcwd()))
 
 	resPrinter(objProfiles)
 
@@ -123,9 +118,6 @@ def mozillaFinder(mozProfile, reportFolder):
 	if not  os.path.isdir(mozProfile):
 		logger.error("No " + mozProfile + " folder found")
 
-	# look in all profiles
-	os.chdir(mozProfile)
-	
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + mozProfile + " <===")
 
@@ -134,17 +126,17 @@ def mozillaFinder(mozProfile, reportFolder):
 
 	mozUsefulList = [config.FF_COOKIES, config.PLACES, config.FORM_HISTORY]
 
-	for profile in open("profiles.ini", "r"):
+	for profile in open(os.path.join(mozProfile,"profiles.ini"), "r"):
 		cred = list()
 		usefulFile = list()
+		
 		#get profile dir
 		if profile.startswith("Path="):
 			p = profile.split("=")[1].strip("\n")
-			os.chdir(p)
 
 			## passwords
-			cred = decrypter.getPasswords(config.MOZ_LOGIN_FILE_DB,p)
-			cred = cred + decrypter.readLoginsJSON(config.MOZ_LOGIN_FILE_JSON, p)
+			cred = decrypter.getPasswords(os.path.join(mozProfile,p,config.MOZ_LOGIN_FILE_DB),p)
+			cred = cred + decrypter.readLoginsJSON(os.path.join(mozProfile,p,config.MOZ_LOGIN_FILE_JSON), p)
 
 			# windows stores profiles as Profiles\....
 			pNew = p if config.OP_SYS == "Linux" else p.split("/")[1] 
@@ -153,14 +145,13 @@ def mozillaFinder(mozProfile, reportFolder):
 			os.mkdir(reportProfile)
 
 			for f in mozUsefulList:
-				absPath = fileCheckerCopy(f, reportProfile) 
+				absPath = fileCheckerCopy(os.path.join(mozProfile,p),f, reportProfile) 
 
 				if absPath is not None:
 					usefulFile.append(absPath)	
 			
 			objProfiles.append(BrowserProfile(p,usefulFile,cred))
 
-			os.chdir(os.path.dirname(os.getcwd()))
 			cred = list()
 			usefulFile = list()
 

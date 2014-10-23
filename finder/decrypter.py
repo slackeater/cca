@@ -39,12 +39,16 @@ def getPasswords(loginFile, profile):
 
 	cred = list()
 
+	# get file name
+	baseName = os.path.basename(os.path.normpath(loginFile))
+	print "BASENAME " + baseName
+
 	if not os.path.isfile(loginFile):
 		return cred
 
 	conn = sqlite3.connect(loginFile)
 
-	if loginFile is config.GCHROME_LOGIN_FILE:
+	if baseName == config.GCHROME_LOGIN_FILE:
 		#chrome on windows, run Windows C application
 		if config.OP_SYS == "Windows":
 			logger.log("Attempting to decrypt Windows Chrome logins")
@@ -80,13 +84,13 @@ def getPasswords(loginFile, profile):
 			finally:
 				conn.close()
 
-	elif loginFile is config.MOZ_LOGIN_FILE_DB:
+	elif baseName == config.MOZ_LOGIN_FILE_DB:
 		query = "SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins"
 	
 		try:
 			for row in conn.execute(query):
 				  #firefox/thunderbird on linux/windows, use NSS library to decrypt
-				  credentials = decryptMozilla(row[1],row[2], config.LIBNSS)
+				  credentials = decryptMozilla(row[1],row[2], config.LIBNSS, os.path.dirname(loginFile))
 				  cred.append(Credentials(row[0], credentials[0], credentials[1], profile))	
 		except sqlite3.Error as e:
 			logger.error(e)
@@ -96,7 +100,7 @@ def getPasswords(loginFile, profile):
 	
 	return cred
 		
-def decryptMozilla(username, password, libnss):
+def decryptMozilla(username, password, libnss, profileFolder):
 	""" Decrypt mozilla login, based on ffpwdcracker.py """
 	
 	decItems = ["",""]
@@ -108,7 +112,7 @@ def decryptMozilla(username, password, libnss):
 	# code from ffpwdcracker.py
 	nss = CDLL(libnss)
 	
-	if nss.NSS_Init(os.getcwd()) != 0:
+	if nss.NSS_Init(profileFolder) != 0:
 		logger.error("Error initializing NSS")
 		logger.error(nss.PORT_GetError())
 		return decItems
@@ -159,7 +163,7 @@ def readLoginsJSON(loginFileJSON, profile):
 	data = json.loads(open(loginFileJSON).read())
 
 	for login in data['logins']:
-		credentials = decryptMozilla(login['encryptedUsername'],login['encryptedPassword'], config.LIBNSS)
+		credentials = decryptMozilla(login['encryptedUsername'],login['encryptedPassword'], config.LIBNSS,os.path.dirname(loginFileJSON))
 		cred.append(Credentials(login['hostname'], credentials[0], credentials[1], profile))	
 
 	return cred

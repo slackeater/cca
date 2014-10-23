@@ -11,6 +11,7 @@
 
 import cloud, browserfile, config, packetizer, crypto, logger, getpass
 import os, subprocess, time, json, zipfile, sys, base64
+from cryptography.fernet import Fernet
 
 def init(reportPathUser):
 	""" Initialize report """
@@ -108,26 +109,29 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 		
 	# now crypt the file
 	zipEnc = os.path.join(encZipPath, zipFileName + ".enc")
-	key = os.urandom(32)
-	logger.log("Encrypting " + os.path.join(encZipPath, zipFileName) + " to " + zipEnc)
-	crypto.encryptAESFile(os.path.join(encZipPath,zipFileName), zipEnc, key)
+	zipKey = Fernet.generate_key()
+	logger.log("Encrypting " + os.path.join(encZipPath, zipFileName))
+	zipBytesEnc = crypto.encryptFernetFile(os.path.join(encZipPath,zipFileName), zipKey)
 
-	# compute HMAC
-	hmacHandler = open(zipEnc, "r")
-	hmacDigest = crypto.sha256File(hmacHandler, key)
-	hmacHandler.close()
+	# encrypt the keys
+	encKeyZip = crypto.encryptRSA(zipKey
 
-	# encrypt the key
-	encKey = base64.b64encode(crypto.encryptRSA(key))
-	
-	hmacFile = open(zipEnc + ".sig", "w+")
-	hmacFile.write("digest:" + hmacDigest)
-	hmacFile.write("\nk:" + encKey)
+	logger.log("Writing key info to " + zipEnc)
+	hmacFile = open(zipEnc, "w+")
+	hmacFile.write("\nenc:" + zipBytesEnc)
+	hmacFile.write("\nk:" + encKeyZip)
 	hmacFile.close()
 
 	# delete the random key
-	key = None
-	del key
+	zipKey = None
+	del zipKey
+
+	hmacKey = None
+	del hmacKey
+	
+	# uncomment for final version
+	#os.rmdir(completeReportPath)
+	logger.log("Deleting " + zipEnc + "(TODO for final version)")
 	
 def main():
 	userPath = sys.argv[1]
@@ -137,8 +141,6 @@ def main():
 	cloudPackList = cloudFinder()
 	zipper(userPath, report[0], report[1], browserPackList, cloudPackList)
 	
-		# uncomment for final version
-	#os.rmdir(completeReportPath)
 
 if __name__ == "__main__":
 	main()

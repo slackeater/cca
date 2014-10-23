@@ -26,13 +26,11 @@ def recurseDir(path):
 
 		for f in files:
 			try:
-				handler = open(os.path.join(root,f), "r")
-				sig = crypto.sha256File(handler)
+				sig = crypto.sha256File(os.path.join(root,f))
 				fName = os.path.join(root,f).encode("UTF-8")
 				entry = {fName:sig}
 				logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
 				globalRes.append(entry)
-				handler.close()
 			except Exception as e:
 				logger.error(e)
 
