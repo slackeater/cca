@@ -53,13 +53,15 @@ def md5(string):
 		enc = string
 	return hashlib.md5(enc).hexdigest()
 
-def encryptRSA(text):
+def encryptRSA(text, pubkey = None):
 	""" Encrypt a string using the given public key !!! ONLY 128 Bits at time can be encrypted with PyCrypto"""
 	
+	rsaPubKey = pubkey if pubkey is not None else config.PUB_KEY_RSA
+
 	# if pub key exists and is readable
-	if os.path.isfile(config.PUB_KEY_RSA) and os.access(config.PUB_KEY_RSA, os.R_OK):
+	if os.path.isfile(rsaPubKey) and os.access(rsaPubKey, os.R_OK):
 		try:
-			key = RSA.importKey(open(config.PUB_KEY_RSA, "rb").read())
+			key = RSA.importKey(open(rsaPubKey, "rb").read())
 			cipher = PKCS1_OAEP.new(key)
 			cipertext = cipher.encrypt(text)
 			return base64.b64encode(cipertext)
@@ -69,14 +71,15 @@ def encryptRSA(text):
 	else:
 		logger.log("No public key found")
 
-def decryptRSA(ciphertext):
+def decryptRSA(ciphertext, privKey = None, passphrase = None):
 	""" Decrypt a previously encrypted text using RSA """
 
-	privKey = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "privkey.pem"))
-	
-	if os.path.isfile(privKey) and os.access(privKey, os.R_OK):
+	rsaPrivKey = privKey if privKey is not None else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', "privkey.pem"))
+	rsaPassphrase = passphrase if passphrase is not None else "mypass"	
+
+	if os.path.isfile(rsaPrivKey) and os.access(rsaPrivKey, os.R_OK):
 		try:
-			key = RSA.importKey(open(privKey, 'rb').read(), "mypass")
+			key = RSA.importKey(open(rsaPrivKey, 'rb').read(), rsaPassphrase) 
 			cipher = PKCS1_OAEP.new(key)
 			text = cipher.decrypt(base64.b64decode(ciphertext))
 			return text

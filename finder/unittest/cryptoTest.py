@@ -104,7 +104,7 @@ class CryptoTest(unittest.TestCase):
 
 			self.assertEquals(crypto.sha256File(testFile), filesHash[key])
 			
-
+		
 
 if __name__ == '__main__':
 	suite = unittest.TestLoader().loadTestsFromTestCase(CryptoTest)
