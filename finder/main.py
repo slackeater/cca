@@ -88,7 +88,12 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	fileName = reportName + ".report"
 	f = open(fileName,"w+")
 	jsonReport = packetizer.mainPacker(browserPackList, cloudPackList)
-	f.write(json.dumps(jsonReport, sort_keys=True, indent=4))
+	formattedReport = json.dumps(jsonReport, sort_keys=True, indent=4)
+
+	logger.log("==== JSON Report ====")
+	logger.log(jsonReport, "no")
+
+	f.write(formattedReport)
 	f.close()
 	logger.log("JSON report " + fileName + "  stored at " + os.getcwd())
 	
@@ -114,7 +119,7 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	zipBytesEnc = crypto.encryptFernetFile(os.path.join(encZipPath,zipFileName), zipKey)
 
 	# encrypt the keys
-	encKeyZip = crypto.encryptRSA(zipKey
+	encKeyZip = crypto.encryptRSA(zipKey)
 
 	logger.log("Writing key info to " + zipEnc)
 	hmacFile = open(zipEnc, "w+")

@@ -10,7 +10,7 @@
 
 
 import config, crypto, logger
-import os, base64, sqlite3
+import os, base64, sqlite3, subprocess
 import xml.etree.ElementTree as ET
 
 def recurseDir(path):
@@ -102,8 +102,9 @@ def getCloudFileHash(cloudService):
 def dropbox():
 	""" Wrapper for Dropbox """
 	if(os.path.isdir(config.DROPBOX)):
+		regQuery = 'reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Dropbox" /v DisplayVersion'
 		dropDict = dict()
-		dropDict["cloudSerivce"] = "Dropbox"
+		dropDict["cloudSerivce"] = "Dropbox" + cloudVersionFinder(regQuery)
 		dropDict["files"] = getCloudFileHash("Dropbox")
 		return dropDict
 	else:
@@ -112,8 +113,9 @@ def dropbox():
 def gdrive():
 	""" Wrapper for Google Drive """
 	if(os.path.isdir(config.GDRIVE)):
+		regQuery = 'reg query "HKEY_LOCAL_MACHINE\Software\Google\Update\Clients\{3C122445-AECE-4309-90B7-85A6AEF42AC0}" /v pv'
 		gdriveDict = dict()
-		gdriveDict["cloudService"] = "Google Drive"
+		gdriveDict["cloudService"] = "Google Drive" + cloudVersionFinder(regQuery)
 		gdriveDict["files"] = getCloudFileHash("GDrive")
 		return gdriveDict
 	else:
@@ -122,9 +124,21 @@ def gdrive():
 def onedrive():
 	""" Wrapper for OneDrive """
 	if(os.path.isdir(config.ONEDRIVE)):
+		regQuery = 'reg query "HKEY_CURRENT_USER\Software\Microsoft\SkyDrive" /v Version'
 		onedriveDict = dict()
-		onedriveDict["cloudService"] = "One Drive"
+		onedriveDict["cloudService"] = "One Drive" + cloudVersionFinder(regQuery)
 		onedriveDict["files"] = getCloudFileHash("OneDrive")
 		return onedriveDict
 	else:
 		logger.error("No OneDrive directory found")
+
+
+def cloudVersionFinder(regQuery):
+	""" Find cloud software version """
+	try:
+		regOutput = subprocess.check_output(regQuery, shell=True)
+		#parse output
+		version = regOutput.split("\r\n")[2].split("    ")[-1]
+		return " " + version
+	except Exception:
+		return ""

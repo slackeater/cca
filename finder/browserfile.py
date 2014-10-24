@@ -138,7 +138,7 @@ def mozillaFinder(mozProfile, reportFolder):
 			cred = decrypter.getPasswords(os.path.join(mozProfile,p,config.MOZ_LOGIN_FILE_DB),p)
 			cred = cred + decrypter.readLoginsJSON(os.path.join(mozProfile,p,config.MOZ_LOGIN_FILE_JSON), p)
 
-			# windows stores profiles as Profiles\....
+			# windows stores profiles as Profiles\...., so take only last part as profile name
 			pNew = p if config.OP_SYS == "Linux" else p.split("/")[1] 
 			# copy file to report folder and add to browser profile object
 			reportProfile = os.path.join(reportFolder, pNew)
