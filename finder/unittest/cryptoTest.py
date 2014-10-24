@@ -6,6 +6,7 @@ sys.path.insert(0, '../')
 
 import unittest
 import crypto
+from cryptography.fernet import Fernet
 
 
 class CryptoTest(unittest.TestCase):
@@ -52,6 +53,59 @@ class CryptoTest(unittest.TestCase):
 			hashString = split[1]
 
 			self.assertEquals(hashString, crypto.md5(string))
+
+	def test_RSAEncryption(self):
+		""" Test RSA encryption and decryption """
+		encText = dict()
+		text = dict()
+		text[0] = "RSA"
+		text[1] = "pythonIsQuick"
+		text[2] = "ÈÈÈ‡‡‡bbb"
+		text[3] = "88ff8f10e4bd1f374072cfd3f4d8e665"
+
+		# encrypt
+		for key in text:
+			encText[key] = crypto.encryptRSA(text[key], "pubkey.pem")
+
+		#decrypt
+		for key in encText:
+			self.assertEquals(crypto.decryptRSA(encText[key], "privkey.pem", "pass"), text[key])
+
+	def test_Fernet(self):
+		""" Test Fernet encryption and decryption """
+		symmKey = dict()
+		symmKey[0] = Fernet.generate_key()
+		symmKey[1] = Fernet.generate_key()
+		symmKey[2] = Fernet.generate_key()
+
+		files = dict()
+		files[0] = "file1.txt"
+		files[1] = "file2.txt"
+		files[2] = "file3.txt"
+
+		filesHash = dict()
+		filesHash[0] = crypto.sha256File(files[0])
+		filesHash[1] = crypto.sha256File(files[1])
+		filesHash[2] = crypto.sha256File(files[2])
 		
+		encText = dict()
+
+		# encrypt
+		for key in files:
+			encText[key] = crypto.encryptFernetFile(files[key], symmKey[key])
+
+		# decrypt
+		for key in encText:
+			filesBytes = crypto.decryptFernetFile(encText[key], symmKey[key])
+
+			#create a file with decrypted information and check hash with source file
+			testFile = "decFile"+str(key)+".txt"
+			open(testFile, "w+b").write(filesBytes)
+
+			self.assertEquals(crypto.sha256File(testFile), filesHash[key])
+			
+
+
 if __name__ == '__main__':
-	unittest.main()
+	suite = unittest.TestLoader().loadTestsFromTestCase(CryptoTest)
+	unittest.TextTestRunner(verbosity=2).run(suite)
