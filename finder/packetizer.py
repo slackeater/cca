@@ -13,7 +13,7 @@ import time
 from profilebrowser import BrowserProfileEncoder
 
 def browserPack(browserDict):
-	""" Encode the list of file for a browser into JSON """
+	""" Encode the list of file for a browser into a dictionary """
 
 	jsonProfile = ""
 	browserNewDict = dict()
