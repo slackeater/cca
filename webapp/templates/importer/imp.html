@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+{% if upload %}
+	<p>{{ upload }}</p>
+{% endif %}
+
+<p>Import a report</p>
+
+<form method='post' action='/import/' enctype="multipart/form-data">
+	{% csrf_token %}
+	{% for field in form %}
+		<p>{{ field.label }}</p>
+		<p>{{ field }}</p>
+	{% endfor %}
+	<input type='button' value='upload' onclick="Dajaxice.importer.upload(Dajax.process);">
+</form>
+<div id="status"></div>
+
+<p>Imported report</p>
+
+<table>
+	<tr><td>Report</td><td>Date</td><td>IP</td></tr>
+
+</table>
+
+{% endblock %}
+

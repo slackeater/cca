@@ -1,8 +1,14 @@
+{% load dajaxice_templatetags %}
 <html>
 <head>
-<title>Cloud Analyzer</title>
+<title>Cloud Toolkit</title>
+{% load staticfiles %}
+<script type="text/javascript" src="/static/dajax/jquery.dajax.core.js"></script>
+<script type="text/javascript" src="{% static "jquery.js" %}"></script>
+{% dajaxice_js_import %}
+</head>
 <body>
-<h1>Cloud Analyzer</h1>
+<h1>Cloud Toolkit</h1>
 
 {% block menu %}
 <ul>
@@ -12,6 +18,12 @@
 	<li>Report</li>
 </ul>
 {% endblock %}
+
+{% if isAuthenticated %}
+	<p>Hello {{ uname }}</p>
+{% else %}
+	<p>Not logged in</p>
+{% endif %}
 
 <div>
 	{% block content %}{% endblock %}
