@@ -19,7 +19,6 @@ def importer(request):
 			form = UploadForm(request.POST, request.FILES)
 
 			if form.is_valid():
-				
 				try:
 					fileUpload = request.FILES['fileUp']
 					with open('/tmp/' + fileUpload.name, 'wb+') as destination:
@@ -27,10 +26,16 @@ def importer(request):
 							destination.write(chunk)
 					
 					status = "Upload of " + fileUpload.name + " was successful."
+
+					# TODO add IP
+					newUpload = Upload(fileName=fileUpload.name)
+					newUpload.save()
 				except Exception as e:
 					status = e.message
 
-				return render_to_response("importer/imp.html", {'form': form, 'upload': status}, context_instance=RequestContext(request))
+				# store file name for AJAX	
+				request.session['fileName'] = fileUpload.name
+				return render_to_response("importer/imp.html", {'form': form, 'upload': status, 'uploadFile': True}, context_instance=RequestContext(request))
 		else:
 			form = UploadForm()
 			return render_to_response("importer/imp.html", {'form': form}, context_instance=RequestContext(request))

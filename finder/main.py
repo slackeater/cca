@@ -123,8 +123,8 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 
 	logger.log("Writing key info to " + zipEnc)
 	hmacFile = open(zipEnc, "w+")
-	hmacFile.write("\nenc:" + zipBytesEnc)
-	hmacFile.write("\nk:" + encKeyZip)
+	hmacFile.write('{\n"enc":"' + zipBytesEnc + '",')
+	hmacFile.write('\n"k":"' + encKeyZip + '"\n}')
 	hmacFile.close()
 
 	# delete the random key

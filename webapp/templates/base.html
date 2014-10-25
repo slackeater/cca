@@ -6,8 +6,15 @@
 <script type="text/javascript" src="/static/dajax/jquery.dajax.core.js"></script>
 <script type="text/javascript" src="{% static "jquery.js" %}"></script>
 {% dajaxice_js_import %}
+{% block js %}{% endblock %}
 </head>
+
+{% if uploadFile %}
+<body onload="parseReport()">
+{% else %}
 <body>
+{% endif %}
+
 <h1>Cloud Toolkit</h1>
 
 {% block menu %}

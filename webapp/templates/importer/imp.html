@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 
+{% block js %}
+<script type="text/javascript">
+	function parseReport(){
+		Dajaxice.importer.decrypt(Dajax.process);
+	}
+
+
+</script>
+{% endblock %}
+
 {% block content %}
-
-
 
 {% if upload %}
 	<p>{{ upload }}</p>
@@ -10,16 +18,16 @@
 
 <p>Import a report</p>
 
-<form method='post' action='/import/' enctype="multipart/form-data">
+<form method='post' action='/import/' id="upForm" enctype="multipart/form-data">
 	{% csrf_token %}
 	{% for field in form %}
 		<p>{{ field.label }}</p>
 		<p>{{ field }}</p>
 	{% endfor %}
-	<input type='button' value='upload' onclick="Dajaxice.importer.upload(Dajax.process);">
+	<input type='submit' value='upload' />
 </form>
-<div id="status"></div>
 
+<div id="parseStatus"></div>
 <p>Imported report</p>
 
 <table>
