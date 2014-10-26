@@ -64,9 +64,9 @@ def headerPacker():
 	return json.dumps(mainPack, sort_keys=True, indent=4)
 
 def mainPacker(browserList, cloudList):
-	jsonFile = "{\n"
+	jsonFile = "[\n"
 
-	jsonFile += headerPacker()
+	jsonFile += headerPacker()+","
 
 	# encode each dictionary of each browser
 	packedBrowsersList = list()
@@ -75,11 +75,11 @@ def mainPacker(browserList, cloudList):
 		packedBrowsersList.append(browserPack(b))
 
 	# JSONify browser results
-	jsonFile += browserContainer(packedBrowsersList)
+	jsonFile += browserContainer(packedBrowsersList)+","
 
 	# JSONify cloud result
 	jsonFile += cloudContainer(cloudList)
 
-	jsonFile += "\n}"
+	jsonFile += "\n]"
 
 	return jsonFile

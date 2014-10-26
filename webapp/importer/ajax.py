@@ -2,6 +2,7 @@ from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register, dajaxice_functions
 from django.conf import settings
 import sys, os, json, zipfile
+from models import Upload
 
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -33,8 +34,15 @@ def decrypt(request):
 		
 		# fernet wants "bytes" as token
 		fileBytes = crypto.decryptFernetFile(open(tempFileName, "rb").read(), aes)
-		#write decrypted file
-		decZipFile = os.path.join(settings.UPLOAD_DIR, fileName.strip(".enc"))
+		#write decrypted filea
+
+		if fileName.endswith(".enc"):
+			name = fileName[:-4] 
+		else:
+			dajax.assign("#parseStatus","innerHTML", "Invalid name")
+			return dajax.json()
+
+		decZipFile = os.path.join(settings.UPLOAD_DIR, name)
 		open(decZipFile, "w+b").write(fileBytes)
 		
 		#delete temp file
@@ -51,6 +59,12 @@ def decrypt(request):
 			
 			msg += "<br />ZIP extracted correctly"
 			dajax.assign("#parseStatus","innerHTML",msg)
+
+			# set this report parsed	
+			up = Upload.objects.get(id=request.session['lastID'])
+			up.parsed = True
+			up.save()
+
 			return dajax.json()
 		except Exception as e:
 			dajax.assign("#parseStatus","innerHTML",str(e.message))

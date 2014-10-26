@@ -1,0 +1,15 @@
+div#left{
+	border: solid 1px black;
+	width: 15%;
+	float: left;
+}
+
+div#right{
+	border: solid 1px black;
+	width: 82%;
+	float: right;
+}
+
+div#left div{
+	border: solid 2px red;
+}

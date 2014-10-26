@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% block menu %}{% endblock %}
 
 {% block js %}
 <script type="text/javascript">
@@ -34,10 +33,10 @@
 <p>Imported report</p>
 
 <table>
-	<tr><td>Report</td><td>Date</td><td>IP</td></tr>
+	<tr><td>Report</td><td>Date</td><td>IP</td><td>Parsed</td></tr>
 	
 	{% for report in repList %}
-	<tr><td><a href="/dashboard/?r={{ report.fileName }}">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}</tr>
+	<tr><td><a href="/dashboard/?i={{report.id}}">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}<td><td>{{ report.parsed }}</td></tr>
 	{% endfor %}
 </table>
 

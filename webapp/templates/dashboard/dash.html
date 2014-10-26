@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div id="left">
+<div>Client Report</div>
+<div>Cloud Downloader</div>
+<div>Timeline</div>
+<div>Generate Report</div>
+</div>
+<div id="right">
+	{% if up %}
+		<p>{{ up.fileName }} - {{ up.uploadDate }}</p>
+	
+		<p>Attributes</p>
+		<p>{{attributes.id}}</p>
+		<p>{{attributes.time}}</p>
+		{% for e in attributes.info %}
+			<span>{{e}}</span>
+		{% endfor %}
+
+		<p>Browser</p>
+		{% for b in browser %}
+			<p>{{ b.name }}</p>
+
+			{% for p in b.profiles %}
+				<p>{{ p.profileName }}</p>
+				<p>{{ p.fileListHashes }}</p>
+				<p>{{ p.credentialList }}</p>
+			{% endfor %}
+		{% endfor %}
+
+		<p>Cloud</p>
+		{{ cloud }}
+	{% endif %}
+
+
+</div>
+
+{% endblock %}

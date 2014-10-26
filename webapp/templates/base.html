@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Cloud Toolkit</title>
+<link href="/static/style.css" rel="stylesheet" type="text/css">
 {% load staticfiles %}
 <script type="text/javascript" src="/static/dajax/jquery.dajax.core.js"></script>
 <script type="text/javascript" src="{% static "jquery.js" %}"></script>
@@ -16,15 +17,6 @@
 {% endif %}
 
 <h1>Cloud Toolkit</h1>
-
-{% block menu %}
-<ul>
-	<li>Import</li>
-	<li>Downloader</li>
-	<li>Timeline</li>
-	<li>Report</li>
-</ul>
-{% endblock %}
 
 {% if isAuthenticated %}
 	<p>Hello {{ uname }}</p>

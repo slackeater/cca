@@ -9,8 +9,9 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^login/', 'django.contrib.auth.views.login'),
+    url(r'^login/$', 'django.contrib.auth.views.login'),
     url(r'^import/$', include('importer.urls')),
+    url(r'^dashboard/$', include('dashboard.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

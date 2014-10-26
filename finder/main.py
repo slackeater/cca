@@ -77,12 +77,6 @@ def cloudFinder():
 def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	""" Create the directories and the encrypted ZIP """
 	
-	#pack all together insto JSON
-	jsontext = packetizer.mainPacker(browserPackList, cloudPackList)
-	
-	logger.log("\n === JSON Report === \n")
-	logger.log(jsontext, "no")
-
 	# save into a file
 	os.chdir(reportPath)
 	fileName = reportName + ".report"
@@ -93,7 +87,7 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	logger.log("==== JSON Report ====")
 	logger.log(jsonReport, "no")
 
-	f.write(formattedReport)
+	f.write(jsonReport)
 	f.close()
 	logger.log("JSON report " + fileName + "  stored at " + os.getcwd())
 	
