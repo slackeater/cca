@@ -6,6 +6,8 @@ from models import Upload
 from django.http import HttpResponse
 from dajaxice.core import dajaxice_functions
 from dajaxice.core import dajaxice_config
+from django.conf import settings
+import os
 
 # Create your views here.
 
@@ -14,6 +16,8 @@ class UploadForm(forms.Form):
 
 def importer(request):
 	if request.user.is_authenticated():
+		# get all report imported
+		rep = Upload.objects.all()
 
 		if request.method == "POST":
 			form = UploadForm(request.POST, request.FILES)
@@ -21,7 +25,7 @@ def importer(request):
 			if form.is_valid():
 				try:
 					fileUpload = request.FILES['fileUp']
-					with open('/tmp/' + fileUpload.name, 'wb+') as destination:
+					with open(os.path.join(settings.UPLOAD_DIR,fileUpload.name), 'wb+') as destination:
 						for chunk in fileUpload.chunks():
 							destination.write(chunk)
 					
@@ -30,14 +34,16 @@ def importer(request):
 					# TODO add IP
 					newUpload = Upload(fileName=fileUpload.name)
 					newUpload.save()
+					
+					# store file name for AJAX	
+					request.session['fileName'] = fileUpload.name
+					request.session['lastID'] = newUpload.id
 				except Exception as e:
 					status = e.message
 
-				# store file name for AJAX	
-				request.session['fileName'] = fileUpload.name
-				return render_to_response("importer/imp.html", {'form': form, 'upload': status, 'uploadFile': True}, context_instance=RequestContext(request))
+				return render_to_response("importer/imp.html", {'form': form, 'upload': status, 'uploadFile': True, 'repList': rep}, context_instance=RequestContext(request))
 		else:
 			form = UploadForm()
-			return render_to_response("importer/imp.html", {'form': form}, context_instance=RequestContext(request))
+			return render_to_response("importer/imp.html", {'form': form, 'repList': rep}, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")

@@ -99,7 +99,9 @@ def encryptFernetFile(fileIn, key):
 	#encrypt
 	f = Fernet(key)
 	enc = f.encrypt(fileBytes)
-
+	key = None
+	del key
+	
 	#write
 	return enc
 
@@ -111,5 +113,7 @@ def decryptFernetFile(fileBytes, key):
 	#decrypt
 	f = Fernet(key)
 	dec = f.decrypt(fileBytes)
+	key = None
+	del key
 
 	return dec
