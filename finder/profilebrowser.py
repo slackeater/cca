@@ -37,7 +37,14 @@ class BrowserProfileEncoder(json.JSONEncoder):
 			#remove _, to avoid problem with Django
 			newKey = key.strip("_")
 			if key == "_credentialList":
-				val[newKey] = json.dumps(value, cls=CredentialsEncoder)
+				cList = list()
+				credenc = CredentialsEncoder()
+			
+				# use the encode to format the list of credentials
+				for c in value:
+					cList.append(credenc.default(c))
+
+				val[newKey] = cList
 			else:
 				val[newKey] = value
 

@@ -36,7 +36,7 @@
 	<tr><td>Report</td><td>Date</td><td>IP</td><td>Parsed</td></tr>
 	
 	{% for report in repList %}
-	<tr><td><a href="/dashboard/?i={{report.id}}">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}<td><td>{{ report.parsed }}</td></tr>
+	<tr><td><a href="/dashboard/?i={{report.id}}&s=display">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}<td><td>{{ report.parsed }}</td></tr>
 	{% endfor %}
 </table>
 

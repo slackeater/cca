@@ -16,12 +16,14 @@
 <body>
 {% endif %}
 
-<h1>Cloud Toolkit</h1>
+<h1>Cloud Toolkit<h1> 
 
 {% if isAuthenticated %}
-	<p>Hello {{ uname }}</p>
-{% else %}
-	<p>Not logged in</p>
+<h2>
+	Hello {{ uname }} 
+	| <a href="/import/">Import</a>
+	| <a href="/logout/">Logout</a>
+</h2>
 {% endif %}
 
 <div>

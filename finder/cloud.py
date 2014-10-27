@@ -28,7 +28,7 @@ def recurseDir(path):
 			try:
 				sig = crypto.sha256File(os.path.join(root,f))
 				fName = os.path.join(root,f).encode("UTF-8")
-				entry = {fName:sig}
+				entry = {"path":fName, "hash": sig}
 				logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
 				globalRes.append(entry)
 			except Exception as e:
@@ -104,7 +104,7 @@ def dropbox():
 	if(os.path.isdir(config.DROPBOX)):
 		regQuery = 'reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Dropbox" /v DisplayVersion'
 		dropDict = dict()
-		dropDict["cloudSerivce"] = "Dropbox" + cloudVersionFinder(regQuery)
+		dropDict["cloudService"] = "Dropbox" + cloudVersionFinder(regQuery)
 		dropDict["files"] = getCloudFileHash("Dropbox")
 		return dropDict
 	else:

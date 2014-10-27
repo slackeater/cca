@@ -38,6 +38,11 @@ class CredentialsEncoder(json.JSONEncoder):
 	def default(self, obj):
 		if not isinstance(obj, Credentials):
 			return super(Credentials, self).default(obj)
+		
+		# remove _ from variable name
+		d = dict()
+		for key in obj.__dict__:
+			d[key.strip("_")] = obj.__dict__[key]
 
-		return obj.__dict__
+		return d
 

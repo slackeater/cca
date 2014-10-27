@@ -28,7 +28,9 @@ def resPrinter(profileObjects):
 		logger.log("Files","no")
 
 		for f in obj.fileListHashes:
-			logger.log("\t" + f,"no")
+			filePath = f['path']
+			fileHash = f['hash']
+			logger.log("\t" + filePath+":"+fileHash,"no")
 
 def fileCheckerCopy(profileDir, fileName, reportFolder):
 	""" Check if the file exists and copy it to the report folder """
@@ -49,10 +51,10 @@ def fileCheckerCopy(profileDir, fileName, reportFolder):
 		# compare the source and destination file hashes
 		if hashSrc == hashDst:
 			logger.log("\n\t Hash are the same (" + hashSrc + ")", "no")
-			return wholePath + ":" + hashSrc
+			return { "path": wholePath, "hash": hashSrc }
 		else:
 			logger.log("\n\t Hash do not coincide (" + hashSrc + " != " + hashDst + ")", "no")
-			return wholePath + ":<no hash>" 
+			return { "path": wholePath, "hash": "<no hash>" } 
 	else:
 		logger.log("No " + wholePath + " found")
 		return None

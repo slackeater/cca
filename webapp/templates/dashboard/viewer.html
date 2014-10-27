@@ -1,0 +1,105 @@
+{% extends "dashboard/dash.html" %}
+
+{% block js %}
+
+<script type="text/javascript">
+function toggleHide(id){
+	if (document.getElementById(id).style.display == "none" || document.getElementById(id).style.display == ""){
+		document.getElementById(id).style.display = "block";
+	}
+	else{
+		document.getElementById(id).style.display = "none";
+	}
+}
+
+</script>
+
+{% endblock %}
+
+{% block rightcont %}
+
+{% if up %}
+<div id="reportHeader">Import ID: {{ up.id }}<br />Import Name: {{ up.fileName }} <br />Import Time: {{ up.uploadDate }}</div>
+
+	<div class="reportCategory" onclick="toggleHide('attribContainer')">Attributes</div>
+	<div id="attribContainer">
+		<table class="reportInfo">
+			<tr><td class="tdReportInfo">Client Report ID:</td><td>{{attributes.id}}</td></tr>
+			<tr><td class="tdReportInfo">Date:</td><td>{{attributes.time}}</td></tr>
+			<tr>
+				<td class="tdReportInfo">Client Info:</td>
+				<td>	{% for e in attributes.info %}
+						<span>{{e}}</span>
+					{% endfor %}
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="reportCategory" onclick="toggleHide('browserContainer')">Browser</div>
+	<div id="browserContainer">
+	{% for b in browser %}
+		<table class="reportInfo">
+			<tr><td colspan="2">{{ b.name }}</td></tr>
+
+			{% for p in b.profiles %}
+				<tr><td colspan=2 class="profileHeader">{{ p.profileName }}</td></tr>
+				
+				<tr>
+				<td>Files</td>
+						
+				{% if p.listHashes|length == 0 %}
+					<td>Sorry, no useful files have been found.</td>
+				{% else %}
+					<td>{{ p.fileListHashes.0.path }}<br />{{ p.fileListHashes.0.hash  }}</td>
+				{% endif %}
+				</tr>
+				
+				{% for h in p.fileListHashes %}
+					{% if forloop.counter0 != 0 %}
+						<tr><td></td><td>{{ h.path }}</td></tr>
+						<tr><td></td><td>{{ h.hash }}</td></tr>
+					{% endif %}
+				{% endfor %}
+
+				<tr><td>Credentials</td>
+				{% if p.credentialList|length == 0 %}
+					<td>Sorry, no credentials have been found.</td>
+				{% else %}
+					<td>{{ p.credentialList.0.hostname }},{{ p.credentialList.0.username }},{{ p.credentialList.0.password }}
+					<br />{{ p.credentialList.0.signature }}</td>
+				{% endif %}
+				</tr>
+
+				{% for c in p.credentialList %}
+					{% if forloop.counter0 != 0 %}
+						<tr><td></td><td>{{ c.hostname }},{{ c.password }},{{ c.profile }},{{ c.username }}<br />{{ c.signature }}</td></tr>
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		</table>
+		<br />
+	{% endfor %}
+	</div>	
+
+
+	<div class="reportCategory" onclick="toggleHide('cloudContainer')">Cloud</div>
+	<div id="cloudContainer">
+	{% for c in cloud %}
+		<table class="reportInfo">
+			<tr><td colspan=2 class="profileHeader">{{ c.cloudService }}</td></tr>
+			
+			{% for f in c.files %}
+				<tr><td>{{ f.path }}</td><td>{{ f.hash }}</td></tr>
+			{% empty %}
+				<tr><td colspan=2>Sorry no file have been found</td></tr>
+			{% endfor %}
+		</table>
+		<br />
+	{% endfor %}
+	</div>
+{% endif %}
+
+
+
+{% endblock %}

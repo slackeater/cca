@@ -1,40 +1,33 @@
 {% extends "base.html" %}
 
+{% block js %}
+
+<script type="text/javascript">
+function toggleHide(id){
+	if (document.getElementById(id).style.display == "none" || document.getElementById(id).style.display == ""){
+		document.getElementById(id).style.display = "block";
+	}
+	else{
+		document.getElementById(id).style.display = "none";
+	}
+}
+
+</script>
+
+{% endblock %}
+
 {% block content %}
 
 <div id="left">
-<div>Client Report</div>
-<div>Cloud Downloader</div>
-<div>Timeline</div>
-<div>Generate Report</div>
+	<div><a href="?i={{ objID }}&s=display"><img src="/static/checklist1.png" alt="Client Report" /></a></div>
+	<div><a href="?i={{ objID }}&c=display"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></div>
+	<div><a href="?i={{ objID }}&t=display"><img src="/static/timeline.png" alt="Timeline" /></a></div>
+	<div><a href="?i={{ objID }}&r=display"><img src="/static/seo2.png" alt="Report" /></a></div>
+	<br />
+	<div>Icons made by Freepik from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>
 </div>
 <div id="right">
-	{% if up %}
-		<p>{{ up.fileName }} - {{ up.uploadDate }}</p>
-	
-		<p>Attributes</p>
-		<p>{{attributes.id}}</p>
-		<p>{{attributes.time}}</p>
-		{% for e in attributes.info %}
-			<span>{{e}}</span>
-		{% endfor %}
-
-		<p>Browser</p>
-		{% for b in browser %}
-			<p>{{ b.name }}</p>
-
-			{% for p in b.profiles %}
-				<p>{{ p.profileName }}</p>
-				<p>{{ p.fileListHashes }}</p>
-				<p>{{ p.credentialList }}</p>
-			{% endfor %}
-		{% endfor %}
-
-		<p>Cloud</p>
-		{{ cloud }}
-	{% endif %}
-
-
+	{% block rightcont %}{% endblock %}
 </div>
 
 {% endblock %}
