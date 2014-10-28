@@ -94,7 +94,7 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	# create  ZIP 
 	os.chdir(os.path.dirname(os.getcwd()))
 	zipFileName = reportName + ".zip"
-	zipFile = zipfile.ZipFile(zipFileName, "w")
+	zipFile = zipfile.ZipFile(zipFileName, "w", zipfile.ZIP_DEFLATED)
 
 	# walk the directory and add to ZIP
 	for dirname, subdirs, files in os.walk(reportName):
@@ -115,23 +115,24 @@ def zipper(encZipPath, reportName, reportPath, browserPackList, cloudPackList):
 	# encrypt the keys
 	encKeyZip = crypto.encryptRSA(zipKey)
 
-	logger.log("Writing key info to " + zipEnc)
+	#write the file with encrypted content and encrypted aes key
+	logger.log("Writing encrypted content to " + zipEnc)
 	hmacFile = open(zipEnc, "w+")
 	hmacFile.write('{\n"enc":"' + zipBytesEnc + '",')
 	hmacFile.write('\n"k":"' + encKeyZip + '"\n}')
 	hmacFile.close()
 
-	# delete the random key
+	# delete the random keys
 	zipKey = None
 	del zipKey
 
 	hmacKey = None
 	del hmacKey
 	
-	# uncomment for final version
+	# uncomment for final version TODO
 	#os.rmdir(completeReportPath)
-	logger.log("Deleting " + zipEnc + "(TODO for final version)")
-	
+	logger.log("Deleting " + zipFileName + "(TODO for final version)")
+
 def main():
 	userPath = sys.argv[1]
 

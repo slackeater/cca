@@ -7,6 +7,16 @@
 <script type="text/javascript" src="/static/dajax/jquery.dajax.core.js"></script>
 <script type="text/javascript" src="{% static "jquery.js" %}"></script>
 {% dajaxice_js_import %}
+<script type="text/javascript">
+function toggleHide(id){
+		if (document.getElementById(id).style.display == "none" || document.getElementById(id).style.display == ""){
+			document.getElementById(id).style.display = "block";
+		}
+		else{
+			document.getElementById(id).style.display = "none";
+		}
+}
+</script>
 {% block js %}{% endblock %}
 </head>
 

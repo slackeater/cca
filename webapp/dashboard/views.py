@@ -1,8 +1,9 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from importer.models import Upload
+from models import DropboxToken
 from django.conf import settings
-import json, os
+import json, os, drop
 
 # Create your views here.
 
@@ -12,15 +13,18 @@ def showdash(request):
 	tmpl = "dash.html"
 
 	if request.user.is_authenticated():
-		if request.method == "GET" and request.GET['i'] is not None:
+		index = request.GET.get('i', 'null')
+
+		if index != 'null':
 			c = request.GET.get('c', "null")
 			s = request.GET.get('s', 'null')
 
 			if s == "display":
 				data = importViewer(request)
 				tmpl = "viewer.html"
+			
 			elif c == "display":
-				cloudDownloader(request)
+				data = cloudDownloader(request)
 				tmpl = "cloud.html"
 
 			data['objID'] = request.GET['i']
@@ -35,20 +39,8 @@ def importViewer(request):
 	up = Upload.objects.get(id=uploadID)
 	data =  { 'up': up }
 
-	#get report content
-	if up.fileName.endswith(".zip.enc"):
-		name = up.fileName[:-8]
-	else:
-		# TODO exception
-		return None
-
-	fileName = os.path.join(settings.UPLOAD_DIR, name, name+".report")
-	openFile = open(fileName, "r")
-	jsonReport = json.load(openFile)
-
+	jsonReport = getReportJson(up)
 	data['attributes'] = jsonReport[0]['objects']
-
-	browser = jsonReport[1]['objects']
 	data['browser'] = jsonReport[1]['objects']
 	data['cloud'] = jsonReport[2]['objects']
 	
@@ -56,4 +48,33 @@ def importViewer(request):
 
 def cloudDownloader(request):
 	""" Download data from the cloud with the credentials found """
+
+	#get all credentials
+	importID = request.GET['i']
+	up = Upload.objects.get(id=importID)
+	jsonReport = getReportJson(up)
+	browser = jsonReport[1]['objects']
+
+	data = { 'authurl' : drop.authorizeURL()}
+
+	#get all tokens
+	token = DropboxToken.objects.filter(importID=Upload.objects.get(id=importID))
+	data["tokens"] = token
+	data["browsers"] = browser
+
+	return data
+
+
+def getReportJson(uploadObject):
+
+	#get report content
+	if uploadObject.fileName.endswith(".zip.enc"):
+		name = uploadObject.fileName[:-8]
+	else:
+		# TODO exception
+		return None
+
+	fileName = os.path.join(settings.UPLOAD_DIR, name, name+".report")
+	openFile = open(fileName, "r")
+	return json.load(openFile)
 

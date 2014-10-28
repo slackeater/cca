@@ -3,6 +3,11 @@ body{
 	font-size: 8pt;
 }
 
+table{
+	font-size: 8pt;
+	width: 100%;
+}
+
 div#left{
 	width: 15%;
 	float: left;
@@ -55,4 +60,8 @@ td.tdReportInfo{
 td.profileHeader{
 	font-weight: bold;
 	text-align: center;
+}
+
+table#credTab{
+	display: none;
 }

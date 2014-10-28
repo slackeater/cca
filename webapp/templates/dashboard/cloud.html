@@ -1,1 +1,75 @@
 {% extends "dashboard/dash.html" %}
+
+{% block js %}
+<script type="text/javascript">
+
+var vars = [], hash;
+
+var q = document.URL.split('?')[1];
+
+if(q != undefined){
+	q = q.split('&');
+	for(var i = 0; i < q.length; i++){
+		hash = q[i].split('=');
+		vars.push(hash[1]);
+		vars[hash[0]] = hash[1];
+	}
+}
+
+
+function dropboxAuthCode(){
+	Dajaxice.dashboard.submitDropboxCode(Dajax.process, {'code':$('#dropCode').val(),'impID':vars['i']});
+}
+
+</script>
+
+{% endblock %}
+
+{% block rightcont %}
+
+<h2 onclick="toggleHide('credTab')">Credentials</h2>
+<table id="credTab">
+	<tr><td><b>Hostname</b></td><td><b>Username</b></td><td><b>Password</b></td></tr>
+	{% for b in browsers %}
+		{% for p in b.profiles %}
+			{% for cred in p.credentialList %}
+			<tr><td>{{ cred.hostname }}</td><td>{{ cred.username }}</td><td>{{ cred.password }}</td></tr>
+			{% endfor %}
+		{% endfor %}
+	{% endfor %}
+</table>
+
+<h2>Dropbox</h2>
+<ol>
+	<li>First login with <a href="{{ authurl }}">Dropbox</a></li>
+	<li>Copy the authorization code below and submit to obtain an access token
+
+		<form method="post">
+			{% csrf_token %}
+			<label>Authorization Code</label>
+			<input type="text" name="dropboxCode" id="dropCode" />
+			<input type="button" name="sub" onclick="dropboxAuthCode()" value="Submit" />
+		</form>
+	</li>
+</ol>
+
+<div id="stat"></div>
+<ul>
+	<li>
+		<h3>Access Tokens</h3>
+		<table>
+			<tr><td><b>ID</b></td><td><b>Access Token</b></td><td><b>Dropbox UID</b></td></tr>	
+			{% for token in tokens %}
+				<tr><td>{{token.id}}</td><td>{{token.accessToken}}</td><td>{{token.userID}}</td></tr>	
+			{% empty %}
+				<tr><td colspan="3">Sorry no tokens for dropbox have been found</td></tr>
+			{% endfor %}
+		</table>
+	</li>
+</ul>
+
+<h2>Google Drive</h2>
+
+<h2>Microsoft OneDrive</h2>
+
+{% endblock %}
