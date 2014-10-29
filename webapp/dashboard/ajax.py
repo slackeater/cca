@@ -2,8 +2,9 @@ from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 import drop
 from models import DropboxToken
+import dropbox
 from importer.models import Upload
-import dropbox.rest
+
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
 	""" Submit the dropbox authorization code """
@@ -18,4 +19,16 @@ def submitDropboxCode(request, code, impID):
 		dajax.assign("#stat","innerHTML",str(e.status) + ", " + str(e.reason) + ", " + str(e.error_msg))
 	except Exception as e:
 		dajax.assign("#stat","innerHTML", str(e.message))
+	return dajax.json()
+
+@dajaxice_register
+def openFolder(request, folderName, tokenID):
+	""" Open a folder """
+	dajax = Dajax() 
+
+	try:
+		dajax.assign("#statusMeta","innerHTML","si")	
+	except Exception as e:
+		dajax.assign("#statusMeta","innerHTML", str(e.message))
+
 	return dajax.json()

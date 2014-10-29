@@ -3,6 +3,7 @@ from django.template import RequestContext
 from importer.models import Upload
 from models import DropboxToken
 from django.conf import settings
+import dropbox
 import json, os, drop
 
 # Create your views here.
@@ -26,8 +27,15 @@ def showdash(request):
 			elif c == "display":
 				data = cloudDownloader(request)
 				tmpl = "cloud.html"
+			elif c == "token":
+				tknID = request.GET.get('t', "null")
 
-			data['objID'] = request.GET['i']
+				if tknID != "null":
+					data = dropboxCall(tknID)
+					tmpl = "drop.html"
+
+			data['objID'] = index
+			print data
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
 
 	else:
@@ -64,8 +72,17 @@ def cloudDownloader(request):
 
 	return data
 
+def dropboxCall(tokenID):
+	""" Perform different API calls for dropbox """
+	tkn = DropboxToken.objects.get(id=tokenID)
+	c = dropbox.client.DropboxClient(tkn.accessToken)
+	d = {}
+	d['account_info'] = c.account_info()
+	d['folders'] = c.metadata("/", include_deleted= True, include_media_info=True)
+	return d
 
 def getReportJson(uploadObject):
+	""" Read the JSON of the report """
 
 	#get report content
 	if uploadObject.fileName.endswith(".zip.enc"):

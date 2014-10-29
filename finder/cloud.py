@@ -12,6 +12,7 @@
 import config, crypto, logger
 import os, base64, sqlite3, subprocess
 import xml.etree.ElementTree as ET
+import mimetypes
 
 def recurseDir(path):
 	""" Recurse into directory """
@@ -28,7 +29,8 @@ def recurseDir(path):
 			try:
 				sig = crypto.sha256File(os.path.join(root,f))
 				fName = os.path.join(root,f).encode("UTF-8")
-				entry = {"path":fName, "hash": sig}
+				fType = mimetypes.guess_type(fName)[0]
+				entry = {"path":fName, "hash": sig, "size": os.path.getsize(fName), "type": fType}
 				logger.log("\t" + f.encode("UTF-8") + ": " + sig, "no")
 				globalRes.append(entry)
 			except Exception as e:

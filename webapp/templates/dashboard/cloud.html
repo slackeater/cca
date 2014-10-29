@@ -3,20 +3,6 @@
 {% block js %}
 <script type="text/javascript">
 
-var vars = [], hash;
-
-var q = document.URL.split('?')[1];
-
-if(q != undefined){
-	q = q.split('&');
-	for(var i = 0; i < q.length; i++){
-		hash = q[i].split('=');
-		vars.push(hash[1]);
-		vars[hash[0]] = hash[1];
-	}
-}
-
-
 function dropboxAuthCode(){
 	Dajaxice.dashboard.submitDropboxCode(Dajax.process, {'code':$('#dropCode').val(),'impID':vars['i']});
 }
@@ -41,7 +27,7 @@ function dropboxAuthCode(){
 
 <h2>Dropbox</h2>
 <ol>
-	<li>First login with <a href="{{ authurl }}">Dropbox</a></li>
+	<li>First login with <a target="_blank" href="{{ authurl }}">Dropbox</a></li>
 	<li>Copy the authorization code below and submit to obtain an access token
 
 		<form method="post">
@@ -60,7 +46,7 @@ function dropboxAuthCode(){
 		<table>
 			<tr><td><b>ID</b></td><td><b>Access Token</b></td><td><b>Dropbox UID</b></td></tr>	
 			{% for token in tokens %}
-				<tr><td>{{token.id}}</td><td>{{token.accessToken}}</td><td>{{token.userID}}</td></tr>	
+				<tr><td>{{token.id}}</td><td><a href="/dashboard/?i=5&c=token&t={{token.id}}">{{token.accessToken}}</a></td><td>{{token.userID}}</td></tr>	
 			{% empty %}
 				<tr><td colspan="3">Sorry no tokens for dropbox have been found</td></tr>
 			{% endfor %}
