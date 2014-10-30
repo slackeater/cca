@@ -35,7 +35,6 @@ def showdash(request):
 					tmpl = "drop.html"
 
 			data['objID'] = index
-			print data
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
 
 	else:
@@ -78,7 +77,7 @@ def dropboxCall(tokenID):
 	c = dropbox.client.DropboxClient(tkn.accessToken)
 	d = {}
 	d['account_info'] = c.account_info()
-	d['folders'] = c.metadata("/", include_deleted= True, include_media_info=True)
+	#d['folders'] = c.metadata("/", include_deleted= True, include_media_info=True)
 	return d
 
 def getReportJson(uploadObject):

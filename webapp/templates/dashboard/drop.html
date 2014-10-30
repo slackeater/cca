@@ -2,10 +2,19 @@
 
 {% block js %}
 <script type="text/javascript">
+
 function showCont(name){
-	Dajaxice.dashboard.openFolder(Dajax.process,{'folderName': name,'tokenID': vars['t']});
+	//$("#wait").show();
+	$("#wait").fadeIn("slow");
+	Dajaxice.dashboard.openFolder(my_call_back,{'resName': 'analysisRes','tokenID': vars['t']});
 }
 
+// workaround for loader
+function my_call_back(data){
+	Dajax.process(data)
+	$("#wait").fadeOut("slow");
+	$("#analysisRes").fadeIn("slow");
+}
 </script>
 
 {% endblock %}
@@ -22,29 +31,15 @@ function showCont(name){
 	<tr><td>Shared</td><td>{{ account_info.quota_info.shared }}</td></tr>
 </table>
 
-<h2>Metadata</h2>
+<h2>File Metadata</h2>
 <div id="statusMeta"></div>
-<table>
-	<tr><td>{{ folders.path }}</td></tr>
-	{% for f in folders.contents %}
-		{% if f.is_dir  %}
-		<tr><td>{{ f.path }}<img src="/static/icons/folder_go.png" onclick="showCont('{{f.path}}')"/></td></tr>
-		{% else %}
-		<tr><td>
-			{% if f.is_deleted %}
-				<b>	
-			{% endif %}
-		
-			{{ f.path }}, {{ f.mime_type }}, {{ f.modified }}, {{ f.size }}
 
-			{% if f.is_deleted %}
-				</b>
-			{% endif %}
-		</td></tr>
-		{% endif %}
-	{% endfor %}
+<table><tr><td style="height: 25px;"><span onclick="showCont()">Start Analysis (deleted files, depth=5)</span></td>
+	<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr></table>
 
-</table>
+<br />
+
+<div id="analysisRes" style="display:none;"></div>
 
 <h2>Metadata Search</h2>
 {% endblock %}
