@@ -15,6 +15,10 @@ function my_call_back(data){
 	$("#wait").fadeOut("slow");
 	$("#analysisRes").fadeIn("slow");
 }
+
+function startRes(){
+
+}
 </script>
 
 {% endblock %}
@@ -32,14 +36,39 @@ function my_call_back(data){
 </table>
 
 <h2>File Metadata</h2>
-<div id="statusMeta"></div>
 
-<table><tr><td style="height: 25px;"><span onclick="showCont()">Start Analysis (deleted files, depth=5)</span></td>
+<table><tr><td style="height: 25px;"><span onclick="showCont()">Start Analysis (deleted files, directory depth=5)</span></td>
 	<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr></table>
 
+<div id="statusMeta"></div>
 <br />
 
-<div id="analysisRes" style="display:none;"></div>
+<div id="analysisRes" style="display:none;">
+</div>
 
 <h2>Metadata Search</h2>
+<form>
+	<table>
+		<tr><td>Deleted File</td><td><input type="radio" name="searchType" /></td></tr>
+		<tr><td>MIME Type</td>
+			<td>
+				<input type="radio"  name="searchType" /></td>
+			<td>	<select name="mime">
+					{% for m in mimes %}
+						<option value="{{m.mime}}">{{m.mime}}</option>
+					{% endfor %}
+				</select>
+			</td>
+		</tr>
+		<tr><td>Last Modified</td><td><input type="radio"  name="searchType" /></td></tr>
+		<tr><td colspan=3><button value="Search" onclick="startRes()">Search</button></td></tr>
+	</table>
+</form>
+
+<div id="resCont">
+	<table></table>
+</div>
+
+<h2>Downloader</h2>
+<h2>Local <=> Remote Comparatror</h2>
 {% endblock %}

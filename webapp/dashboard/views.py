@@ -1,9 +1,9 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from importer.models import Upload
-from models import DropboxToken
+from models import DropboxToken, DropboxAccountInfo, MimeType
 from django.conf import settings
-import dropbox
+import dropbox, base64
 import json, os, drop
 
 # Create your views here.
@@ -33,6 +33,10 @@ def showdash(request):
 				if tknID != "null":
 					data = dropboxCall(tknID)
 					tmpl = "drop.html"
+					
+					#mime types
+					mime = MimeType.objects.all()
+					data['mimes'] = mime
 
 			data['objID'] = index
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
@@ -73,11 +77,24 @@ def cloudDownloader(request):
 
 def dropboxCall(tokenID):
 	""" Perform different API calls for dropbox """
-	tkn = DropboxToken.objects.get(id=tokenID)
-	c = dropbox.client.DropboxClient(tkn.accessToken)
+
 	d = {}
-	d['account_info'] = c.account_info()
-	#d['folders'] = c.metadata("/", include_deleted= True, include_media_info=True)
+
+	try:
+		tkn = DropboxToken.objects.get(id=tokenID)
+
+		try:
+			acc = DropboxAccountInfo.objects.get(tokenID=tkn)
+			d['account_info'] = json.loads(base64.b64decode(acc.accountInfo))
+		except DropboxAccountInfo.DoesNotExist:
+			c = dropbox.client.DropboxClient(tkn.accessToken)
+			d['account_info'] = c.account_info()
+			# store the retrieved object
+			acc = DropboxAccountInfo(tokenID=tkn, accountInfo=base64.b64encode(json.dumps(d['account_info'])))
+			acc.save()
+	except DropboxToken.DoesNotExist:
+		None
+
 	return d
 
 def getReportJson(uploadObject):

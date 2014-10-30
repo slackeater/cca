@@ -5,6 +5,7 @@ from models import DropboxToken, DropboxFileMetadata
 import dropbox
 from importer.models import Upload
 import time, base64, pickle, StringIO
+from django.template.loader import render_to_string
 
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
@@ -52,13 +53,25 @@ def openFolder(request, resName, tokenID):
 			metastore = DropboxFileMetadata(metadata=base64.b64encode(pickledMetaInfo.getvalue()), tokenID=t)
 			metastore.save()
 
-		dajax.assign("#analysisRes", "innerHTML", str(metaInfo).decode("utf-8"))
-	except Exception as e:
-		dajax.assign("#statusMeta","innerHTML", str(e))
+		dirCount, fileSize, fileCount, fileType, deletedFile = parseDropTree(metaInfo)
+		data = { 'dC': dirCount, 'fS': fileSize, 'fC': fileCount, 'dF': deletedFile, 'types': fileType}
+		table = render_to_string('dashboard/dropMetaTable.html',data)	
+		dajax.assign("#analysisRes", "innerHTML", table)
+	#except Exception as e:
+	#	dajax.assign("#statusMeta","innerHTML", str(e))
 	except dropbox.rest.ErrorResponse as e:
 		dajax.assign("#statusMeta","innerHTML", str(e))
 
 	return dajax.json()
+
+@dajaxice_register
+def searchMetaData(request, tknID, resType, mimeType):
+	""" Search files over meta data """
+
+	dajax = Dajax()
+	# TODO
+
+
 
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
@@ -81,3 +94,36 @@ def recurseDropTree(folderMetadata, client, depth):
 	elif folderMetadata['is_dir'] and depth == 0:
 		res.append(folderMetadata)
 		return res
+
+def parseDropTree(contList):
+	""" Parse the list of file metadata """
+
+	dirCount = len(contList)
+	fileSize = 0
+	fileCount = 0
+	fileType = dict()
+	deletedFile = 0
+
+	for c in contList:
+		print c['path']
+		print "============"
+		for dirCont in c['contents']:
+			if not dirCont['is_dir']:
+				print "\t" + dirCont['path']
+				print "============"
+				fileCount += 1
+				print dirCont['bytes']
+				fileSize += float(dirCont['bytes'])
+
+				key = dirCont['mime_type']#.replace("/","_")
+				fileType.setdefault(key, 0)
+				fileType[key] += 1
+
+				try:
+					if dirCont['is_deleted']:
+						deletedFile += 1
+				except KeyError as e:
+					None
+
+	fileSize = fileSize/(1024*1024)
+	return dirCount, fileSize, fileCount, fileType, deletedFile
