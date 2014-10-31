@@ -1,10 +1,11 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from importer.models import Upload
-from models import DropboxToken, DropboxAccountInfo, MimeType
+from models import DropboxToken, DropboxAccountInfo
 from django.conf import settings
 import dropbox, base64
 import json, os, drop
+from forms import DropMetaSearch
 
 # Create your views here.
 
@@ -33,11 +34,8 @@ def showdash(request):
 				if tknID != "null":
 					data = dropboxCall(tknID)
 					tmpl = "drop.html"
+					data['resForm'] = DropMetaSearch()
 					
-					#mime types
-					mime = MimeType.objects.all()
-					data['mimes'] = mime
-
 			data['objID'] = index
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
 

@@ -1,11 +1,14 @@
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 import drop
+import json
 from models import DropboxToken, DropboxFileMetadata
 import dropbox
 from importer.models import Upload
 import time, base64, pickle, StringIO
 from django.template.loader import render_to_string
+from forms import DropMetaSearch
+from dajaxice.utils import deserialize_form
 
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
@@ -57,19 +60,56 @@ def openFolder(request, resName, tokenID):
 		data = { 'dC': dirCount, 'fS': fileSize, 'fC': fileCount, 'dF': deletedFile, 'types': fileType}
 		table = render_to_string('dashboard/dropMetaTable.html',data)	
 		dajax.assign("#analysisRes", "innerHTML", table)
-	#except Exception as e:
-	#	dajax.assign("#statusMeta","innerHTML", str(e))
+	except Exception as e:
+		dajax.assign("#statusMeta","innerHTML", str(e))
 	except dropbox.rest.ErrorResponse as e:
 		dajax.assign("#statusMeta","innerHTML", str(e))
 
 	return dajax.json()
 
 @dajaxice_register
-def searchMetaData(request, tknID, resType, mimeType):
+def searchMetaData(request, form, tokenID):
 	""" Search files over meta data """
 
 	dajax = Dajax()
+	desForm = DropMetaSearch(deserialize_form(form))
+
+	if desForm.is_valid():
+		try:
+			# get metadata and decode it
+			token = DropboxToken.objects.get(id=tokenID)
+			getMetaInfo = DropboxFileMetadata.objects.get(tokenID=token)
+			metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
+			res = list()
+			t = int(desForm.cleaned_data['resType'][0])
+
+			for folder in metaInfo:
+				for cnt in folder['contents']:
+					#deleted 
+					if t == 0:
+						try:
+							if cnt['is_deleted']:
+								res.append(cnt)
+						except KeyError as e:
+							None
+					#MIME Type
+					elif t == 1:
+						None
+					# Last modified
+					elif t == 2:
+						None
+			print res
+			table = render_to_string("dashboard/dropSearchTable.html", {'res': res})
+			dajax.assign("#searchRes","innerHTML", table)
+		except DropboxFileMetadata.DoesNotExist, DropboxToken.DoesNotExist:
+			dajax.assign("#resStatus","innerHTML", "There is a problem with your search :(")
+	
+	else:
+		dajax.assign("#resStatus","innerHTML", "Please fill in all fields")
+
+	return dajax.json()
 	# TODO
+	
 
 
 
@@ -105,14 +145,9 @@ def parseDropTree(contList):
 	deletedFile = 0
 
 	for c in contList:
-		print c['path']
-		print "============"
 		for dirCont in c['contents']:
 			if not dirCont['is_dir']:
-				print "\t" + dirCont['path']
-				print "============"
 				fileCount += 1
-				print dirCont['bytes']
 				fileSize += float(dirCont['bytes'])
 
 				key = dirCont['mime_type']#.replace("/","_")

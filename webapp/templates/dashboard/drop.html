@@ -4,7 +4,6 @@
 <script type="text/javascript">
 
 function showCont(name){
-	//$("#wait").show();
 	$("#wait").fadeIn("slow");
 	Dajaxice.dashboard.openFolder(my_call_back,{'resName': 'analysisRes','tokenID': vars['t']});
 }
@@ -17,8 +16,16 @@ function my_call_back(data){
 }
 
 function startRes(){
-
+	$("#wait2").fadeIn("slow");
+	Dajaxice.dashboard.searchMetaData(searchCallBack,{'form':$('#searchForm').serialize(true), 'tokenID': vars['t']});
 }
+
+function searchCallBack(data){
+	Dajax.process(data);
+	$("#wait2").fadeOut("slow");
+	$("#searchRes").fadeIn("slow");
+}
+
 </script>
 
 {% endblock %}
@@ -47,27 +54,17 @@ function startRes(){
 </div>
 
 <h2>Metadata Search</h2>
-<form>
+<div id="resStatus"></div>
+<form method="post" id="searchForm" action="">
+	{% csrf_token %}
 	<table>
-		<tr><td>Deleted File</td><td><input type="radio" name="searchType" /></td></tr>
-		<tr><td>MIME Type</td>
-			<td>
-				<input type="radio"  name="searchType" /></td>
-			<td>	<select name="mime">
-					{% for m in mimes %}
-						<option value="{{m.mime}}">{{m.mime}}</option>
-					{% endfor %}
-				</select>
-			</td>
-		</tr>
-		<tr><td>Last Modified</td><td><input type="radio"  name="searchType" /></td></tr>
-		<tr><td colspan=3><button value="Search" onclick="startRes()">Search</button></td></tr>
+		<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
+		<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
+		<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
+		<tr><td></td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
 	</table>
 </form>
-
-<div id="resCont">
-	<table></table>
-</div>
+<div id="searchRes"></div>
 
 <h2>Downloader</h2>
 <h2>Local <=> Remote Comparatror</h2>
