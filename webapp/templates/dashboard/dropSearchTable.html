@@ -1,8 +1,16 @@
 <table style="border-collapse: collapse; border: solid 1px black; width: 100%;">
-	<tr><td colspan=2 style="text-align: center; padding: 4px"><b>Results</b></td></td></tr>
+	<tr><td colspan=6 style="text-align: center; padding: 4px"><b>Results</b></td></td></tr>
+	<tr><td>Path</td><td>Directory</td><td>Mime Type</td><td>Modified</td><td>Client Modified</td><td>Deleted</td></tr>
 	{% for r in res %}
-		<tr><td style="border:solid 1px black;">{{r}}</td></tr>
+		<tr>
+			<td style="border:solid 1px black;">{{r.path}}</td>
+			<td style="border:solid 1px black;">{{r.is_dir}}</td>
+			<td style="border:solid 1px black;">{{r.mime_type}}</td>
+			<td style="border:solid 1px black;">{{r.modified}}</td>
+			<td style="border:solid 1px black;">{{r.client_mtime}}</td>
+			<td style="border:solid 1px black;">{{r.is_deleted}}</td>
+		</tr>
 	{% empty %}
-		<tr><td colspan=2>Sorry not results have been found</td></tr>
+		<tr><td colspan=6>Sorry not results have been found</td></tr>
 	{% endfor %}
 </table>

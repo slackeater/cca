@@ -94,10 +94,12 @@ def searchMetaData(request, form, tokenID):
 							None
 					#MIME Type
 					elif t == 1:
-						None
+						if not cnt['is_dir'] and cnt['mime_type'] == desForm.cleaned_data['mimeType']:
+							res.append(cnt)
 					# Last modified
 					elif t == 2:
-						None
+						res.append(cnt)
+						
 			print res
 			table = render_to_string("dashboard/dropSearchTable.html", {'res': res})
 			dajax.assign("#searchRes","innerHTML", table)

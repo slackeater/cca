@@ -61,11 +61,12 @@ function searchCallBack(data){
 		<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
 		<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
 		<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
-		<tr><td></td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
+		<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
 	</table>
 </form>
 <div id="searchRes"></div>
 
 <h2>Downloader</h2>
+<div>Download Dropbox Remote Content</div>
 <h2>Local <=> Remote Comparatror</h2>
 {% endblock %}
