@@ -100,7 +100,6 @@ def searchMetaData(request, form, tokenID):
 					elif t == 2:
 						res.append(cnt)
 						
-			print res
 			table = render_to_string("dashboard/dropSearchTable.html", {'res': res})
 			dajax.assign("#searchRes","innerHTML", table)
 		except DropboxFileMetadata.DoesNotExist, DropboxToken.DoesNotExist:
@@ -110,10 +109,32 @@ def searchMetaData(request, form, tokenID):
 		dajax.assign("#resStatus","innerHTML", "Please fill in all fields")
 
 	return dajax.json()
-	# TODO
-	
 
 
+@dajaxice_register
+def getDownloadList(request, tokenID):
+	""" Get the list of file to download """
+
+	dajax = Dajax()
+
+	try:
+		print "AAA"
+		tkn = DropboxToken.objects.get(id=tokenID)
+		getMetaInfo = DropboxFileMetadata.objects.get(tokenID=tkn)
+		metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
+		res = list()
+
+		for f in metaInfo:
+			for cnt in f['contents']:
+				if not cnt['is_dir']:
+					res.append(cnt['path'])
+
+		table = render_to_string("dashboard/dropDownTable.html", {'res': res})
+		dajax.assign("#downList", "innerHTML", table)
+	except DropboxToken.DoesNotExist:
+		None
+
+	return dajax.json()
 
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """

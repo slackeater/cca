@@ -5,11 +5,11 @@
 
 function showCont(name){
 	$("#wait").fadeIn("slow");
-	Dajaxice.dashboard.openFolder(my_call_back,{'resName': 'analysisRes','tokenID': vars['t']});
+	Dajaxice.dashboard.openFolder(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t']});
 }
 
-// workaround for loader
-function my_call_back(data){
+// callback for analysis
+function analysisCallBack(data){
 	Dajax.process(data)
 	$("#wait").fadeOut("slow");
 	$("#analysisRes").fadeIn("slow");
@@ -20,10 +20,23 @@ function startRes(){
 	Dajaxice.dashboard.searchMetaData(searchCallBack,{'form':$('#searchForm').serialize(true), 'tokenID': vars['t']});
 }
 
+// callback for meta search
 function searchCallBack(data){
 	Dajax.process(data);
 	$("#wait2").fadeOut("slow");
 	$("#searchRes").fadeIn("slow");
+}
+
+function getDownloadList(){
+	$("#wait3").fadeIn("slow");
+	Dajaxice.dashboard.getDownloadList(downCallBack,{'tokenID': vars['t']});
+}
+
+// callback for download list
+function downCallBack(data){
+	Dajax.process(data);
+	$("#wait3").fadeOut("slow");
+	$("#downList").fadeIn("slow");
 }
 
 </script>
@@ -67,6 +80,8 @@ function searchCallBack(data){
 <div id="searchRes"></div>
 
 <h2>Downloader</h2>
-<div>Download Dropbox Remote Content</div>
+<div onclick="getDownloadList()">Files to download</div>
+<span id="wait3" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span>
+<div id="downList"></div>
 <h2>Local <=> Remote Comparatror</h2>
 {% endblock %}
