@@ -32,7 +32,7 @@ def showdash(request):
 				tknID = request.GET.get('t', "null")
 
 				if tknID != "null":
-					data = dropboxCall(tknID)
+					data = dropboxCall(request,tknID)
 					tmpl = "drop.html"
 					data['resForm'] = DropMetaSearch()
 					
@@ -53,6 +53,10 @@ def importViewer(request):
 	data['browser'] = jsonReport[1]['objects']
 	data['cloud'] = jsonReport[2]['objects']
 	
+	#set session with import id
+	if "importID" not in request.session:
+		request.session['importID'] = up.fileName[:-8]
+
 	return data
 
 def cloudDownloader(request):
@@ -73,13 +77,16 @@ def cloudDownloader(request):
 
 	return data
 
-def dropboxCall(tokenID):
+def dropboxCall(request,tokenID):
 	""" Perform different API calls for dropbox """
 
 	d = {}
 
 	try:
 		tkn = DropboxToken.objects.get(id=tokenID)
+
+		if "accessToken" not in request.session:
+			request.session["accessToken"] = tkn.accessToken
 
 		try:
 			acc = DropboxAccountInfo.objects.get(tokenID=tkn)

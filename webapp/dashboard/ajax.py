@@ -1,7 +1,8 @@
 from dajax.core import Dajax
+from django.conf import settings
 from dajaxice.decorators import dajaxice_register
 import drop
-import json
+import json, os
 from models import DropboxToken, DropboxFileMetadata
 import dropbox
 from importer.models import Upload
@@ -114,11 +115,10 @@ def searchMetaData(request, form, tokenID):
 @dajaxice_register
 def getDownloadList(request, tokenID):
 	""" Get the list of file to download """
-
+	
 	dajax = Dajax()
 
 	try:
-		print "AAA"
 		tkn = DropboxToken.objects.get(id=tokenID)
 		getMetaInfo = DropboxFileMetadata.objects.get(tokenID=tkn)
 		metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
@@ -126,13 +126,59 @@ def getDownloadList(request, tokenID):
 
 		for f in metaInfo:
 			for cnt in f['contents']:
-				if not cnt['is_dir']:
+				if not cnt['is_dir'] and "is_deleted" not in cnt:
 					res.append(cnt['path'])
 
 		table = render_to_string("dashboard/dropDownTable.html", {'res': res})
 		dajax.assign("#downList", "innerHTML", table)
 	except DropboxToken.DoesNotExist:
 		None
+
+	return dajax.json()
+
+
+@dajaxice_register
+def downloadFile(request, fileName):
+	""" Download a file from the dropbox folder """
+	dajax = Dajax()
+
+	try:
+		#check if directory does not exist TODO
+
+		client = dropbox.client.DropboxClient(request.session['accessToken'])
+		tkn = DropboxToken.objects.get(accessToken=request.session['accessToken'])
+		f = client.get_file(fileName)
+		downFullPath = os.path.join(settings.DOWNLOAD_DIR, request.session['importID'],"dropbox_"+tkn.userID, os.path.basename(fileName))
+		out = open(downFullPath, "wb+")
+		out.write(f.read())
+		out.close()
+		dajax.assign("#fileDownStatus", "innerHTML", "correct")
+	except (dropbox.rest.ErrorResponse, Exception) as e:
+		dajax.assign("#fileDownStatus","innerHTML", "<p>" + fileName + " download failed</p>")
+
+	return dajax.json()
+
+@dajaxice_register
+def downloadWrapper(request, tokenID):
+	""" Wrapper for downloader """
+
+	dajax = Dajax()
+
+	#check if a directory for this report and dropbox id already exists
+	tkn = DropboxToken.objects.get(id=tokenID)
+	downReportPath = os.path.join(settings.DOWNLOAD_DIR,request.session['importID'])
+	downFullPath = os.path.join(downReportPath,"dropbox_" + tkn.userID)
+	
+	if not os.path.isdir(downReportPath):
+		# create folder
+		os.mkdir(downReportPath)
+
+		# folder of dropbox userid
+		if not os.path.isdir(downFullPath):
+			# create folder
+			os.mkdir(downFullPath)
+
+	dajax.assign("#wrapperStatus", "innerHTML", "true")
 
 	return dajax.json()
 

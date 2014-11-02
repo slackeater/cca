@@ -65,3 +65,8 @@ td.profileHeader{
 table#credTab{
 	display: none;
 }
+
+div#progress{
+	width: 100%;
+	border: solid 1px black;
+}
