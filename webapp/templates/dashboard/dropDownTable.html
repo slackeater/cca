@@ -160,8 +160,8 @@
 		<input type="hidden" value="{{r}}" />
 		{% endfor %}
 		<br />
-		<div>You are about to download {{ res|length }} files.
+		<div>You are about to download <b>{{ res|length }}</b> files. File size is about <b>{{ convertSize }}</b> MB.
 			<input type="button" id="downBtn" onclick="wrapDownload()" value="Download All?" />
-			<div id="waitDown" style="display: none;"><img src="/static/47.GIF" /></div>
+			<span id="waitDown" style="display: none;"><img src="/static/47.GIF" /></span>
 		</div>
 </form>

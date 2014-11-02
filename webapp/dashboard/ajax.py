@@ -11,6 +11,16 @@ from django.template.loader import render_to_string
 from forms import DropMetaSearch
 from dajaxice.utils import deserialize_form
 
+
+# add path for crypto
+cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
+
+if not cryptoPath in sys.path:
+	sys.path.insert(1, cryptoPath)
+del cryptoPath
+
+import crypto
+
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
 	""" Submit the dropbox authorization code """
@@ -123,13 +133,16 @@ def getDownloadList(request, tokenID):
 		getMetaInfo = DropboxFileMetadata.objects.get(tokenID=tkn)
 		metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
 		res = list()
+		size = 0
 
 		for f in metaInfo:
 			for cnt in f['contents']:
 				if not cnt['is_dir'] and "is_deleted" not in cnt:
 					res.append(cnt['path'])
+					size += float(cnt['bytes'])
 
-		table = render_to_string("dashboard/dropDownTable.html", {'res': res})
+		convertSize = size/(1024*1024)
+		table = render_to_string("dashboard/dropDownTable.html", {'res': res, 'convertSize': convertSize})
 		dajax.assign("#downList", "innerHTML", table)
 	except DropboxToken.DoesNotExist:
 		None
@@ -182,6 +195,23 @@ def downloadWrapper(request, tokenID):
 
 	return dajax.json()
 
+@dajaxice_register
+def comparator(request, tokenID):
+	dajax = Dajax()
+
+	tkn = DropboxToken.objects.get(id=tokenID)
+	downReportPath = os.path.join(settings.DOWNLOAD_DIR,request.session['importID'])
+	downFullPath = os.path.join(downReportPath,"dropbox_" + tkn.userID)
+	fList = list()
+
+	for root, dirs, files in os.walk(downFullPath):
+		for f in files:
+			entry = {"file":f, "hash": crypto.sha256File(os.path.join(downFullPath,f))}
+			fList.append(entry)
+
+	table = render_to_string("dashboard/dropCompareTable.html",{'hList': fList})
+	return dajax.json()
+
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
 	res = list()
@@ -219,7 +249,7 @@ def parseDropTree(contList):
 				fileCount += 1
 				fileSize += float(dirCont['bytes'])
 
-				key = dirCont['mime_type']#.replace("/","_")
+				key = dirCont['mime_type']
 				fileType.setdefault(key, 0)
 				fileType[key] += 1
 
