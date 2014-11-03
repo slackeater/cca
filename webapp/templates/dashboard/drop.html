@@ -5,9 +5,9 @@
 
 /* ==== Analysis ==== */
 
-function showCont(name){
+function showCont(type){
 	$("#wait").fadeIn("slow");
-	Dajaxice.dashboard.openFolder(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t']});
+	Dajaxice.dashboard.analyzeDropMetaData(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t'], 'resType': type});
 }
 
 // callback for analysis
@@ -110,6 +110,14 @@ function downFileCallBack(data){
 
 /* End */
 
+/* ==== Hash comparator === */
+
+function compareHash(){
+	Dajaxice.dashboard.comparator(Dajax.process,{'tokenID': vars['t']});
+}
+
+/* End */
+
 </script>
 
 {% endblock %}
@@ -128,7 +136,11 @@ function downFileCallBack(data){
 
 <h2>File Metadata</h2>
 
-<table><tr><td style="height: 25px;"><span onclick="showCont()">Start Analysis (deleted files, directory depth=5)</span></td>
+<table><tr>
+	<td style="height: 25px;">
+			<span onclick="showCont('start')">Start Analysis (deleted files, directory depth=5)</span> | 
+			<span onclick="showCont('up')">Update</span>
+	</td>
 	<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr></table>
 
 <div id="statusMeta"></div>
@@ -161,5 +173,6 @@ function downFileCallBack(data){
 <div id="downList"></div>
 <div id="fileDownStatus"></div>
 <h2>Local <=> Remote Comparator</h2>
-<div>Compare Local files with Remote</div>
+<div onclick="compareHash();">Compare Local files with Remote</div>
+<div id="hashTable"></div>
 {% endblock %}

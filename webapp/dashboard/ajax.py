@@ -1,7 +1,7 @@
 from dajax.core import Dajax
 from django.conf import settings
 from dajaxice.decorators import dajaxice_register
-import drop
+import drop, sys
 import json, os
 from models import DropboxToken, DropboxFileMetadata
 import dropbox
@@ -28,7 +28,7 @@ def submitDropboxCode(request, code, impID):
 	
 	try:
 		token = drop.accessToken(code)
-		dropTkn = DropboxToken(importID=Upload.objects.get(id=5), accessToken=token[0], userID=token[1])
+		dropTkn = DropboxToken(importID=Upload.objects.get(id=impID), accessToken=token[0], userID=token[1])
 		dropTkn.save()
 		dajax.assign("#stat","innerHTML",str("Access Token: " + token[0] + "<br />User ID: " + token[1]))
 	except dropbox.rest.ErrorResponse as e:
@@ -38,8 +38,8 @@ def submitDropboxCode(request, code, impID):
 	return dajax.json()
 
 @dajaxice_register
-def openFolder(request, resName, tokenID):
-	""" Open a folder """
+def analyzeDropMetaData(request, resName, tokenID, resType):
+	""" Download and analyze dropbox metadata """
 	dajax = Dajax() 
 	
 	try:
@@ -47,14 +47,20 @@ def openFolder(request, resName, tokenID):
 		t = DropboxToken.objects.get(id=tokenID)
 		c = dropbox.client.DropboxClient(t.accessToken)
 
-		try:
-			# check if we already have parsed this tree with the actual token
-			getMeta = DropboxFileMetadata.objects.get(tokenID=t)
-			metaInfo = pickle.loads(base64.b64decode(getMeta.metadata))
-			dajax.assign("#statusMeta","innerHTML", str("Showing analysis of ") + str(getMeta.metaTime))
-		except DropboxFileMetadata.DoesNotExist:
+		if resType == "start":		
+			#we want to use cached version of metadata
+			try:
+				# check if we already have parsed this tree with the actual token
+				getMeta = DropboxFileMetadata.objects.filter(tokenID=t).latest("metaTime")
+				metaInfo = pickle.loads(base64.b64decode(getMeta.metadata))
+				dajax.assign("#statusMeta","innerHTML", str("Showing analysis of ") + str(getMeta.metaTime))
+			except DropboxFileMetadata.DoesNotExist:
+				None
+		elif resType == "up":
+			# we want to update metadata from dropbox
 			getMeta = None
 
+		#get new metadata
 		if getMeta is None:
 			dajax.assign("#statusMeta","innerHTML", str("Downloaded from Dropbox now."))
 			#parse directory tree
@@ -71,9 +77,7 @@ def openFolder(request, resName, tokenID):
 		data = { 'dC': dirCount, 'fS': fileSize, 'fC': fileCount, 'dF': deletedFile, 'types': fileType}
 		table = render_to_string('dashboard/dropMetaTable.html',data)	
 		dajax.assign("#analysisRes", "innerHTML", table)
-	except Exception as e:
-		dajax.assign("#statusMeta","innerHTML", str(e))
-	except dropbox.rest.ErrorResponse as e:
+	except (Exception, dropbox.rest.ErrorResponse) as e:
 		dajax.assign("#statusMeta","innerHTML", str(e))
 
 	return dajax.json()
@@ -89,7 +93,7 @@ def searchMetaData(request, form, tokenID):
 		try:
 			# get metadata and decode it
 			token = DropboxToken.objects.get(id=tokenID)
-			getMetaInfo = DropboxFileMetadata.objects.get(tokenID=token)
+			getMetaInfo = DropboxFileMetadata.objects.filter(tokenID=token).latest('metaTime')
 			metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
 			res = list()
 			t = int(desForm.cleaned_data['resType'][0])
@@ -130,7 +134,7 @@ def getDownloadList(request, tokenID):
 
 	try:
 		tkn = DropboxToken.objects.get(id=tokenID)
-		getMetaInfo = DropboxFileMetadata.objects.get(tokenID=tkn)
+		getMetaInfo = DropboxFileMetadata.objects.filter(tokenID=tkn).latest('metaTime')
 		metaInfo = pickle.loads(base64.b64decode(getMetaInfo.metadata))
 		res = list()
 		size = 0
@@ -156,12 +160,10 @@ def downloadFile(request, fileName):
 	dajax = Dajax()
 
 	try:
-		#check if directory does not exist TODO
-
 		client = dropbox.client.DropboxClient(request.session['accessToken'])
 		tkn = DropboxToken.objects.get(accessToken=request.session['accessToken'])
 		f = client.get_file(fileName)
-		downFullPath = os.path.join(settings.DOWNLOAD_DIR, request.session['importID'],"dropbox_"+tkn.userID, os.path.basename(fileName))
+		downFullPath = os.path.join(settings.DOWNLOAD_DIR, getImportNameFromToken(tkn),"dropbox_"+tkn.userID, os.path.basename(fileName))
 		out = open(downFullPath, "wb+")
 		out.write(f.read())
 		out.close()
@@ -179,7 +181,7 @@ def downloadWrapper(request, tokenID):
 
 	#check if a directory for this report and dropbox id already exists
 	tkn = DropboxToken.objects.get(id=tokenID)
-	downReportPath = os.path.join(settings.DOWNLOAD_DIR,request.session['importID'])
+	downReportPath = os.path.join(settings.DOWNLOAD_DIR,getImportNameFromToken(tkn))
 	downFullPath = os.path.join(downReportPath,"dropbox_" + tkn.userID)
 	
 	if not os.path.isdir(downReportPath):
@@ -200,16 +202,30 @@ def comparator(request, tokenID):
 	dajax = Dajax()
 
 	tkn = DropboxToken.objects.get(id=tokenID)
-	downReportPath = os.path.join(settings.DOWNLOAD_DIR,request.session['importID'])
+	importName = getImportNameFromToken(tkn)
+	downReportPath = os.path.join(settings.DOWNLOAD_DIR,importName)
 	downFullPath = os.path.join(downReportPath,"dropbox_" + tkn.userID)
 	fList = list()
 
 	for root, dirs, files in os.walk(downFullPath):
 		for f in files:
-			entry = {"file":f, "hash": crypto.sha256File(os.path.join(downFullPath,f))}
+			entry = {"file":f, "hash": crypto.sha256File(os.path.join(downFullPath,f)), "localFile": None}
 			fList.append(entry)
 
+	 # get file of dropbox from report
+	uploadDir = os.path.join(settings.UPLOAD_DIR,importName, importName + ".report" )
+	jsonReport = json.load(open(uploadDir, "rb"))
+	
+	for cloud in jsonReport[2]['objects']:
+		if cloud['cloudService'].startswith("Dropbox") and cloud['files'] is not None:
+			for f in cloud['files']:
+				# check if we have this file in the downloaded list
+				for count in range(0,len(fList)): 
+					if f["hash"] == fList[count]["hash"]:
+						fList[count]["localFile"] = f
+
 	table = render_to_string("dashboard/dropCompareTable.html",{'hList': fList})
+	dajax.assign("#hashTable", "innerHTML", table)
 	return dajax.json()
 
 def recurseDropTree(folderMetadata, client, depth):
@@ -261,3 +277,9 @@ def parseDropTree(contList):
 
 	fileSize = fileSize/(1024*1024)
 	return dirCount, fileSize, fileCount, fileType, deletedFile
+
+def getImportNameFromToken(token):
+	""" Get the import name without extension """
+	upload = Upload.objects.get(id=token.importID.id)
+	importName = upload.fileName[:-8]
+	return importName

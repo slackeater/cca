@@ -1,0 +1,43 @@
+<style>
+table#hashTable{
+	border: solid 1px black;
+	padding: 2px;
+	border-collapse: collapse;
+}
+
+td.hashHeader{
+	border: solid 1px black;
+}
+
+td.hasLocal{
+	background-color: green;
+}
+
+td.noLocal{
+	background-color: red;
+}
+
+</style>
+
+<table id="hashTable">
+	{% for f in hList %}
+		<tr>
+		{% if f.localFile %}
+			<td class="hashHeader hasLocal">Hash</td>
+		{% else %}
+			<td class="hashHeader noLocal">Hash</td>
+		{% endif %}
+
+		<td class="hashHeader" style="font-weight: bold">{{f.hash}}</td></tr>
+		<tr><td>Remote</td><td>{{f.file}}</td></tr>
+
+		{% if f.localFile %}
+			<tr><td>Client File</td><td>{{f.localFile.path}}</td></tr>
+			<tr><td>File Info</td><td>{{f.localFile.size}}</td></tr>
+			<tr><td></td><td>{{f.localFile.type}}</td></tr>
+		{% endif %}
+	{% endfor %}
+
+
+
+</table>

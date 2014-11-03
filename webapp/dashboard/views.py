@@ -53,10 +53,6 @@ def importViewer(request):
 	data['browser'] = jsonReport[1]['objects']
 	data['cloud'] = jsonReport[2]['objects']
 	
-	#set session with import id
-	if "importID" not in request.session:
-		request.session['importID'] = up.fileName[:-8]
-
 	return data
 
 def cloudDownloader(request):
