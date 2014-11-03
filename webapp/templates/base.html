@@ -45,19 +45,26 @@ if(q != undefined){
 <body>
 {% endif %}
 
-<h1>Cloud Toolkit<h1> 
+<h1>Cloud Toolkit</h1> 
 
 {% if isAuthenticated %}
-<h2>
+<div id="menuTop">
+<span id="helloMenu">
 	Hello {{ uname }} 
 	| <a href="/import/">Import</a>
 	| <a href="/logout/">Logout</a>
-</h2>
+</span>
+{% block menudash %}{% endblock %}
+
+</div>
 {% endif %}
 
 <div>
 	{% block content %}{% endblock %}
 </div>
+<br />
+<span style="font-size: 6pt">Icons made by Freepik from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></span>
+
 
 </body>
 

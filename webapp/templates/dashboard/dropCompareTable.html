@@ -28,13 +28,20 @@ td.noLocal{
 			<td class="hashHeader noLocal">Hash</td>
 		{% endif %}
 
-		<td class="hashHeader" style="font-weight: bold">{{f.hash}}</td></tr>
-		<tr><td>Remote</td><td>{{f.file}}</td></tr>
+		<td class="hashHeader" style="font-weight: bold">{{f.hash}}</td>
+	
+		<td>Downloaded {{f.downloaded}}</td>
+		<td>Not In Report {{f.notinreport}}</td>
+		<td>Full {{f.full}}</td>
+		<td>Diff {{f.diff}}</td>
+
+		</tr>
+		<tr><td>Remote</td><td colspan=5>{{f.file}}</td></tr>
 
 		{% if f.localFile %}
-			<tr><td>Client File</td><td>{{f.localFile.path}}</td></tr>
-			<tr><td>File Info</td><td>{{f.localFile.size}}</td></tr>
-			<tr><td></td><td>{{f.localFile.type}}</td></tr>
+			<tr><td>Client File</td><td colspan=5>{{f.localFile.path}}</td></tr>
+			<tr><td>File Info</td><td colspan=5>{{f.localFile.size}}</td></tr>
+			<tr><td></td><td colspan=5>{{f.localFile.type}}</td></tr>
 		{% endif %}
 	{% endfor %}
 

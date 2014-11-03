@@ -24,6 +24,9 @@ import crypto
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
 	""" Submit the dropbox authorization code """
+
+	checkUserAuthentication(request)
+
 	dajax = Dajax()
 	
 	try:
@@ -38,8 +41,11 @@ def submitDropboxCode(request, code, impID):
 	return dajax.json()
 
 @dajaxice_register
-def analyzeDropMetaData(request, resName, tokenID, resType):
+def analyzeDropMetaData(request, resName, tokenID):
 	""" Download and analyze dropbox metadata """
+
+	checkUserAuthentication(request)
+
 	dajax = Dajax() 
 	
 	try:
@@ -47,24 +53,20 @@ def analyzeDropMetaData(request, resName, tokenID, resType):
 		t = DropboxToken.objects.get(id=tokenID)
 		c = dropbox.client.DropboxClient(t.accessToken)
 
-		if resType == "start":		
-			#we want to use cached version of metadata
-			try:
-				# check if we already have parsed this tree with the actual token
-				getMeta = DropboxFileMetadata.objects.filter(tokenID=t).latest("metaTime")
-				metaInfo = pickle.loads(base64.b64decode(getMeta.metadata))
-				dajax.assign("#statusMeta","innerHTML", str("Showing analysis of ") + str(getMeta.metaTime))
-			except DropboxFileMetadata.DoesNotExist:
-				None
-		elif resType == "up":
-			# we want to update metadata from dropbox
+		try:
+			# check if we already have parsed this tree with the actual token
+			getMeta = DropboxFileMetadata.objects.filter(tokenID=t).latest("metaTime")
+			metaInfo = pickle.loads(base64.b64decode(getMeta.metadata))
+			dajax.assign("#statusMeta","innerHTML", str("Showing analysis of ") + str(getMeta.metaTime))
+		except DropboxFileMetadata.DoesNotExist:
 			getMeta = None
 
-		#get new metadata
-		if getMeta is None:
+		data = c.metadata("/", include_deleted=True, include_media_info=True)	
+
+		#get new metadata if we do not have or the hash do not coincide
+		if getMeta is None or metaInfo[0]['hash'] != data['hash']:
 			dajax.assign("#statusMeta","innerHTML", str("Downloaded from Dropbox now."))
 			#parse directory tree
-			data = c.metadata("/", include_deleted=True, include_media_info=True)	
 			pickledMetaInfo= StringIO.StringIO()
 			metaInfo = recurseDropTree(data, c, 5);
 			pickle.dump(metaInfo, pickledMetaInfo)
@@ -73,8 +75,8 @@ def analyzeDropMetaData(request, resName, tokenID, resType):
 			metastore = DropboxFileMetadata(metadata=base64.b64encode(pickledMetaInfo.getvalue()), tokenID=t)
 			metastore.save()
 
-		dirCount, fileSize, fileCount, fileType, deletedFile = parseDropTree(metaInfo)
-		data = { 'dC': dirCount, 'fS': fileSize, 'fC': fileCount, 'dF': deletedFile, 'types': fileType}
+		dirCount, fileSize, fileCount, fileType, deletedFile, deletedDirs = parseDropTree(metaInfo)
+		data = { 'dC': dirCount, 'fS': fileSize, 'fC': fileCount, 'dF': deletedFile, 'dD': deletedDirs, 'types': fileType}
 		table = render_to_string('dashboard/dropMetaTable.html',data)	
 		dajax.assign("#analysisRes", "innerHTML", table)
 	except (Exception, dropbox.rest.ErrorResponse) as e:
@@ -85,6 +87,8 @@ def analyzeDropMetaData(request, resName, tokenID, resType):
 @dajaxice_register
 def searchMetaData(request, form, tokenID):
 	""" Search files over meta data """
+
+	checkUserAuthentication(request)
 
 	dajax = Dajax()
 	desForm = DropMetaSearch(deserialize_form(form))
@@ -111,7 +115,7 @@ def searchMetaData(request, form, tokenID):
 					elif t == 1:
 						if not cnt['is_dir'] and cnt['mime_type'] == desForm.cleaned_data['mimeType']:
 							res.append(cnt)
-					# Last modified
+					# All
 					elif t == 2:
 						res.append(cnt)
 						
@@ -130,6 +134,9 @@ def searchMetaData(request, form, tokenID):
 def getDownloadList(request, tokenID):
 	""" Get the list of file to download """
 	
+
+	checkUserAuthentication(request)
+
 	dajax = Dajax()
 
 	try:
@@ -157,6 +164,9 @@ def getDownloadList(request, tokenID):
 @dajaxice_register
 def downloadFile(request, fileName):
 	""" Download a file from the dropbox folder """
+
+	checkUserAuthentication(request)
+
 	dajax = Dajax()
 
 	try:
@@ -176,6 +186,9 @@ def downloadFile(request, fileName):
 @dajaxice_register
 def downloadWrapper(request, tokenID):
 	""" Wrapper for downloader """
+
+
+	checkUserAuthentication(request)
 
 	dajax = Dajax()
 
@@ -199,34 +212,86 @@ def downloadWrapper(request, tokenID):
 
 @dajaxice_register
 def comparator(request, tokenID):
+
+	checkUserAuthentication(request)
+
 	dajax = Dajax()
 
 	tkn = DropboxToken.objects.get(id=tokenID)
+
+	#get dropbox metadata
+	dropMeta = DropboxFileMetadata.objects.filter(tokenID=tokenID).latest("metaTime")
+	cleanedMeta = pickle.loads(base64.b64decode(dropMeta.metadata))
+	fileFromMeta = list()
+
+	for meta in cleanedMeta:
+		for f in meta['contents']:
+			if not f['is_dir']:
+				fileFromMeta.append({"file": os.path.basename(f['path']), "hash": None, "localFile": None, "downloaded": False, "full": False, "notinreport": True, "diff": False})
+
+	#get import
 	importName = getImportNameFromToken(tkn)
 	downReportPath = os.path.join(settings.DOWNLOAD_DIR,importName)
 	downFullPath = os.path.join(downReportPath,"dropbox_" + tkn.userID)
-	fList = list()
 
-	for root, dirs, files in os.walk(downFullPath):
-		for f in files:
-			entry = {"file":f, "hash": crypto.sha256File(os.path.join(downFullPath,f)), "localFile": None}
-			fList.append(entry)
+	# now check the download directory for the file and compute their hash
+	for count in range(0,len(fileFromMeta)):
+		thisF = fileFromMeta[count]
+		fPath = os.path.join(downFullPath,thisF['file']) 
+		if os.path.isfile(fPath):
+			# compute hash if file found
+			h = crypto.sha256File(fPath)
+			thisF['hash'] = h
+			thisF['downloaded'] = True
 
 	 # get file of dropbox from report
 	uploadDir = os.path.join(settings.UPLOAD_DIR,importName, importName + ".report" )
 	jsonReport = json.load(open(uploadDir, "rb"))
-	
+
+	# build list of file cloud from report
+	reportList = list()
 	for cloud in jsonReport[2]['objects']:
 		if cloud['cloudService'].startswith("Dropbox") and cloud['files'] is not None:
-			for f in cloud['files']:
-				# check if we have this file in the downloaded list
-				for count in range(0,len(fList)): 
-					if f["hash"] == fList[count]["hash"]:
-						fList[count]["localFile"] = f
+			reportList = cloud['files']
 
-	table = render_to_string("dashboard/dropCompareTable.html",{'hList': fList})
+
+	# compare meta and report list and diff
+	for count in range(0, len(fileFromMeta)):
+		actualMeta = fileFromMeta[count]
+
+		#check if this file is in the report
+		for r in reportList:
+
+			# same hash, the file is the same
+			if actualMeta['hash'] == r['hash']:
+				actualMeta["localFile"] = r
+				actualMeta["full"] = True
+				actualMeta["notinreport"] = False
+				break
+			# same file name, propose diff
+			elif actualMeta['file'] == os.path.basename(r["path"]):
+				actualMets["diff"] = True
+				actualMeta["notinreport"] = False
+				break
+			
+	table = render_to_string("dashboard/dropCompareTable.html",{'hList': fileFromMeta})
 	dajax.assign("#hashTable", "innerHTML", table)
 	return dajax.json()
+
+@dajaxice_register
+def fileRevisioner(request, fileName, tokenID):
+	""" Show the list of revision for the file """
+
+	checkUserAuthentication(request)
+
+	dajax = Dajax()
+	tkn = DropboxToken.objects.get(id=tokenID)
+	client = dropbox.client.DropboxClient(tkn.accessToken)
+	fileHistory = client.revisions(fileName)
+	table = render_to_string("dashboard/dropRevisioner.html", {"revisions": fileHistory})
+	dajax.assign("#fileRevisionContainer", "innerHTML", table)
+
+	return dajax.json();
 
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
@@ -258,6 +323,7 @@ def parseDropTree(contList):
 	fileCount = 0
 	fileType = dict()
 	deletedFile = 0
+	deletedDirs = 0
 
 	for c in contList:
 		for dirCont in c['contents']:
@@ -274,12 +340,23 @@ def parseDropTree(contList):
 						deletedFile += 1
 				except KeyError as e:
 					None
+			elif dirCont['is_dir']:
+				try:
+					if dirCont['is_deleted']:
+						deletedDirs += 1
+				except KeyError as e:
+					None
 
 	fileSize = fileSize/(1024*1024)
-	return dirCount, fileSize, fileCount, fileType, deletedFile
+	return dirCount, fileSize, fileCount, fileType, deletedFile, deletedDirs
 
 def getImportNameFromToken(token):
 	""" Get the import name without extension """
 	upload = Upload.objects.get(id=token.importID.id)
 	importName = upload.fileName[:-8]
 	return importName
+
+def checkUserAuthentication(request):
+	""" Check if the user is authenticated """
+	if not request.user.is_authenticated():
+		sys.exit("Auth required")

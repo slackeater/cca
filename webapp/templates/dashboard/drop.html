@@ -5,9 +5,9 @@
 
 /* ==== Analysis ==== */
 
-function showCont(type){
+function showCont(){
 	$("#wait").fadeIn("slow");
-	Dajaxice.dashboard.analyzeDropMetaData(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t'], 'resType': type});
+	Dajaxice.dashboard.analyzeDropMetaData(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t']});
 }
 
 // callback for analysis
@@ -118,13 +118,44 @@ function compareHash(){
 
 /* End */
 
+/* === Folder === */
+
+function fold(cnt){
+	$(cnt).fadeToggle("fast", "linear");
+}
+
+/* End */
+
+/* === Revisioner === */
+
+function showFile(name){
+	$("#searchResult").fadeOut("slow", "linear");
+	$("#revSpinner").fadeIn("slow");
+	Dajaxice.dashboard.fileRevisioner(showFileCallBack,{'tokenID': vars['t'], 'fileName': name});
+}
+
+function showFileCallBack(data){
+	$("#fileRevisionContainer").fadeIn("fast", "linear");
+	$("#revSpinner").fadeOut("slow");
+	Dajax.process(data)
+}
+
+function backToSearch(){
+	$("#fileRevisionContainer").fadeOut("fast", "linear");
+	$("#searchResult").fadeIn("fast", "linear");
+}
+/* End */
+
 </script>
 
 {% endblock %}
 
 {% block rightcont %}
 
-<h2>Account Info</h2>
+<h2>Dropbox Analysis</h2>
+
+<div class="analysisHead"><a class="foldingLink" onclick="fold('#accountTab')" href="javascript:void(0);"><img src="/static/icons/add.png" />Account Info</a></div>
+<div id="accountTab" style="display: none">
 <table>
 	<tr><td>Display Name</td><td>{{ account_info.display_name }}</td></tr>
 	<tr><td>E-Mail Verified</td><td>{{ account_info.email_verified }}</td></tr>
@@ -133,46 +164,56 @@ function compareHash(){
 	<tr><td>Quota</td><td>{{ account_info.quota_info.quota }}</td></tr>
 	<tr><td>Shared</td><td>{{ account_info.quota_info.shared }}</td></tr>
 </table>
-
-<h2>File Metadata</h2>
-
-<table><tr>
-	<td style="height: 25px;">
-			<span onclick="showCont('start')">Start Analysis (deleted files, directory depth=5)</span> | 
-			<span onclick="showCont('up')">Update</span>
-	</td>
-	<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr></table>
-
-<div id="statusMeta"></div>
-<br />
-
-<div id="analysisRes" style="display:none;">
 </div>
 
-<h2>Metadata Search</h2>
-<div id="resStatus"></div>
-<form method="post" id="searchForm" action="">
-	{% csrf_token %}
-	<table>
-		<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
-		<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
-		<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
-		<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
-	</table>
-</form>
-<div id="searchRes"></div>
+<div class="analysisHead"><a class="foldingLink" onclick="fold('#metaAnalysis')" href="javascript:void(0);"><img src="/static/icons/add.png" />Metadata Analysis</a></div>
+<div id="metaAnalysis" style="display: none">
+	<table><tr>
+		<td style="height: 25px;">
+				<span onclick="showCont()">Start Analysis (deleted files, directory depth=5)</span> 
+		</td>
+		<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr></table>
 
-<h2>Downloader</h2>
-<table>
-	<tr>
-		<td><div onclick="getDownloadList()">Files to download</div></td>
-		<td><span id="wait3" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td>
-	</tr>
-</table>
-<br />
-<div id="downList"></div>
-<div id="fileDownStatus"></div>
-<h2>Local <=> Remote Comparator</h2>
-<div onclick="compareHash();">Compare Local files with Remote</div>
-<div id="hashTable"></div>
+	<div id="statusMeta"></div>
+	<br />
+
+	<div id="analysisRes" style="display:none;">
+	</div>
+</div>
+
+
+<div class="analysisHead"><a class="foldingLink" onclick="fold('#metaSearchCont')" href="javascript:void(0);"><img src="/static/icons/add.png" />Metadata Search</a></div>
+
+<div id="metaSearchCont" style="display: none">
+	<div id="resStatus"></div>
+	<form method="post" id="searchForm" action="">
+		{% csrf_token %}
+		<table>
+			<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
+			<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
+			<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
+			<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
+		</table>
+	</form>
+	<div id="searchRes"></div>
+</div>
+
+<div class="analysisHead"><a class="foldingLink" onclick="fold('#downCont')" href="javascript:void(0);"><img src="/static/icons/add.png" />Downloader</a></div>
+<div id="downCont" style="display: none">
+	<table>
+		<tr>
+			<td><div onclick="getDownloadList()">Files to download</div></td>
+			<td><span id="wait3" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td>
+		</tr>
+	</table>
+	<div id="downList"></div>
+	<div id="fileDownStatus"></div>
+</div>
+
+<div class="analysisHead"><a class="foldingLink" onclick="fold('#comparatorCont')" href="javascript:void(0);"><img src="/static/icons/add.png" />Local <=> Remote Comparator</a></div>
+<div id="comparatorCont" style="display: none">
+	<div onclick="compareHash();">Compare Local files with Remote</div>
+	<div id="hashTable"></div>
+</div>
+
 {% endblock %}

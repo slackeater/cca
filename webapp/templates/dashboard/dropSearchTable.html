@@ -1,17 +1,48 @@
-<table style="border-collapse: collapse; border: solid 1px black; width: 100%;">
-	<tr><td colspan=7 style="text-align: center; padding: 4px"><b>Results</b></td></td></tr>
-	<tr><td>Path</td><td>Directory</td><td>Mime Type</td><td>Modified</td><td>Client Modified</td><td>Deleted</td><td>Rev</td></tr>
+<style>
+
+table#searchResult td{
+	padding: 2px;
+}
+
+img#revSpinner{
+	margin-left: 45%;
+	margin-right: 45%;
+	display: none;
+}
+
+</style>
+<img src="/static/468.GIF" id="revSpinner" />
+<table style="border-collapse: collapse; border: solid 1px black; width: 100%; " id="searchResult">
+	<tr><td colspan=6 style="text-align: center; padding: 4px"><b>Results</b></td></td></tr>
+	<tr><td colspan=2>Path</td><td>Mime Type</td><td>Modified</td><td>Client Modified</td><td>Deleted</td></tr>
 	{% for r in res %}
 		<tr>
-			<td style="border:solid 1px black;">{{r.path}}</td>
-			<td style="border:solid 1px black;">{{r.is_dir}}</td>
+			<td style="border:solid 1px black;">
+				
+				{% if r.is_dir %}
+					<img src="/static/icons/folder.png" />
+				{% else %}
+					<img src="/static/icons/page.png" />
+				{% endif %}
+			</td>
+			<td>
+				{% if r.is_dir %}
+					{{r.path}}
+				{% else %}
+					<a href="javascript:void(0)" onclick='showFile("{{r.path}}")'>{{r.path}}</a>
+				{% endif %}
+			</td>
+
 			<td style="border:solid 1px black;">{{r.mime_type}}</td>
 			<td style="border:solid 1px black;">{{r.modified}}</td>
 			<td style="border:solid 1px black;">{{r.client_mtime}}</td>
 			<td style="border:solid 1px black;">{{r.is_deleted}}</td>
-			<td style="border:solid 1px black;">{{r.rev}}</td>
 		</tr>
 	{% empty %}
-		<tr><td colspan=7>Sorry not files have been found</td></tr>
+		<tr><td colspan=6>Sorry not files have been found</td></tr>
 	{% endfor %}
 </table>
+
+<div id="fileRevisionContainer" style="display: none">
+</div>
+<br />

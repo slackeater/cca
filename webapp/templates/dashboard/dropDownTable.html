@@ -19,7 +19,7 @@
 			-moz-border-radius: 25px;
 			-webkit-border-radius: 25px;
 			border-radius: 25px;
-			padding: 10px;
+			padding: 5px;
 			-webkit-box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
 			-moz-box-shadow   : inset 0 -1px 1px rgba(255,255,255,0.3);
 			box-shadow        : inset 0 -1px 1px rgba(255,255,255,0.3);
@@ -151,17 +151,25 @@
 			background-image: none;
 		}
 	</style>
-	<div class="meter nostripes" id="progress" style="width: 90%;">
-		<span style="width: 0%" id="progressLen"></span>
-		<div style="position: relative; width: 200px; height: 30px; left: 43%; top: -14px; z-index: 15;"><span id="file">0</span> of <span id="total">{{ res|length }}</span> downloaded</div>
-	</div>
-<form id="downListForm">
-		{% for r in res %}
-		<input type="hidden" value="{{r}}" />
-		{% endfor %}
-		<br />
-		<div>You are about to download <b>{{ res|length }}</b> files. File size is about <b>{{ convertSize }}</b> MB.
-			<input type="button" id="downBtn" onclick="wrapDownload()" value="Download All?" />
-			<span id="waitDown" style="display: none;"><img src="/static/47.GIF" /></span>
+
+	{% if convertSize > 500 %}
+		<div>Download will happen in background (> 500 MB). Will download {{ convertSize }} MB, {{res|length}} files.</div>	
+	{% elif convertSize <= 500 %}
+		<div class="meter nostripes" id="progress" style="width: 80%; margin-left: 10%; margin-right: 10%">
+			<span style="width: 0%" id="progressLen"></span>
+			<div style="position: relative; width: 200px; height: 30px; left: 43%; top: -14px; z-index: 15; font-size: 8pt;">
+				<span id="file" style="font-weight: bold;">0</span> of <span id="total" style="font-weight: bold;">{{ res|length }}</span> downloaded</div>
+			</div>
+			<form id="downListForm">
+				{% for r in res %}
+					<input type="hidden" value="{{r}}" />
+				{% endfor %}
+				<br />
+				<div>You are about to download <b>{{ res|length }}</b> files. File size is about <b>{{ convertSize }}</b> MB.
+					<input type="button" id="downBtn" onclick="wrapDownload()" value="Download All?" />
+					<span id="waitDown" style="display: none;"><img src="/static/47.GIF" /></span>
+				</div>
+			</form>
 		</div>
-</form>
+	{% endif %}
+

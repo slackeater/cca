@@ -16,16 +16,18 @@ function toggleHide(id){
 
 {% endblock %}
 
-{% block content %}
+{% block menudash %}
 
-<div id="left">
-	<div><a href="?i={{ objID }}&s=display"><img src="/static/checklist1.png" alt="Client Report" /></a></div>
-	<div><a href="?i={{ objID }}&c=display"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></div>
-	<div><a href="?i={{ objID }}&t=display"><img src="/static/timeline.png" alt="Timeline" /></a></div>
-	<div><a href="?i={{ objID }}&r=display"><img src="/static/seo2.png" alt="Report" /></a></div>
-	<br />
-	<div>Icons made by Freepik from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>
-</div>
+<span id="dashMenu">
+	<span><a href="?i={{ objID }}&s=display"><img src="/static/checklist1.png" alt="Client Report" /></a></span>
+	<span><a href="?i={{ objID }}&c=display"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
+	<span><a href="?i={{ objID }}&t=display"><img src="/static/timeline.png" alt="Timeline" /></a></span>
+	<span><a href="?i={{ objID }}&r=display"><img src="/static/seo2.png" alt="Report" /></a></span>
+</span>
+
+{% endblock %}
+
+{% block content %}
 <div id="right">
 	{% block rightcont %}{% endblock %}
 </div>
