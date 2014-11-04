@@ -42,7 +42,7 @@ def dropboxCall(request,tokenID):
 			acc.save()
 			return a
 	except DropboxToken.DoesNotExist:
-		None
+		return None
 
 def getReportJson(uploadObject):
 	""" Read the JSON of the report """

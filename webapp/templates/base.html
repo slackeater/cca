@@ -4,9 +4,9 @@
 <title>Cloud Toolkit</title>
 <link href="/static/style.css" rel="stylesheet" type="text/css">
 {% load staticfiles %}
-<script type="text/javascript" src="/static/dajax/jquery.dajax.core.js"></script>
+<script type="text/javascript" src="/dajax/jquery.dajax.core.js"></script>
 <script type="text/javascript" src="{% static "jquery.js" %}"></script>
-{% dajaxice_js_import %}
+<script type="text/javascript" src="/dajaxice/dajaxice.core.js"></script>
 <script type="text/javascript">
 function toggleHide(id){
 		if (document.getElementById(id).style.display == "none" || document.getElementById(id).style.display == ""){

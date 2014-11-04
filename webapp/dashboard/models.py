@@ -8,3 +8,7 @@ class DropboxToken(models.Model):
 	importID = models.ForeignKey('importer.Upload')
 	accessToken = models.CharField(max_length=256)
 	userID = models.CharField(max_length=20)
+
+class GDriveToken(models.Model):
+	""" A model for storing gdrive token information """
+	

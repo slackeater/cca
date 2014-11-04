@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^import/$', include('importer.urls')),
     url(r'^dashboard/$', include('dashboard.urls')),
     url(r'^dropcloud/$', include('dropcloud.urls')),
+    url(r'^gdrivecloud/$', include('gdrivecloud.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

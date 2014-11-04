@@ -1,6 +1,6 @@
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
-import drop, sys
+import oauth, sys
 import json
 from models import DropboxToken
 from importer.models import Upload
@@ -16,7 +16,7 @@ def submitDropboxCode(request, code, impID):
 	dajax = Dajax()
 	
 	try:
-		token = drop.accessToken(code)
+		token = oauth.dropboxAccessToken(code)
 		dropTkn = DropboxToken(importID=Upload.objects.get(id=impID), accessToken=token[0], userID=token[1])
 		dropTkn.save()
 		dajax.assign("#stat","innerHTML",str("Access Token: " + token[0] + "<br />User ID: " + token[1]))
