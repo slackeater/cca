@@ -72,6 +72,10 @@ var Dajaxice = {
     
     dashboard: {
     
+    submitGoogleCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('dashboard.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
+    },
+
     submitDropboxCode: function(callback_function, argv, custom_settings){
         return Dajaxice.call('dashboard.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
     }

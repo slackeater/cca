@@ -15,3 +15,8 @@ def dropboxAccessToken(code):
 def googleAuthorizeURL():
 	flow = OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID,config.GOOGLE_CLIENT_SECRET,config.GOOGLE_OAUHT_SCOPE,config.GOOGLE_REDIRECT_URI)
 	return flow.step1_get_authorize_url()
+
+def googleAccessToken(code):
+	flow = OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID,config.GOOGLE_CLIENT_SECRET,config.GOOGLE_OAUHT_SCOPE,config.GOOGLE_REDIRECT_URI)
+	credentials = flow.step2_exchange(code)
+	return credentials

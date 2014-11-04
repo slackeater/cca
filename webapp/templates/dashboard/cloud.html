@@ -4,9 +4,12 @@
 <script type="text/javascript">
 
 function dropboxAuthCode(){
-	Dajaxice.dashboard.submitDropboxCode(Dajax.process, {'code':$('#dropCode').val(),'impID':vars['i']});
+	Dajaxice.dashboard.submitDropboxCode(Dajax.process, {'code':$('#dropCode').val(),'impID':vars['i']})
 }
 
+function googleAuthCode(){
+	Dajaxice.dashboard.submitGoogleCode(Dajax.process, {'code':$('#gCode').val(),'impID':vars['i']})
+}
 </script>
 
 {% endblock %}
@@ -39,7 +42,7 @@ function dropboxAuthCode(){
 	</li>
 </ol>
 
-<div id="stat"></div>
+<div id="dStat"></div>
 <ul>
 	<li>
 		<h3>Access Tokens</h3>
@@ -57,22 +60,31 @@ function dropboxAuthCode(){
 <h2>Google Drive</h2>
 <ol>
 	<li>First login with <a target="_blank" href="{{gdriveAuthurl}}">Google Drive</a></li>
-	<li>After, you will be redirected here and you should see the access token in the table below.</li>
+	<li>Copy the authorization code below and submit to obtain an access token
+
+		<form method="post">
+			{% csrf_token %}
+			<label>Authorization Code</label>
+			<input type="text" name="googleCode" id="gCode" />
+			<input type="button" name="sub" onclick="googleAuthCode()" value="Submit" />
+		</form>
+	</li>
 </ol>
 <ul>
 	<li>
 		<h3>Access Tokens</h3>
 		<table>
 			<tr><td><b>ID</b></td><td><b>Access Token</b></td><td><b>Google UID</b></td></tr>	
-			{% for token in dropTokens %}
+			<!--{% for token in dropTokens %}
 			<tr><td>{{token.id}}</td><td><a href="/dropcloud/?i={{ objID }}&t={{token.id}}">{{token.accessToken}}</a></td><td>{{token.userID}}</td></tr>	
 			{% empty %}
 				<tr><td colspan="3">Sorry no tokens for google drive have been found</td></tr>
-			{% endfor %}
+			{% endfor %}-->
 		</table>
 	</li>
 </ul>
 
+<div id="gStat"></div>
 <h2>Microsoft OneDrive</h2>
 
 {% endblock %}
