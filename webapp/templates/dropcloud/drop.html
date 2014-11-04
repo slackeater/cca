@@ -7,7 +7,7 @@
 
 function showCont(){
 	$("#wait").fadeIn("slow");
-	Dajaxice.dashboard.analyzeDropMetaData(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t']});
+	Dajaxice.dropcloud.analyzeDropMetaData(analysisCallBack,{'resName': 'analysisRes','tokenID': vars['t']});
 }
 
 // callback for analysis
@@ -23,7 +23,7 @@ function analysisCallBack(data){
 
 function startRes(){
 	$("#wait2").fadeIn("slow");
-	Dajaxice.dashboard.searchMetaData(searchCallBack,{'form':$('#searchForm').serialize(true), 'tokenID': vars['t']});
+	Dajaxice.dropcloud.searchMetaData(searchCallBack,{'form':$('#searchForm').serialize(true), 'tokenID': vars['t']});
 }
 
 // callback for meta search
@@ -39,7 +39,7 @@ function searchCallBack(data){
 
 function getDownloadList(){
 	$("#wait3").fadeIn("slow");
-	Dajaxice.dashboard.getDownloadList(downCallBack,{'tokenID': vars['t']});
+	Dajaxice.dropcloud.getDownloadList(downCallBack,{'tokenID': vars['t']});
 }
 
 // callback for download list
@@ -54,7 +54,7 @@ function downCallBack(data){
 /* ==== Download ==== */
 
 function wrapDownload(){
-	Dajaxice.dashboard.downloadWrapper(wrapperCallBack,{'tokenID': vars['t']});
+	Dajaxice.dropcloud.downloadWrapper(wrapperCallBack,{'tokenID': vars['t']});
 }
 
 function wrapperCallBack(data){
@@ -71,7 +71,7 @@ function downloadFiles(){
 
 	$("form#downListForm :input[type=hidden]").each(function(){
 		var input = $(this);
-		Dajaxice.dashboard.downloadFile(downFileCallBack,{'fileName': input.val()});
+		Dajaxice.dropcloud.downloadFile(downFileCallBack,{'fileName': input.val()});
 	});
 }
 
@@ -113,7 +113,7 @@ function downFileCallBack(data){
 /* ==== Hash comparator === */
 
 function compareHash(){
-	Dajaxice.dashboard.comparator(Dajax.process,{'tokenID': vars['t']});
+	Dajaxice.dropcloud.comparator(Dajax.process,{'tokenID': vars['t']});
 }
 
 /* End */
@@ -131,7 +131,7 @@ function fold(cnt){
 function showFile(name){
 	$("#searchResult").fadeOut("slow", "linear");
 	$("#revSpinner").fadeIn("slow");
-	Dajaxice.dashboard.fileRevisioner(showFileCallBack,{'tokenID': vars['t'], 'fileName': name});
+	Dajaxice.dropcloud.fileRevisioner(showFileCallBack,{'tokenID': vars['t'], 'fileName': name});
 }
 
 function showFileCallBack(data){
@@ -157,12 +157,12 @@ function backToSearch(){
 <div class="analysisHead"><a class="foldingLink" onclick="fold('#accountTab')" href="javascript:void(0);"><img src="/static/icons/add.png" />Account Info</a></div>
 <div id="accountTab" style="display: none">
 <table>
-	<tr><td>Display Name</td><td>{{ account_info.display_name }}</td></tr>
-	<tr><td>E-Mail Verified</td><td>{{ account_info.email_verified }}</td></tr>
-	<tr><td>E-Mail</td><td>{{ account_info.email }}</td></tr>
-	<tr><td>Country</td><td>{{ account_info.country }}</td></tr>
-	<tr><td>Quota</td><td>{{ account_info.quota_info.quota }}</td></tr>
-	<tr><td>Shared</td><td>{{ account_info.quota_info.shared }}</td></tr>
+	<tr><td>Display Name</td><td>{{ accountInfo.display_name }}</td></tr>
+	<tr><td>E-Mail Verified</td><td>{{ accountInfo.email_verified }}</td></tr>
+	<tr><td>E-Mail</td><td>{{ accountInfo.email }}</td></tr>
+	<tr><td>Country</td><td>{{ accountInfo.country }}</td></tr>
+	<tr><td>Quota</td><td>{{ accountInfo.quota_info.quota }}</td></tr>
+	<tr><td>Shared</td><td>{{ accountInfo.quota_info.shared }}</td></tr>
 </table>
 </div>
 

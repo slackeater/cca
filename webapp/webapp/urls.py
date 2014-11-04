@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'django.contrib.auth.views.logout',{'next_page': '/login'}),
     url(r'^import/$', include('importer.urls')),
     url(r'^dashboard/$', include('dashboard.urls')),
+    url(r'^dropcloud/$', include('dropcloud.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

@@ -1,18 +1,16 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from importer.models import Upload
-from models import DropboxToken, DropboxAccountInfo
+from models import DropboxToken
 from django.conf import settings
 import dropbox, base64
 import json, os, drop
-from forms import DropMetaSearch
 
 # Create your views here.
 
 def showdash(request):
 	""" Displays the dashboard and manage the menu choices """
 	data = {}
-	tmpl = "dash.html"
 
 	if request.user.is_authenticated():
 		index = request.GET.get('i', 'null')
@@ -28,17 +26,11 @@ def showdash(request):
 			elif c == "display":
 				data = cloudDownloader(request)
 				tmpl = "cloud.html"
-			elif c == "token":
-				tknID = request.GET.get('t', "null")
-
-				if tknID != "null":
-					data = dropboxCall(request,tknID)
-					tmpl = "drop.html"
-					data['resForm'] = DropMetaSearch()
 					
 			data['objID'] = index
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
-
+		else: 
+			return redirect("/import/")
 	else:
 		return redirect("/login/")
 
@@ -72,31 +64,6 @@ def cloudDownloader(request):
 	data["browsers"] = browser
 
 	return data
-
-def dropboxCall(request,tokenID):
-	""" Perform different API calls for dropbox """
-
-	d = {}
-
-	try:
-		tkn = DropboxToken.objects.get(id=tokenID)
-
-		if "accessToken" not in request.session:
-			request.session["accessToken"] = tkn.accessToken
-
-		try:
-			acc = DropboxAccountInfo.objects.get(tokenID=tkn)
-			d['account_info'] = json.loads(base64.b64decode(acc.accountInfo))
-		except DropboxAccountInfo.DoesNotExist:
-			c = dropbox.client.DropboxClient(tkn.accessToken)
-			d['account_info'] = c.account_info()
-			# store the retrieved object
-			acc = DropboxAccountInfo(tokenID=tkn, accountInfo=base64.b64encode(json.dumps(d['account_info'])))
-			acc.save()
-	except DropboxToken.DoesNotExist:
-		None
-
-	return d
 
 def getReportJson(uploadObject):
 	""" Read the JSON of the report """
