@@ -47,16 +47,20 @@ function googleCallBack(data){
 
 		<form method="post">
 			{% csrf_token %}
-			<label>Authorization Code</label>
-			<input type="text" name="dropboxCode" id="dropCode" />
-			<input type="button" name="sub" onclick="dropboxAuthCode()" value="Submit" />
+			<table>
+				<tr>
+					<td>Authorization Code
+					<input type="text" name="dropboxCode" id="dropCode" />
+					<input type="button" name="sub" onclick="dropboxAuthCode()" value="Submit" />
+					<img src="/static/47.GIF" style="display: none" id="loadDrop" /></td>
+				</tr>
+			</table>
 		</form>
 	</li>
 </ol>
 
 <div id="dStat"></div>
 <div id="dropTokenTable">
-	<img src="/static/468.GIF" style="display: none" id="loadDrop" />	
 {{ dTab }}
 </div>
 
@@ -67,16 +71,20 @@ function googleCallBack(data){
 
 		<form method="post">
 			{% csrf_token %}
-			<label>Authorization Code</label>
-			<input type="text" name="googleCode" id="gCode" />
-			<input type="button" name="sub" onclick="googleAuthCode()" value="Submit" />
+			<table>
+				<tr>
+					<td>Authorization Code
+					<input type="text" name="googleCode" id="gCode" />
+					<input type="button" name="sub" onclick="googleAuthCode()" value="Submit" />
+					<img src="/static/47.GIF" style="display: none" id="loadGoogle" /></td>
+				</tr>
+			</table>	
 		</form>
 	</li>
 </ol>
 
 <div id="gStat"></div>
 <div id="googleTokenTable">
-	<img src="/static/468.GIF" style="display: none" id="loadGoogle" />	
 	{{ gTab }}
 </div>
 
