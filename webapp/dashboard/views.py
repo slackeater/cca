@@ -1,7 +1,8 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
+from django.template.loader import render_to_string
 from importer.models import Upload
-from models import DropboxToken
+from models import DropboxToken, GoogleDriveToken
 from django.conf import settings
 import dropbox, base64
 import json, os, oauth
@@ -16,18 +17,16 @@ def showdash(request):
 		index = request.GET.get('i', 'null')
 
 		if index != 'null':
-			c = request.GET.get('c', "null")
 			s = request.GET.get('s', 'null')
 
 			if s == "display":
 				data = importViewer(request)
 				tmpl = "viewer.html"
 			
-			elif c == "display":
+			elif s == "cloud":
 				data = cloudDownloader(request)
 				tmpl = "cloud.html"
 					
-			data['objID'] = index
 			return render_to_response("dashboard/" + tmpl, data, context_instance=RequestContext(request))
 		else: 
 			return redirect("/import/")
@@ -44,6 +43,7 @@ def importViewer(request):
 	data['attributes'] = jsonReport[0]['objects']
 	data['browser'] = jsonReport[1]['objects']
 	data['cloud'] = jsonReport[2]['objects']
+	data['objID'] = uploadID
 	
 	return data
 
@@ -61,10 +61,12 @@ def cloudDownloader(request):
 	data['dropAuthurl'] = oauth.dropboxAuthorizeURL()
 	data["gdriveAuthurl"] = oauth.googleAuthorizeURL()
 
-	#get all tokens
-	token = DropboxToken.objects.filter(importID=Upload.objects.get(id=importID))
-	data["dropTokens"] = token
+	
+	data["dTab"] = render_to_string("dashboard/tokenTable.html",{"tknTable": DropboxToken.objects.all(),"link": "dropcloud", "id": importID})	
+	data["gTab"] = render_to_string("dashboard/tokenTable.html",{"tknTable": GoogleDriveToken.objects.all(), "link": "gdrivecloud", "id": importID})	
+
 	data["browsers"] = browser
+	data['objID'] = importID
 
 	return data
 

@@ -1,0 +1,9 @@
+<h3>Access Tokens</h3>
+<table>
+	<tr><td><b>ID</b></td><td><b>{{platform}} UID</b></td></tr>	
+	{% for token in tknTable %}
+	<tr><td>{{token.id}}</td><td><a href="/dropcloud/?i={{ objID }}&t={{token.id}}">{{token.userID}}</td></tr>	
+	{% empty %}
+		<tr><td colspan="3">Sorry no tokens have been found</td></tr>
+	{% endfor %}
+</table>

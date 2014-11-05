@@ -12,8 +12,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
+            model_name='dropboxaccountinfo',
+            name='accountInfo',
+            field=models.TextField(),
+        ),
+        migrations.AlterField(
             model_name='dropboxfilemetadata',
             name='metadata',
-            field=models.CharField(max_length=16777125),
+            field=models.TextField(),
         ),
     ]

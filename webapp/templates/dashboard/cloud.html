@@ -4,11 +4,23 @@
 <script type="text/javascript">
 
 function dropboxAuthCode(){
-	Dajaxice.dashboard.submitDropboxCode(Dajax.process, {'code':$('#dropCode').val(),'impID':vars['i']})
+	$("#loadDrop").fadeIn("slow")
+	Dajaxice.dashboard.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'impID':vars['i']})
+}
+
+function dropCallBack(data){
+	$("#loadDrop").fadeOut("slow")
+	Dajax.process(data)
 }
 
 function googleAuthCode(){
-	Dajaxice.dashboard.submitGoogleCode(Dajax.process, {'code':$('#gCode').val(),'impID':vars['i']})
+	$("#loadGoogle").fadeIn("slow")
+	Dajaxice.dashboard.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'impID':vars['i']})
+}
+
+function googleCallBack(data){
+	$("#loadGoogle").fadeOut("slow")
+	Dajax.process(data)
 }
 </script>
 
@@ -43,19 +55,10 @@ function googleAuthCode(){
 </ol>
 
 <div id="dStat"></div>
-<ul>
-	<li>
-		<h3>Access Tokens</h3>
-		<table>
-			<tr><td><b>ID</b></td><td><b>Access Token</b></td><td><b>Dropbox UID</b></td></tr>	
-			{% for token in dropTokens %}
-			<tr><td>{{token.id}}</td><td><a href="/dropcloud/?i={{ objID }}&t={{token.id}}">{{token.accessToken}}</a></td><td>{{token.userID}}</td></tr>	
-			{% empty %}
-				<tr><td colspan="3">Sorry no tokens for dropbox have been found</td></tr>
-			{% endfor %}
-		</table>
-	</li>
-</ul>
+<div id="dropTokenTable">
+	<img src="/static/468.GIF" style="display: none" id="loadDrop" />	
+{{ dTab }}
+</div>
 
 <h2>Google Drive</h2>
 <ol>
@@ -70,21 +73,13 @@ function googleAuthCode(){
 		</form>
 	</li>
 </ol>
-<ul>
-	<li>
-		<h3>Access Tokens</h3>
-		<table>
-			<tr><td><b>ID</b></td><td><b>Access Token</b></td><td><b>Google UID</b></td></tr>	
-			<!--{% for token in dropTokens %}
-			<tr><td>{{token.id}}</td><td><a href="/dropcloud/?i={{ objID }}&t={{token.id}}">{{token.accessToken}}</a></td><td>{{token.userID}}</td></tr>	
-			{% empty %}
-				<tr><td colspan="3">Sorry no tokens for google drive have been found</td></tr>
-			{% endfor %}-->
-		</table>
-	</li>
-</ul>
 
 <div id="gStat"></div>
+<div id="googleTokenTable">
+	<img src="/static/468.GIF" style="display: none" id="loadGoogle" />	
+	{{ gTab }}
+</div>
+
 <h2>Microsoft OneDrive</h2>
 
 {% endblock %}

@@ -5,13 +5,13 @@ from django.utils import timezone
 
 class DropboxFileMetadata(models.Model):
 	""" A model for storing file and folders metadata of dropbox """
-	metadata = models.CharField(max_length=16777125)
+	metadata = models.TextField()
 	tokenID = models.ForeignKey('dashboard.DropboxToken')
 	metaTime = models.DateTimeField(default=timezone.now, blank=True)
 
 class DropboxAccountInfo(models.Model):
 	""" A model for storing user info """
-	accountInfo = models.TextField(max_length=16777215)
+	accountInfo = models.TextField()
 	tokenID = models.ForeignKey("dashboard.DropboxToken")
 	metaTime = models.DateTimeField(default=timezone.now, blank=True)
 

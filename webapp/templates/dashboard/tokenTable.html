@@ -1,0 +1,9 @@
+<h3>Access Tokens</h3>
+<table>
+	<tr><td><b>ID</b></td><td><b>UID</b></td></tr>	
+	{% for token in tknTable %}
+	<tr><td>{{token.id}}</td><td><a href="/{{link}}/?i={{ id }}&t={{token.id}}">{{token.userID}}</a></td></tr>	
+	{% empty %}
+		<tr><td colspan="3">Sorry no tokens for dropbox have been found</td></tr>
+	{% endfor %}
+</table>
