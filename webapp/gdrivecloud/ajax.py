@@ -14,7 +14,7 @@ def isAuthenticated(request):
 	return request.user.is_authenticated()
 
 @dajaxice_register
-def analyzeMetaData(request, tokenID, importID):
+def analyzeMetaData(request, tokenID, importID, update):
 	dajax = Dajax()
 
 	# check authenticaton
@@ -23,7 +23,7 @@ def analyzeMetaData(request, tokenID, importID):
 
 	try:
 		sessionName = "session"+str(int(importID))+"-"+str(int(tokenID))
-		parsedTable = drive.metadataAnalysis(request, sessionName)
+		parsedTable = drive.metadataAnalysis(request, sessionName, update, int(tokenID))
 		dajax.assign("#metaAnalysis", "innerHTML", parsedTable)
 	except Exception as e:
 		dajax.assign("#metaAnalysisError","innerHTML", e)

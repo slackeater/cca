@@ -5,6 +5,7 @@ import base64, sys, httplib2, json
 from apiclient.discovery import build
 from models import GoogleAccountInfo, GoogleFileMetadata
 from django.template.loader import render_to_string
+from django.utils import timezone
 ## OAuth Stuff
 
 def retrieveCredentials(request, importIDget, tokenID, sessioName):
@@ -70,14 +71,28 @@ def userInformation(request, sessionName, tokenID):
 
 	return {'userInfoTable': render_to_string("cloudservice/googleUserInfoTable.html", {'accountInfo': userInfo, 'email': email,  'emailVerified': emailVerified})}
 
-def metadataAnalysis(request, sessionName):
+def metadataAnalysis(request, sessionName, update, tokenID):
 	""" Analyse metadata """
 	
 	#build the drive service
 	drive_service = serviceBuilder("drive","v2",httpCreator(request.session[sessionName]))
-	files = drive_service.files().list().execute()
-	getFileStats(files)
-	return render_to_string("cloudservice/googleMetaAnalysis.html", {'res': files})
+	
+	obj, created = GoogleFileMetadata.objects.get_or_create(tokenID=GoogleDriveToken.objects.get(id=tokenID))
+	files = None
+	#build the drive service
+	drive_service = serviceBuilder("drive","v2",httpCreator(request.session[sessionName]))
+	
+	if created or update:
+		files = drive_service.files().list().execute()
+		filesDB = base64.b64encode(json.dumps(files))
+		obj.metadata = filesDB
+		obj.metaTime = timezone.now()
+		obj.save()
+	else: #get from db
+		files = json.loads(base64.b64decode(obj.metadata))
+
+	stat = getFileStats(files)
+	return render_to_string("cloudservice/googleMetaAnalysis.html", {'stat': stat})
 
 def getFileStats(files):
 	""" Get statistics about file on google drive and documents """
@@ -101,13 +116,15 @@ def getFileStats(files):
 
 		mimeType.setdefault(item['mimeType'],0)
 		mimeType[item['mimeType']] += 1
-
-	print deletedCount
-	print driveFiles
-	print docsFiles
-	print driveFileSize
-	print mimeType
-
+	
+	stat = dict()
+	stat['dC'] = deletedCount
+	stat['driveF'] = driveFiles
+	stat['docsF'] = docsFiles
+	stat['driveFS'] = driveFileSize
+	stat['mime'] = mimeType
+	
+	return stat
 
 def metadataSearch():
 	""" Search through metadata """

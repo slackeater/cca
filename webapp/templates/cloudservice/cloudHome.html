@@ -24,6 +24,9 @@
 	<table class="headTable"><tr>
 			<td><img src="/static/icons/add.png" /></td>
 			<td><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);">Metadata Analysis</a></td>
+			{% if updateAnalysis %}
+				<td><a class="foldingLink"  onclick="startMetaAnalysis(true)" href="javascript:void(0);">Update</a></td>
+			{% endif %}
 			<td><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
 	</tr></table>
 </div>

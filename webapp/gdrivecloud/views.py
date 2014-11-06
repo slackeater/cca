@@ -28,6 +28,7 @@ def gdriveViewer(request):
 		data["objID"] = importIDget
 		data["platformTitle"] = "Google"
 		data['cloudServiceJavascript'] = "/static/googleFunc.js"
+		data['updateAnalysis'] = True
 		return render_to_response("cloudservice/cloudHome.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
