@@ -1,0 +1,6 @@
+<table>
+	  {% for i in res.items %}
+
+	  <tr><td>{{i.mimeType}}</td><td>{{i.title}}</td><td>{{i.fileSize}} Bytes</td><td>{{i.labels.trashed}}</td></tr>
+	  {% endfor %}
+</table>

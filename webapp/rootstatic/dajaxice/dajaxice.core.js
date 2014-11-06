@@ -87,6 +87,19 @@ var Dajaxice = {
     
 ,
     
+    gdrivecloud: {
+    
+    analyzeMetaData: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('gdrivecloud.analyzeMetaData', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
 
     get_cookie: function(name)
     {

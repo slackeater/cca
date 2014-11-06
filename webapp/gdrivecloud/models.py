@@ -9,3 +9,9 @@ class GoogleAccountInfo(models.Model):
 	accountInfo = models.TextField()
 	tokenID = models.ForeignKey("dashboard.GoogleDriveToken")
 	metaTime = models.DateTimeField(default=timezone.now, blank=True)
+
+class GoogleFileMetadata(models.Model):
+	""" A model for storing file and folders metadata of dropbox """
+	metadata = models.TextField()
+	tokenID = models.ForeignKey('dashboard.GoogleDriveToken')
+	metaTime = models.DateTimeField(default=timezone.now, blank=True)

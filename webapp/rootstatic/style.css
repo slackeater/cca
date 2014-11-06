@@ -72,21 +72,29 @@ table#credTab{
 
 a.foldingLink{
 	color: black;
-	width: 100%;
-	display: block;
+	font-weight: bold;
 	text-decoration: none;
-}
-
-a.foldingLink img{
-	float: left;
-	margin-right: 4px;
-	margin-bottom: 2px;
 }
 
 div.analysisHead{
 	border-bottom: solid 1px black;
 	background-color: #EEEEEE;
-	padding: 4px;
 	font-size 12pt;
-	font-weight: bold;
 }
+
+table.headTable{
+	height: 30px;
+	width: 300px;
+}
+
+table.headTable td:last-child{
+	width: 125px;
+}
+
+table.headTable td:first-child{
+	width: 20px;
+}
+
+img.waiters{
+}
+
