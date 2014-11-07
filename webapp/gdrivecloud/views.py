@@ -1,6 +1,7 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 import drive
+from dropcloud.forms import DropMetaSearch
 
 # Create your views here.
 
@@ -24,11 +25,11 @@ def gdriveViewer(request):
 		except Exception as e:
 			data['sessionError'] = e.message
 	
-		
 		data["objID"] = importIDget
 		data["platformTitle"] = "Google"
 		data['cloudServiceJavascript'] = "/static/googleFunc.js"
 		data['updateAnalysis'] = True
+		data['resForm'] = DropMetaSearch()
 		return render_to_response("cloudservice/cloudHome.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")

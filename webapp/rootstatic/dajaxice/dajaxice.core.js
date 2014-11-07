@@ -89,8 +89,16 @@ var Dajaxice = {
     
     gdrivecloud: {
     
+    fileInfo: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('gdrivecloud.fileInfo', 'POST', callback_function, argv, custom_settings);
+    },
+
     analyzeMetaData: function(callback_function, argv, custom_settings){
         return Dajaxice.call('gdrivecloud.analyzeMetaData', 'POST', callback_function, argv, custom_settings);
+    },
+
+    searchMetaData: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('gdrivecloud.searchMetaData', 'POST', callback_function, argv, custom_settings);
     }
 
 

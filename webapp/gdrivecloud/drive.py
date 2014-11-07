@@ -126,8 +126,21 @@ def getFileStats(files):
 	
 	return stat
 
-def metadataSearch():
+def metadataSearch(tokenID, desForm):
 	""" Search through metadata """
+
+	#get meta info
+	token = GoogleDriveToken.objects.get(id=tokenID)
+	gMetaInfo = json.loads(base64.b64decode(GoogleFileMetadata.objects.get(tokenID=token).metadata))
+	
+	#TODO search
+
+	table = render_to_string("cloudservice/googleSearchTable.html", {'data': gMetaInfo['items']})
+	return table	
+
+def fileInfo(tokenID, fileID):
+	""" Get information of a file """
+	#TODO
 
 def downloader():
 	""" Download files """

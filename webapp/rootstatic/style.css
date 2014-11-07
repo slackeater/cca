@@ -95,6 +95,9 @@ table.headTable td:first-child{
 	width: 20px;
 }
 
-img.waiters{
+div#metaAnalysis{
+	padding-left: 4px;
+	padding-top: 4px;
+	width: 75%;
+	text-align: center;
 }
-
