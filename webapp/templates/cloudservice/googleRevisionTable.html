@@ -1,0 +1,6 @@
+<table>
+	<tr><td>ID</td><td>Modified Date</td><td>Last Modifying User</td></tr>
+	{%for r in rev %}
+	<tr><td>{{r.id}}</td><td>{{r.modifiedDate}}</td><td>{{r.lastModifyingUserName}}</td></tr>
+	{% endfor %}
+</table>

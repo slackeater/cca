@@ -43,7 +43,11 @@ def httpCreator(credentialSession):
 	return credentials.authorize(http)
 
 ## Functions
-
+def getMetaData(tokenID):
+	""" Get the metadata for a given token ID """
+	token = GoogleDriveToken.objects.get(id=tokenID)
+	meta = json.loads(base64.b64decode(GoogleFileMetadata.objects.get(tokenID=token).metadata))
+	return meta
 
 def userInformation(request, sessionName, tokenID):
 	""" Save and display userinformation  """
@@ -129,10 +133,7 @@ def getFileStats(files):
 def metadataSearch(tokenID, desForm):
 	""" Search through metadata """
 
-	#get meta info
-	token = GoogleDriveToken.objects.get(id=tokenID)
-	gMetaInfo = json.loads(base64.b64decode(GoogleFileMetadata.objects.get(tokenID=token).metadata))
-	
+	gMetaInfo = getMetaData(tokenID)	
 	#TODO search
 
 	table = render_to_string("cloudservice/googleSearchTable.html", {'data': gMetaInfo['items']})
@@ -140,10 +141,32 @@ def metadataSearch(tokenID, desForm):
 
 def fileInfo(tokenID, fileID):
 	""" Get information of a file """
-	#TODO
+	
+	gMetaInfo = getMetaData(tokenID)
+	i = None
+
+	for item in gMetaInfo['items']:
+		if fileID == item['id']:
+			i = item
+			break;
+	
+	table = render_to_string("cloudservice/googleFileInfoTable.html",{'item': i})
+	return table
+
+def fileHistory(fileID, sessionData):
+	""" Get the file history """
+	drive_service = serviceBuilder("drive", "v2",httpCreator(sessionData))
+	
+	#get the revisions
+	revisions = drive_service.revisions().list(fileId=fileID).execute().get('items',[])
+
+	table = render_to_string("cloudservice/googleRevisionTable.html", {'rev': revisions})
+	return table
+	
 
 def downloader():
 	""" Download files """
-
+	#TODO
 def comparator():
 	""" compare files """
+	#TODO

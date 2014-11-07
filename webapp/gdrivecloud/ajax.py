@@ -46,6 +46,7 @@ def searchMetaData(request, form, tokenID):
 		try:
 			parsedTable = drive.metadataSearch(int(tokenID), strip_tags(desForm))
 			dajax.assign("#searchRes","innerHTML", parsedTable)
+			dajax.assign("#searchError", "innerHTML", "")
 		except Exception as e:
 			dajax.assign("#searchError", "innerHTML", e.message)
 	else:
@@ -65,7 +66,24 @@ def fileInfo(request, id, tokenID):
 		parsedTable = drive.fileInfo(int(tokenID), strip_tags(id))
 		dajax.assign("#fileRevisionContainer","innerHTML",parsedTable)
 	except Exception as e:
-		#TODO
-		dajax.assign("#fileInfoError","innerHTML",e.message)
+		dajax.assign("#searchError","innerHTML",e.message)
+
+	return dajax.json()
+
+@dajaxice_register
+def fileRevision(request, id, tokenID, importID):
+	""" Show the file history """
+
+	if not isAuthenticated(request):
+		return None
+
+	dajax = Dajax()
+
+	try:
+		sessionName = "session"+str(int(importID))+"-"+str(int(tokenID))
+		parsedTable = drive.fileHistory(id, request.session[sessionName])
+		dajax.assign("#revisionHistory","innerHTML",parsedTable)
+	except Exception as e:
+		dajax.assign("#searchError","innerHTML",e.message)
 
 	return dajax.json()

@@ -89,6 +89,10 @@ var Dajaxice = {
     
     gdrivecloud: {
     
+    fileRevision: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('gdrivecloud.fileRevision', 'POST', callback_function, argv, custom_settings);
+    },
+
     fileInfo: function(callback_function, argv, custom_settings){
         return Dajaxice.call('gdrivecloud.fileInfo', 'POST', callback_function, argv, custom_settings);
     },

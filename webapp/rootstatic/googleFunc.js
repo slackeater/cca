@@ -33,13 +33,18 @@ function resCallBack(data){
 
 function showFile(id){
 	//loader
-	$("#"+id).attr("src","/static/477.GIF").fadeIn("slow")
-	//$("#"+id+"-load").fadeIn("fast")
-	//Dajaxice.gdrivecloud.fileInfo(showCallBack,{'tokenID': vars['t'], 'id': id})
+	$("#searchError").fadeOut("slow");
+	Dajaxice.gdrivecloud.fileInfo(showCallBack,{'tokenID': vars['t'], 'id': id})
 }
 
 function showCallBack(data){
 	Dajax.process(data)
+	$("#searchResult").fadeOut("slow")
+	$("#fileRevisionContainer").fadeIn("slow")
+	$("#searchError").fadeIn("slow");
+}
 
+function showRevision(id){
+	Dajaxice.gdrivecloud.fileRevision(Dajax.process,{'id': id, 'tokenID': vars['t'], 'importID': vars['i']})
 }
 /* End */
