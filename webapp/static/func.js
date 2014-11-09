@@ -57,8 +57,14 @@ function showCallBack(data){
 }
 
 function showRevision(id,platform){
+	$("#revisionWait").fadeIn("slow")
+	Dajaxice.cloudservice.fileRevision(revCallBack,{'platform':platform,'id': id, 'tokenID': tVal()})
+}
+
+function revCallBack(data){
+	Dajax.process(data)
+	$("#revisionWait").fadeOut("slow")
 	$("#revisionHistory").fadeIn("slow")
-	Dajaxice.cloudservice.fileRevision(Dajax.process,{'platform':platform,'id': id, 'tokenID': tVal()})
 }
 
 /* End */

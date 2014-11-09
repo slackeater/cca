@@ -8,6 +8,6 @@
 	<tr><td>Media Location<td><a href="https://maps.google.com/maps?q={{item.imageMediaMetadata.location.latitude}},{{item.imageMediaMetadata.location.longitude}}">Location</a>
 	</td></tr>
 	{% endif %}
-	<tr><td colspan=2><a href="javascript:void(0)" onclick="showRevision('{{item.id}}')">Revision</td></tr>
+	<tr><td><a href="javascript:void(0)" onclick="showRevision('{{item.id}}','{{platform}}')">Revision</td><td><img src="/static/47.GIF" id="revisionWait" style="display: none"/></td></tr>
 	<tr><td colspan=2 style="display: none" id="revisionHistory"></td></tr>
 </table>

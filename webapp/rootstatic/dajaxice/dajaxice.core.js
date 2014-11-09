@@ -35,8 +35,24 @@ var Dajaxice = {
     
     cloudservice: {
     
+    searchMetaData: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.searchMetaData', 'POST', callback_function, argv, custom_settings);
+    },
+
     metadataAnalysis: function(callback_function, argv, custom_settings){
         return Dajaxice.call('cloudservice.metadataAnalysis', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileInfo: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.fileInfo', 'POST', callback_function, argv, custom_settings);
+    },
+
+    userInfo: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.userInfo', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileRevision: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.fileRevision', 'POST', callback_function, argv, custom_settings);
     }
 
 

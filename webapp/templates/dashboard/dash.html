@@ -1,21 +1,5 @@
 {% extends "base.html" %}
 
-{% block js %}
-
-<script type="text/javascript">
-function toggleHide(id){
-	if (document.getElementById(id).style.display == "none" || document.getElementById(id).style.display == ""){
-		document.getElementById(id).style.display = "block";
-	}
-	else{
-		document.getElementById(id).style.display = "none";
-	}
-}
-
-</script>
-
-{% endblock %}
-
 {% block menudash %}
 
 <span id="dashMenu">

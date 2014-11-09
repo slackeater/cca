@@ -7,7 +7,7 @@ import md5, base64
 
 # Create your views here.
 
-TEMPLATE = "cloudservice/cloudHome.html"
+TEMPLATE = "dashboard/cloudservice/cloudHome.html"
 
 def googleView(request, importID, tokenID):
 	return cloudService(request, "google", importID, tokenID)
@@ -31,13 +31,6 @@ def cloudService(request, platform, importID, tokenID):
 		sessionName = md5.new(tokenID).hexdigest()
 		retrieveCredentials(request, importID, tokenID, sessionName)
 		data['objID'] = importID
-
-		if platform == "google":
-			js = "/static/googleFunc.js"
-		elif platform == "dropbox":
-			js = "/static/dropFunc.js"
-
-		data['cloudServiceJavascript'] = js
 		data['platform'] = platform
 		data['platformTitle'] = platform.title()
 		data['updateAnalysis'] = True

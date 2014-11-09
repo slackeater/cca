@@ -27,7 +27,9 @@ def showdash(request):
 				if tokenID == 0:
 					return redirect("/dashboard/?i="+str(index)+"&s=cloud")
 
+				
 				data = cloudService(request,s)
+				data['tokenID'] = tokenID
 				tmpl = "clouservice/cloudHome.html"
 			
 			data['objID'] = index

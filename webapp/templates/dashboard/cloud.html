@@ -5,24 +5,24 @@
 
 function dropboxAuthCode(){
 	$("#loadDrop").fadeIn("slow")
-	Dajaxice.dashboard.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'impID':vars['i']})
+	Dajaxice.dashboard.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'impID':iVal()})
 }
 
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'dropbox', 'impID': vars['i']})
+	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'dropbox', 'impID': iVal()})
 }
 
 function googleAuthCode(){
 	$("#loadGoogle").fadeIn("slow")
-	Dajaxice.dashboard.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'impID':vars['i']})
+	Dajaxice.dashboard.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'impID':iVal()})
 }
 
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'google','impID': vars['i']})
+	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'google','impID': iVal()})
 }
 
 
@@ -65,7 +65,7 @@ function googleCallBack(data){
 
 <div id="dStat"></div>
 <ul>
-	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'dropbox', 'impID': vars['i']})">Tokens</a></li>
+	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'dropbox', 'impID': iVal()})">Tokens</a></li>
 </ul>
 
 <div id="dropTokenTable"></div>
@@ -90,10 +90,11 @@ function googleCallBack(data){
 
 <div id="gStat"></div>
 <ul>
-	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'google','impID': vars['i']})">Tokens</a></li>
+	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'google','impID': iVal()})">Tokens</a></li>
 </ul>
 <div id="googleTokenTable"></div>
 
 <h2>Microsoft OneDrive</h2>
 
+<input type="hidden" value="{{objID}}" id="i" />
 {% endblock %}

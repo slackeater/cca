@@ -3,31 +3,11 @@ from importer.models import Upload
 from oauth2client.client import OAuth2Credentials
 import base64, sys, httplib2, json
 from apiclient.discovery import build
-from dashboard.models import AccountInfo, FileMetadata
+from dashboard.models import AccountInfo, FileMetadata, MimeType
 from django.template.loader import render_to_string
 from django.utils import timezone
 import md5
 ## OAuth Stuff
-
-def retrieveCredentials(request, importIDget, tokenID, sessioName):
-	""" Retrieve the credentials from the db """
-
-	#check if a session with credentials has been already created
-	sessionCred = request.session.get(sessioName, "none") 
-
-	if sessionCred != "none":
-		#we already have this variable set
-		return None
-
-	# we have all the parameters
-	if importIDget != 0 and tokenID != 0:
-		try:
-			token = AccessToken.objects.get(importID=Upload.objects.get(id=importIDget), id=tokenID)
-		
-			# create credentials
-			request.session[sessioName] = base64.b64decode(token.accessToken)
-		except AccessToken.DoesNotExist:
-			raise Exception("Invalid parameters")	
 
 def serviceBuilder(serviceName, version, httpObj):
 	""" Create a service used to perform future API calls """
@@ -50,8 +30,10 @@ def getMetaData(tokenID):
 	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
 	return meta
 
-def userInformation(request, sessionName, tokenID):
+def userInformation(request, tokenID):
 	""" Save and display userinformation  """
+
+	sessionName = md5.new(str(tokenID)).hexdigest()
 
 	#insert into database if not present
 	obj, created = AccountInfo.objects.get_or_create(tokenID=AccessToken(id=tokenID))
@@ -74,7 +56,7 @@ def userInformation(request, sessionName, tokenID):
 	emailVerified = credJson['token_response']['id_token']['email_verified']
 	email = credJson['token_response']['id_token']['email']
 
-	return {'userInfoTable': render_to_string("cloudservice/googleUserInfoTable.html", {'accountInfo': userInfo, 'email': email,  'emailVerified': emailVerified})}
+	return render_to_string("dashboard/cloudservice/googleUserInfoTable.html", {'accountInfo': userInfo, 'email': email,  'emailVerified': emailVerified})
 
 def metadataAnalysis(request, update, tokenID):
 	""" Analyse metadata """
@@ -99,7 +81,7 @@ def metadataAnalysis(request, update, tokenID):
 		files = json.loads(base64.b64decode(obj.metadata))
 
 	stat = getFileStats(files)
-	return render_to_string("cloudservice/googleMetaAnalysis.html", {'stat': stat})
+	return render_to_string("dashboard/cloudservice/metaAnalysis.html", {'stat': stat,'google': True})
 
 def getFileStats(files):
 	""" Get statistics about file on google drive and documents """
@@ -151,10 +133,11 @@ def metadataSearch(tokenID, resType, selectedMimeType):
 					searchItem.append(i)
 			# mimetype
 			elif resType == 1:
-				if i['mimeType'] == selectedMimeType:
+				m = MimeType.objects.get(id=selectedMimeType)
+				if i['mimeType'] == m.mime:
 					searchItem.append(i)
 
-	table = render_to_string("cloudservice/googleSearchTable.html", {'data': searchItem})
+	table = render_to_string("dashboard/cloudservice/googleSearchTable.html", {'data': searchItem,'platform':'google'})
 	return table	
 
 def fileInfo(tokenID, fileID):
@@ -168,7 +151,7 @@ def fileInfo(tokenID, fileID):
 			i = item
 			break;
 	
-	table = render_to_string("cloudservice/googleFileInfoTable.html",{'item': i})
+	table = render_to_string("dashboard/cloudservice/googleFileInfoTable.html",{'item': i,'platform':'google'})
 	return table
 
 def fileHistory(fileID, sessionData):
@@ -178,7 +161,7 @@ def fileHistory(fileID, sessionData):
 	#get the revisions
 	revisions = drive_service.revisions().list(fileId=fileID).execute().get('items',[])
 
-	table = render_to_string("cloudservice/googleRevisionTable.html", {'rev': revisions})
+	table = render_to_string("dashboard/cloudservice/googleRevisionTable.html", {'rev': revisions})
 	return table
 	
 

@@ -1,7 +1,7 @@
 {% extends "dashboard/dash.html" %}
 
 {% block js %}
-<script type="text/javascript" src="{{cloudServiceJavascript}}"></script>
+<script type="text/javascript" src="/static/func.js"></script>
 {% endblock %}
 
 {% block rightcont %}
@@ -11,21 +11,20 @@
 <div class="analysisHead">
 	<table class="headTable"><tr>
 			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="$('#accountTab').fadeToggle('slow')" href="javascript:void(0);">Account Info</a></td>
+			<td><a class="foldingLink" onclick="showUserInfo('{{platform}}')" href="javascript:void(0);">Account Info</a></td>
 			<td><img id="wait0" class="waiters" style="display: none" src="/static/47.GIF" /></td>
 	</tr></table>
 </div>
 
-<div id="accountTab" style="display: none">
-	{{userInfoTable}}
-</div>
+<div id="userInfoError" style="display: none"></div>
+<div id="accountTab" style="display: none"></div>
 
 <div class="analysisHead">
 	<table class="headTable"><tr>
 			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);">Metadata Analysis</a></td>
+			<td><a class="foldingLink" onclick="startMetaAnalysis(0,'{{platform}}')" href="javascript:void(0);">Metadata Analysis</a></td>
 			{% if updateAnalysis %}
-				<td><a class="foldingLink"  onclick="startMetaAnalysis(true)" href="javascript:void(0);">Update</a></td>
+			<td><a class="foldingLink"  onclick="startMetaAnalysis(1,'{{platform}}')" href="javascript:void(0);">Update</a></td>
 			{% endif %}
 			<td><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
 	</tr></table>
@@ -49,7 +48,7 @@
 		<table>
 			<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
 			<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
-			<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
+			<tr><td></td><td><input type="button" value="Search" onclick="startRes('{{platform}}');" /></td></tr>
 			<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
 		</table>
 	</form>
@@ -93,4 +92,6 @@
 	<div id="hashTable"></div>
 </div>
 
+<input type="hidden" value="{{tokenID}}" id="t" name="t" />
+<input type="hidden" value="{{objID}}" id="i" name="i" />
 {% endblock %}
