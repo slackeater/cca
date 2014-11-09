@@ -19,9 +19,8 @@ def userInformation(request, tokenID):
 		obj.save()
 	elif created == False:
 		userInfo = json.loads(base64.b64decode(obj.accountInfo))
-	print userInfo
+	
 	return render_to_string("dashboard/cloudservice/dropboxUserInfoTable.html",{"accountInfo":userInfo})
-
 
 def metadataAnalysis(request,update,tokenID):
 	""" Dropbox metadata analysis """
@@ -67,6 +66,8 @@ def metadataSearch(tokenID, resType, selectedMimeType):
 
 	for folder in meta:
 		for cnt in folder['contents']:
+			fID = {'fileID':md5.new(cnt['path']).hexdigest()}
+			cnt.update(fID)
 			#deleted 
 			if resType == 0:
 				deleted = cnt.get("is_deleted",False)
@@ -81,9 +82,51 @@ def metadataSearch(tokenID, resType, selectedMimeType):
 			elif resType == 2:
 				res.append(cnt)
 
-	table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res})
+	table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res, 'platform': 'dropbox'})
+	return table
+
+def fileInfo(tokenID, fileID):
+	""" Get the file information """
+
+	#get metadata
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID)).metadata))
+	i = None
+
+	for folder in meta:
+		for cnt in folder['contents']:
+			if md5.new(cnt['path']).hexdigest() == fileID:
+				i = cnt
+				break;
+	
+	table = render_to_string("dashboard/cloudservice/dropboxFileInfoTable.html",{'item':i,'platform':'dropbox'})
+	return table
+
+def fileHistory(id,sessionCredentials):
+	""" Get file history """
+
+	client = dropbox.client.DropboxClient(sessionCredentials)
+	fileHistory = client.revisions(id)
+	table = render_to_string("dashboard/cloudservice/dropboxRevisioner.html",{"revisions": fileHistory})
+	return table
+
+def downloadSize(tokenID):
+	""" Compute the size of the download """
+
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID)).metadata))
+	size = 0	
+	fileCount = 0 
+
+	for folder in meta:
+		for cnt in folder['contents']:
+			if not cnt['is_dir'] and 'is_deleted' not in cnt:
+				size += float(cnt['bytes'])
+				fileCount += 1
+
+	size = size/(1024*1024)
+	table = render_to_string("dashboard/cloudservice/downloadSize.html", {'size': size,'count': fileCount})
 	return table
 	
+
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
 	res = list()

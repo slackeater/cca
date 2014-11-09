@@ -110,7 +110,9 @@ def fileInfo(request,platform,tokenID,id):
 	try:
 		if platform == "google":
 			parsedTable = googledrive.fileInfo(t,id)
-		
+		elif platform == "dropbox":
+			parsedTable = drop.fileInfo(t,id)
+
 		dajax.assign("#fileRevisionContainer","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
 	except Exception as e:
@@ -132,6 +134,8 @@ def fileRevision(request,platform,id,tokenID):
 
 		if platform == "google":
 			parsedTable = googledrive.fileHistory(id,sessionCredentials)
+		elif platform == "dropbox":
+			parsedTable = drop.fileHistory(id,sessionCredentials)
 		
 		dajax.assign("#revisionHistory","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
@@ -140,3 +144,30 @@ def fileRevision(request,platform,id,tokenID):
 
 	return dajax.json()
 
+@dajaxice_register
+def showDownload(request, tokenID,platform):
+	""" Show the download size """
+
+	auth, t = initCheck(request,tokenID)
+
+	dajax = Dajax()
+
+	parsedTable = None
+
+	try:
+		if platform == "google":
+			parsedTable = googledrive.downloadSize(t)
+		elif platform == "dropbox":
+			parsedTable = drop.downloadSize(t)
+
+		dajax.assign("#downCont","innerHTML",parsedTable)
+		dajax.assign("#downError","innerHTML","")
+	except Exception as e:
+		dajax.assign("#downError","innerHTML",e)
+
+	return dajax.json()
+
+
+@dajaxice_register
+def initDownload(request, platform, tokenID):
+	""" Initialize a download """

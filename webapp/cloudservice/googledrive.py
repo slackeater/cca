@@ -164,10 +164,31 @@ def fileHistory(fileID, sessionData):
 	table = render_to_string("dashboard/cloudservice/googleRevisionTable.html", {'rev': revisions})
 	return table
 	
-
-def downloader():
+def downloadSize(tokenID):
 	""" Download files """
-	#TODO
+
+	metadata = getMetaData(tokenID)
+	fileSize = 0
+	count = 0
+	fileListID = list()
+
+	for item in metadata['items']:
+		if 'fileSize' in item:
+			fileSize += float(item['fileSize'])
+			count += 1
+			fileListID.append(item['id'])
+
+
+	fileSize = fileSize/(1024*1024)
+
+	if fileSize <= 500:
+		downloader = render_to_string("dashboard/cloudservice/foregroundDownload.html",{'res':fileListID})
+	else:
+		downloader = None
+
+	table = render_to_string("dashboard/cloudservice/downloadSize.html",{'size': fileSize,'count':count,'downloader': downloader})
+	return table
+
 def comparator():
 	""" compare files """
 	#TODO

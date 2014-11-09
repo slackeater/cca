@@ -1,0 +1,16 @@
+<a href="javascript:void(0)" onclick="backToSearch()">Back</a>
+<table>
+	<tr><td>File</td><td>{{item.path}} </td></tr>
+	<tr><td>Last modified by</td><td>{{item.modified}}</td></tr>
+	<tr><td>Size</td><td>{{item.size}}</td></tr>
+	{% if item.photo_info %}
+	<tr><td>Photo Location</td><td><a target="_blank" href="https://maps.google.com/maps?q={{item.photo_info.lat_long.0}},{{item.photo_info.lat_long.1}}">Location</a></td></tr>
+	<tr><td>Photo Taken</td><td>{{item.photo_info.time_taken}}</td></tr>
+	{% endif %}
+	{% if item.videoi_info %}
+	<tr><td>Video Location<td><a target="_blank" href="https://maps.google.com/maps?q={{item.video_info.lat_long.0}},{{item.video_info.lat_long.1}}">Location</a></td></tr>
+	<tr><td>Video Duration</td><td>{{item.video_info.duration}}</td></tr>
+	{% endif %}
+	<tr><td><a href="javascript:void(0)" onclick="showRevision('{{item.path}}','{{platform}}')">Revision</td><td><img src="/static/47.GIF" id="revisionWait" style="display: none"/></td></tr>
+	<tr><td colspan=2 style="display: none" id="revisionHistory"></td></tr>
+</table>

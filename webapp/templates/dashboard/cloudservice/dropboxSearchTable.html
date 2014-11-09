@@ -29,7 +29,7 @@ img#revSpinner{
 				{% if r.is_dir %}
 					{{r.path}}
 				{% else %}
-					<a href="javascript:void(0)" onclick='showFile("{{r.path}}")'>{{r.path}}</a>
+				<a href="javascript:void(0)" onclick='showFile("{{r.fileID}}","{{platform}}")'>{{r.path}}</a>
 				{% endif %}
 			</td>
 

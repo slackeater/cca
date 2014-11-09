@@ -77,18 +77,5 @@ function showDownload(platform){
 
 function showDownCallBack(data){
 	Dajax.process(data)
-	$("#downError").fadeIn("slow")
 	$("#downCont").fadeIn("slow")
 }
-
-function startForegroundDownload(platform){
-	$("#downError").fadeOut("slow")
-	Dajaxice.cloudservice.foregroundDownload(foregroundCallBack,{'platform':platform,'tokenID':tVal()})
-}
-
-function foregroundCallBack(data){
-	Dajax.process(data)
-	$("#downStatus").fadeIn("slow")
-	$("#downError").fadeIn("slow")
-}
-/* End */

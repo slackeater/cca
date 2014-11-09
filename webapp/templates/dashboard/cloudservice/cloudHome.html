@@ -59,23 +59,13 @@
 <div class="analysisHead">
 	<table class="headTable"><tr>
 			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="fold('#downCont')" href="javascript:void(0);">Downloader</a></td>
+			<td><a class="foldingLink" onclick="showDownload('{{platform}}')" href="javascript:void(0);">Downloader</a></td>
 			<td><img id="wait3" class="waiters" style="display: none" src="/static/47.GIF" /></td>
 	</tr></table>
 </div>
 
 <div id="downError" style="display: none"></div>
-<div id="downCont" style="display: none">
-	<table>
-		<tr>
-			<td><div onclick="getDownloadList()">Files to download</div></td>
-			<td><span id="wait" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td>
-		</tr>
-	</table>
-	<div id="downList"></div>
-	<div id="fileDownStatus"></div>
-</div>
-
+<div id="downCont" style="display: none"></div>
 
 <div class="analysisHead">
 	<table class="headTable"><tr>
