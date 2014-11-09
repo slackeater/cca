@@ -1,3 +1,29 @@
+from dashboard.models import DropboxToken
+from importer.models import Upload
+
+def retrieveCredentials(request, importIDget, tokenID, sessionName):
+	""" Retrieve the credentials from the DB """
+
+	sessionCred = request.session.get(sessionName, "none")
+
+	#check if a session credentials has been already created
+	if sessionCred != "none":
+		return None
+
+	if importIDget != 0 and tokenID != 0:
+		try:
+			token = DropboxToken.objects.get(importID=Upload.objects.get(importID=Upload.objects.get(id=importIDget), id=tokenID))
+
+			# create credentials
+			request.session[sessionName] = token.accessToken
+		except DropboxToken.DoesNotExist:
+			raise Exception("Invalid Parameters")
+
+
+def userInformation(request, sessionName, tokenID):
+	""" Get the user information """
+
+
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
 	res = list()

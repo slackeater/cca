@@ -1,12 +1,9 @@
 /* ==== Analysis ==== */
 
-function startMetaAnalysis(update){
-	if (!update) {
-		update = false
-	}
-
+function startMetaAnalysis(t,update, platform){
 	$("#wait1").fadeIn("slow");
-	Dajaxice.gdrivecloud.analyzeMetaData(analysisCallBack,{'importID': vars['i'],'tokenID': vars['t'], 'update': update});
+	$("#metaAnalysisError").fadeOut("slow");
+	Dajaxice.cloudservice.metadataAnalysis(analysisCallBack,{'tokenID': t, 'update': update, 'platform': platform});
 }
 
 // callback for analysis
@@ -14,14 +11,15 @@ function analysisCallBack(data){
  	Dajax.process(data)
 	$("#wait1").fadeOut("slow");
 	$("#metaAnalysis").fadeIn("slow");
+	$("#metaAnalysisError").fadeIn("slow");
 }
 
 /* === Search === */
 
-function startRes(){
+function startRes(t,platform){
 	$("#wait2").fadeIn("slow");
 	$("#searchError").fadeOut("slow");
-	Dajaxice.gdrivecloud.searchMetaData(resCallBack, {'tokenID': vars['t'], 'form': $("#searchForm").serialize(true)})
+	Dajaxice.gdrivecloud.searchMetaData(resCallBack, {'platform': platform, 'tokenID': t, 'form': $("#searchForm").serialize(true)})
 }
 
 function resCallBack(data){
@@ -31,10 +29,10 @@ function resCallBack(data){
 	$("#searchError").fadeIn("slow");
 }
 
-function showFile(id){
+function showFile(t,id){
 	//loader
 	$("#searchError").fadeOut("slow");
-	Dajaxice.gdrivecloud.fileInfo(showCallBack,{'tokenID': vars['t'], 'id': id})
+	Dajaxice.gdrivecloud.fileInfo(showCallBack,{'tokenID': t, 'id': id})
 }
 
 function showCallBack(data){
@@ -44,9 +42,9 @@ function showCallBack(data){
 	$("#searchError").fadeIn("slow");
 }
 
-function showRevision(id){
+function showRevision(t,id){
 	$("#revisionHistory").fadeIn("slow")
-	Dajaxice.gdrivecloud.fileRevision(Dajax.process,{'id': id, 'tokenID': vars['t'], 'importID': vars['i']})
+	Dajaxice.gdrivecloud.fileRevision(Dajax.process,{'id': id, 'tokenID': t, 'importID': vars['i']})
 }
 
 /* End */

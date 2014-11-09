@@ -3,14 +3,26 @@ from django.utils import timezone
 
 # Create your models here.
 
-class DropboxToken(models.Model):
+class AccessToken(models.Model):
 	""" A model for storing dropbox token information """
 	importID = models.ForeignKey('importer.Upload')
-	accessToken = models.CharField(max_length=256)
-	userID = models.CharField(max_length=20)
+	accessToken = models.TextField(max_length=65535)
+	userID = models.CharField(max_length=100)
+	serviceType = models.CharField(max_length=10)
+	tokentime = models.DateTimeField(default=timezone.now)
 
-class GoogleDriveToken(models.Model):
-	""" A model for storing gdrive token information """
-	importID = models.ForeignKey('importer.Upload')
-	accessToken = models.TextField()
-	userID = models.CharField(max_length=50)
+class FileMetadata(models.Model):
+	""" A model for storing file and folders metadata of dropbox """
+	metadata = models.TextField()
+	tokenID = models.ForeignKey('AccessToken')
+	metaTime = models.DateTimeField(default=timezone.now, blank=True)
+
+class AccountInfo(models.Model):
+	""" A model for storing user info """
+	accountInfo = models.TextField()
+	tokenID = models.ForeignKey("AccessToken")
+	metaTime = models.DateTimeField(default=timezone.now, blank=True)
+
+class MimeType(models.Model):
+	""" A model for storing MIME types """
+	mime = models.CharField(max_length=100)

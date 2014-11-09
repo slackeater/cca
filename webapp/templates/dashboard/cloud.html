@@ -11,6 +11,7 @@ function dropboxAuthCode(){
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
+	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'dropbox', 'impID': vars['i']})
 }
 
 function googleAuthCode(){
@@ -21,7 +22,10 @@ function googleAuthCode(){
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
+	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'google','impID': vars['i']})
 }
+
+
 </script>
 
 {% endblock %}
@@ -60,10 +64,11 @@ function googleCallBack(data){
 </ol>
 
 <div id="dStat"></div>
-<div id="dropTokenTable">
-{{ dTab }}
-</div>
+<ul>
+	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'dropbox', 'impID': vars['i']})">Tokens</a></li>
+</ul>
 
+<div id="dropTokenTable"></div>
 <h2>Google Drive</h2>
 <ol>
 	<li>First login with <a target="_blank" href="{{gdriveAuthurl}}">Google Drive</a></li>
@@ -84,9 +89,10 @@ function googleCallBack(data){
 </ol>
 
 <div id="gStat"></div>
-<div id="googleTokenTable">
-	{{ gTab }}
-</div>
+<ul>
+	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'google','impID': vars['i']})">Tokens</a></li>
+</ul>
+<div id="googleTokenTable"></div>
 
 <h2>Microsoft OneDrive</h2>
 

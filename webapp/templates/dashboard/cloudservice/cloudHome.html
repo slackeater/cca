@@ -6,8 +6,6 @@
 
 {% block rightcont %}
 
-<p>{{sessionError}}
-
 <h2>{{platformTitle}} Analysis</h2>
 
 <div class="analysisHead">
@@ -25,9 +23,9 @@
 <div class="analysisHead">
 	<table class="headTable"><tr>
 			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="startMetaAnalysis({{tokenID}},0,'{{platform}}')" href="javascript:void(0);">Metadata Analysis</a></td>
+			<td><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);">Metadata Analysis</a></td>
 			{% if updateAnalysis %}
-			<td><a class="foldingLink"  onclick="startMetaAnalysis({{tokenID}},1,'{{platform}}')" href="javascript:void(0);">Update</a></td>
+				<td><a class="foldingLink"  onclick="startMetaAnalysis(true)" href="javascript:void(0);">Update</a></td>
 			{% endif %}
 			<td><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
 	</tr></table>
@@ -51,7 +49,7 @@
 		<table>
 			<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
 			<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
-			<tr><td></td><td><input type="button" value="Search" onclick="startRes({{tokenID}},'{{platform}}');" /></td></tr>
+			<tr><td></td><td><input type="button" value="Search" onclick="startRes();" /></td></tr>
 			<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
 		</table>
 	</form>

@@ -33,34 +33,10 @@ var Dajaxice = {
     
 ,
     
-    dropcloud: {
+    cloudservice: {
     
-    comparator: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.comparator', 'POST', callback_function, argv, custom_settings);
-    },
-
-    getDownloadList: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.getDownloadList', 'POST', callback_function, argv, custom_settings);
-    },
-
-    searchMetaData: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.searchMetaData', 'POST', callback_function, argv, custom_settings);
-    },
-
-    downloadFile: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.downloadFile', 'POST', callback_function, argv, custom_settings);
-    },
-
-    analyzeDropMetaData: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.analyzeDropMetaData', 'POST', callback_function, argv, custom_settings);
-    },
-
-    fileRevisioner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.fileRevisioner', 'POST', callback_function, argv, custom_settings);
-    },
-
-    downloadWrapper: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dropcloud.downloadWrapper', 'POST', callback_function, argv, custom_settings);
+    metadataAnalysis: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.metadataAnalysis', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -78,31 +54,10 @@ var Dajaxice = {
 
     submitDropboxCode: function(callback_function, argv, custom_settings){
         return Dajaxice.call('dashboard.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
-    }
-
-
-    
-    
-    }
-    
-,
-    
-    gdrivecloud: {
-    
-    fileRevision: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('gdrivecloud.fileRevision', 'POST', callback_function, argv, custom_settings);
     },
 
-    fileInfo: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('gdrivecloud.fileInfo', 'POST', callback_function, argv, custom_settings);
-    },
-
-    analyzeMetaData: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('gdrivecloud.analyzeMetaData', 'POST', callback_function, argv, custom_settings);
-    },
-
-    searchMetaData: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('gdrivecloud.searchMetaData', 'POST', callback_function, argv, custom_settings);
+    showTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('dashboard.showTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 

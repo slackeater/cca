@@ -3,28 +3,64 @@ from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import MultipleObjectsReturned
 import oauth, sys, dropbox
 import json, base64
-from models import DropboxToken, GoogleDriveToken
+from models import AccessToken
 from importer.models import Upload
 from apiclient.discovery import build
 from django.template.loader import render_to_string
 import httplib2
-
+from django.utils.html import strip_tags
 
 @dajaxice_register
 def submitDropboxCode(request, code, impID):
 	""" Submit the dropbox authorization code """
-	return submitCode(request, code, impID, "dropbox")
+	stripCode = strip_tags(code)
+	return submitCode(request, stripCode, impID, "dropbox")
 
 @dajaxice_register
 def submitGoogleCode(request, code, impID):
 	""" Submit the dropbox authorization code """
-	return submitCode(request, code, impID, "google")
+	stripCode = strip_tags(code)
+	return submitCode(request, stripCode, impID, "google")
+
+@dajaxice_register
+def showTokens(request, platform, impID):
+	""" Show the tokens """
+
+	if not request.user.is_authenticated():
+		return None
+
+	importIDget = int(impID)
+	
+	if not importIDget > 0:
+		return None
+
+	dajax = Dajax()
+	cleanPlatform = strip_tags(platform)	
+	data = dict()
+
+	if platform == "google":
+		eID = "#gStat"
+		tab = "#googleTokenTable"
+	elif platform == "dropbox":
+		eID = "#dStat"
+		tab = "#dropTokenTable"
+
+	try:	
+		data['tknTable'] = AccessToken.objects.filter(serviceType=cleanPlatform)
+		data['link'] = cleanPlatform
+		data['id'] = importIDget
+		table = render_to_string("dashboard/tokenTable.html",data)
+		dajax.assign(tab, "innerHTML", table)
+	except Exception as e:
+		dajax.assign(eID, "innetHTML", e)
+
+	return dajax.json()
 
 def submitCode(request, code, impID, platform):
 	""" Get the access code from the code """
 
 	if not request.user.is_authenticated():
-		sys.exit("Auth required")
+		return None
 
 	dajax = Dajax()
 	eID = "#gStat" if platform == "google" else "#dStat"
@@ -42,13 +78,11 @@ def submitCode(request, code, impID, platform):
 			user_info_service = build(serviceName='oauth2',version='v2',http=http)
 			user_info = user_info_service.userinfo().get().execute()
 
-			table = insertToken("google",user_info.get('id'), base64.b64encode(credentials.to_json()),impID)
-			dajax.assign("#googleTokenTable", "innerHTML", table)
+			insertToken("google",user_info.get('id'), credentials.to_json(),impID)
 			dajax.assign(eID,"innerHTML", str(""))
 		elif platform == "dropbox":
 			accessToken, userID = oauth.dropboxAccessToken(code)
-			table = insertToken("dropbox",userID,accessToken, impID)
-			dajax.assign("#dropTokenTable", "innerHTML", table)
+			insertToken("dropbox",userID,accessToken, impID)
 			dajax.assign(eID,"innerHTML", str(""))
 		else: 
 			raise Exception("Invalid platform")
@@ -63,14 +97,10 @@ def submitCode(request, code, impID, platform):
 def insertToken(platform, uid, token, importID):
 	""" Insert a token into the relative table """
 
-	if platform == "google":
-		databaseModel = GoogleDriveToken
-	elif platform == "dropbox":
-		databaseModel = DropboxToken
-
 	#check if we have already an access token for this id
 	try:
-		obj, created = databaseModel.objects.get_or_create(importID=Upload.objects.get(id=importID), userID=uid, defaults={'accessToken': token})
+		parseToken = base64.b64encode(token)
+		obj, created = AccessToken.objects.get_or_create(importID=Upload.objects.get(id=importID), userID=uid, serviceType=platform,  defaults={'accessToken': parseToken})
 
 		if not created:
 			obj.accessToken = token
@@ -79,11 +109,4 @@ def insertToken(platform, uid, token, importID):
 	except MultipleObjectsReturned:
 		return None
 	
-	data = dict()
-	data['tknTable'] = databaseModel.objects.all()
-	data['link'] = "gdrivecloud" if platform == "google" else "dropcloud"
-	data['objID'] = importID
-	
-	table = render_to_string("dashboard/tokenTable.html",data)
-	return table
 

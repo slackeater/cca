@@ -1,11 +1,12 @@
-from dashboard.models import GoogleDriveToken 
+from dashboard.models import AccessToken 
 from importer.models import Upload
 from oauth2client.client import OAuth2Credentials
 import base64, sys, httplib2, json
 from apiclient.discovery import build
-from models import GoogleAccountInfo, GoogleFileMetadata
+from dashboard.models import AccountInfo, FileMetadata
 from django.template.loader import render_to_string
 from django.utils import timezone
+import md5
 ## OAuth Stuff
 
 def retrieveCredentials(request, importIDget, tokenID, sessioName):
@@ -21,11 +22,11 @@ def retrieveCredentials(request, importIDget, tokenID, sessioName):
 	# we have all the parameters
 	if importIDget != 0 and tokenID != 0:
 		try:
-			token = GoogleDriveToken.objects.get(importID=Upload.objects.get(id=importIDget), id=tokenID)
+			token = AccessToken.objects.get(importID=Upload.objects.get(id=importIDget), id=tokenID)
 		
 			# create credentials
 			request.session[sessioName] = base64.b64decode(token.accessToken)
-		except GoogleDriveToken.DoesNotExist:
+		except AccessToken.DoesNotExist:
 			raise Exception("Invalid parameters")	
 
 def serviceBuilder(serviceName, version, httpObj):
@@ -45,15 +46,15 @@ def httpCreator(credentialSession):
 ## Functions
 def getMetaData(tokenID):
 	""" Get the metadata for a given token ID """
-	token = GoogleDriveToken.objects.get(id=tokenID)
-	meta = json.loads(base64.b64decode(GoogleFileMetadata.objects.get(tokenID=token).metadata))
+	token = AccessToken.objects.get(id=tokenID)
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
 	return meta
 
 def userInformation(request, sessionName, tokenID):
 	""" Save and display userinformation  """
 
 	#insert into database if not present
-	obj, created = GoogleAccountInfo.objects.get_or_create(tokenID=GoogleDriveToken(id=tokenID))
+	obj, created = AccountInfo.objects.get_or_create(tokenID=AccessToken(id=tokenID))
 	
 	if created == True:
 		httpObj = httpCreator(request.session[sessionName])
@@ -75,18 +76,20 @@ def userInformation(request, sessionName, tokenID):
 
 	return {'userInfoTable': render_to_string("cloudservice/googleUserInfoTable.html", {'accountInfo': userInfo, 'email': email,  'emailVerified': emailVerified})}
 
-def metadataAnalysis(request, sessionName, update, tokenID):
+def metadataAnalysis(request, update, tokenID):
 	""" Analyse metadata """
 	
+	sessionName = md5.new(str(tokenID)).hexdigest()
+
 	#build the drive service
 	drive_service = serviceBuilder("drive","v2",httpCreator(request.session[sessionName]))
 	
-	obj, created = GoogleFileMetadata.objects.get_or_create(tokenID=GoogleDriveToken.objects.get(id=tokenID))
+	obj, created = FileMetadata.objects.get_or_create(tokenID=AccessToken.objects.get(id=tokenID))
 	files = None
 	#build the drive service
 	drive_service = serviceBuilder("drive","v2",httpCreator(request.session[sessionName]))
 	
-	if created or update:
+	if created or update == 1:
 		files = drive_service.files().list().execute()
 		filesDB = base64.b64encode(json.dumps(files))
 		obj.metadata = filesDB
@@ -130,13 +133,28 @@ def getFileStats(files):
 	
 	return stat
 
-def metadataSearch(tokenID, desForm):
+def metadataSearch(tokenID, resType, selectedMimeType):
 	""" Search through metadata """
 
 	gMetaInfo = getMetaData(tokenID)	
-	#TODO search
+	
+	searchItem = list()
 
-	table = render_to_string("cloudservice/googleSearchTable.html", {'data': gMetaInfo['items']})
+	# all
+	if resType == 2:
+		searchItem = gMetaInfo['items']
+	else:
+		for i in gMetaInfo['items']:
+			#deleted
+			if resType == 0:
+				if i['labels']['trashed']:
+					searchItem.append(i)
+			# mimetype
+			elif resType == 1:
+				if i['mimeType'] == selectedMimeType:
+					searchItem.append(i)
+
+	table = render_to_string("cloudservice/googleSearchTable.html", {'data': searchItem})
 	return table	
 
 def fileInfo(tokenID, fileID):

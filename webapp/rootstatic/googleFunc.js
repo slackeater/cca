@@ -1,12 +1,12 @@
 /* ==== Analysis ==== */
 
-function startMetaAnalysis(update){
+function startMetaAnalysis(update, platform){
 	if (!update) {
 		update = false
 	}
 
 	$("#wait1").fadeIn("slow");
-	Dajaxice.gdrivecloud.analyzeMetaData(analysisCallBack,{'importID': vars['i'],'tokenID': vars['t'], 'update': update});
+	Dajaxice.cloudservice.metadataAnalysis(analysisCallBack,{'tokenID': "aa", 'update': update, 'platform': platform});
 }
 
 // callback for analysis
@@ -45,6 +45,8 @@ function showCallBack(data){
 }
 
 function showRevision(id){
+	$("#revisionHistory").fadeIn("slow")
 	Dajaxice.gdrivecloud.fileRevision(Dajax.process,{'id': id, 'tokenID': vars['t'], 'importID': vars['i']})
 }
+
 /* End */

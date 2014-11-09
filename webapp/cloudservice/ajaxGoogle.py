@@ -44,7 +44,7 @@ def searchMetaData(request, form, tokenID):
 
 	if desForm.is_valid():
 		try:
-			parsedTable = drive.metadataSearch(int(tokenID), strip_tags(desForm))
+			parsedTable = drive.metadataSearch(int(tokenID), int(desForm.cleaned_data['resType'][0]),desForm.cleaned_data['mimeType'])
 			dajax.assign("#searchRes","innerHTML", parsedTable)
 			dajax.assign("#searchError", "innerHTML", "")
 		except Exception as e:

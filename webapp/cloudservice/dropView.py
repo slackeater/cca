@@ -5,7 +5,7 @@ from models import DropboxAccountInfo
 from dashboard.models import DropboxToken
 from django.conf import settings
 import dropbox, base64
-import json, os
+import json, os, drop
 from forms import DropMetaSearch
 
 # Create your views here.
@@ -13,14 +13,23 @@ from forms import DropMetaSearch
 def dropViewer(request):
 	""" Display the function page """
 	if request.user.is_authenticated():
-		data = {}
-		tknID = request.GET.get("t","null")
-		index = request.GET.get("i", "null")
-		if tknID != "null" and tknID > 0 and index != "null" and index >= 0:
-			data['accountInfo'] = dropboxCall(request,tknID)
+		data = dict()
+		tokenID = int(request.GET.get("t",0))
+		index = int(request.GET.get("i", 0))
+
+		if not tokenID > 0 or not index > 0:
+			return None
+
+		try:
+			data['userInfoTable'] = "INFO"
 			data['resForm'] = DropMetaSearch()
 			data['objID'] = index
-			return render_to_response("dropcloud/drop.html", data, context_instance=RequestContext(request))
+			data['updateAnalysis'] = False
+			data['cloudServiceJavascript'] = "/static/dropFunc.js"
+		except Exception as e:
+			data['sessionError'] = e.message
+
+		return render_to_response("cloudservice/cloudHome.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
 
