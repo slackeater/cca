@@ -123,7 +123,7 @@ def downloadSize(tokenID):
 				fileCount += 1
 
 	size = size/(1024*1024)
-	table = render_to_string("dashboard/cloudservice/downloadSize.html", {'size': size,'count': fileCount})
+	table = render_to_string("dashboard/cloudservice/downloadSize.html", {'platform': platform, 'size': size,'count': fileCount})
 	return table
 	
 

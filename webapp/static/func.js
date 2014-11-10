@@ -83,12 +83,63 @@ function showDownCallBack(data){
 
 function startForegroundDownload(platform){
 	$("#downError").fadeOut("slow")
-	Dajaxice.cloudservice.foregroundDownload(foregroundCallBack,{'platform':platform,'tokenID':tVal()})
+	Dajaxice.cloudservice.startForegroundDownload(foregroundCallBack,{'platform':platform,'tokenID':tVal()})
 }
 
 function foregroundCallBack(data){
 	Dajax.process(data)
 	$("#downStatus").fadeIn("slow")
 	$("#downError").fadeIn("slow")
+	$("#downBtn").fadeOut("slow")
+	if(data[0].val == "true"){
+		$("form#downListForm :input[type=hidden]").each(function(){
+			var input = $(this)
+			setTimeout(function(){
+				Dajaxice.cloudservice.downloadFile(downFileCallBack,
+				{'tokenID': tVal(),'platform':$("#p").val(),'fileID': input.val()})
+			},4000)
+		});
+
+	}
 }
+
+function downFileCallBack(data){
+	//File processing has gone good
+	if(data[0].val == "correct"){
+		html = parseInt($("#file").text())
+		totalLen = $("#progress").width()
+		nowFileLen = $("#progressLen").width()
+		totalFile = parseInt($("#total").text());
+
+		//block length
+		blockLen = totalLen / totalFile
+
+		//add the block to the current progress width
+		$("#progressLen").width(nowFileLen+blockLen)
+
+		//update file count
+		tot = html + 1
+		$("#file").text(tot)
+
+		//status
+		oldText = $("#fileDownStatus").html()
+		$("#fileDownStatus").html(oldText + "<div>Download complete:" + data[1].val + "</div>").fadeIn("slow")
+
+		//we reached the end 
+		if (tot == totalFile){
+			oldText = $("#fileDownStatus").html()
+			$("#fileDownStatus").html(oldText + "<p>Completed</p>")
+			$("#fileDownStatus").fadeIn("slow")
+			$("#downBtn").fadeIn("slow")
+		}
+	}
+	else{
+		cont = data[1].val
+		oldText = $("#fileDownStatus").text()
+		$("#fileDownStatus").text(oldText+cont)
+		$("#fileDownStatus").fadeIn("slow")
+	}
+}
+
+
 /* End */

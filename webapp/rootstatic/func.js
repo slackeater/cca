@@ -77,5 +77,63 @@ function showDownload(platform){
 
 function showDownCallBack(data){
 	Dajax.process(data)
+	$("#downError").fadeIn("slow")
 	$("#downCont").fadeIn("slow")
 }
+
+function startForegroundDownload(platform){
+	$("#downError").fadeOut("slow")
+	Dajaxice.cloudservice.startForegroundDownload(foregroundCallBack,{'platform':platform,'tokenID':tVal()})
+}
+
+function foregroundCallBack(data){
+	Dajax.process(data)
+	$("#downStatus").fadeIn("slow")
+	$("#downError").fadeIn("slow")
+		alert(data[0].val)
+	if(data[0].val == "true"){
+		$("form#downListForm :input[type=hidden]").each(function(){
+			var input = $(this)
+			Dajaxice.cloudservice.downloadFile(downFileCallBack,{'platform':$("#p").val(),'fileName': input.val()})
+		});
+
+	}
+}
+
+function downFileCallBack(data){
+	//File processing has gone good
+	if(data[0].val == "correct"){
+		html = parseInt($("#file").text())
+		totalLen = $("#progress").width()
+		nowFileLen = $("#progressLen").width()
+		totalFile = parseInt($("#total").text());
+
+		//block length
+		blockLen = totalLen / totalFile
+
+		//add the block to the current progress width
+		$("#progressLen").width(nowFileLen+blockLen)
+
+		//update file count
+		tot = html + 1
+		$("#file").text(tot)
+
+		//we reached the end 
+		if (tot == totalFile){
+			oldText = $("#fileDownStatus").text()
+			 $("#fileDownStatus").html(oldText + "<p>Completed</p>")
+			 $("#fileDownStatus").fadeIn("slow")
+			 $("#waitDown").fadeOut("slow")
+			 $("#downBnt").fadeIn("slow")
+		}
+	}
+	else{
+		cont = data[0].val
+		oldText = $("#fileDownStatus").text()
+		$("#fileDownStatus").text(oldText+cont)
+		$("#fileDownStatus").fadeIn("slow")
+	}
+}
+
+
+/* End */

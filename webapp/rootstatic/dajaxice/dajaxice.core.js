@@ -43,6 +43,10 @@ var Dajaxice = {
         return Dajaxice.call('cloudservice.searchMetaData', 'POST', callback_function, argv, custom_settings);
     },
 
+    downloadFile: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.downloadFile', 'POST', callback_function, argv, custom_settings);
+    },
+
     metadataAnalysis: function(callback_function, argv, custom_settings){
         return Dajaxice.call('cloudservice.metadataAnalysis', 'POST', callback_function, argv, custom_settings);
     },
@@ -57,6 +61,10 @@ var Dajaxice = {
 
     fileInfo: function(callback_function, argv, custom_settings){
         return Dajaxice.call('cloudservice.fileInfo', 'POST', callback_function, argv, custom_settings);
+    },
+
+    startForegroundDownload: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.startForegroundDownload', 'POST', callback_function, argv, custom_settings);
     }
 
 

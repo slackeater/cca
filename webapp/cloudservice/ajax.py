@@ -1,15 +1,19 @@
 import googledrive, drop
-import md5,base64,sys
+import md5,base64,sys,os,pickle,time
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
+from django.utils.html import strip_tags
 from forms import MetaSearch
+from django.conf import settings
+from models import Downloads
+from googleapiclient.discovery import Resource
 
 def isAuhtenticated(request):
 	""" Check if a user is authenticated """
 	return request.user.is_authenticated()
 
-def initCheck(request,tokenID = None):
+def initCheck(request,tokenID):
 
 	auth = False
 	t = 0
@@ -169,5 +173,66 @@ def showDownload(request, tokenID,platform):
 
 
 @dajaxice_register
-def initDownload(request, platform, tokenID):
+def startForegroundDownload(request, platform, tokenID):
 	""" Initialize a download """
+
+	auth, t = initCheck(request,tokenID)
+
+	#check if there is already a folder
+	fName = md5.new(str(t)).hexdigest()
+	downFolder = os.path.join(settings.DOWNLOAD_DIR,fName)
+	dajax = Dajax()
+
+	#if the folder exists or is not empty return
+	if os.path.isdir(downFolder) and os.listdir(downFolder) != []:
+		dajax.assign("#status","innerHTML","false")
+		dajax.assign("#downError","innerHTML","A folder already exists with the same name / folder not empty")
+	else:
+		try:
+			if not os.path.isdir(downFolder):
+				os.mkdir(downFolder)
+				
+			dbDir, created = Downloads.objects.get_or_create(dirName=downFolder,defaults={'dirName':downFolder,'status':0})
+
+			if dbDir.status == 0 and (platform == "google" or platform == "dropbox"):
+				dajax.assign("#status","innerHTML","true")
+				dajax.assign("#p","value",platform)
+			else:
+				dajax.assign("#downError","innerHTML","Error")
+		except (Error,Exception) as e:
+			dajax.assign("#downError","innerHTML",e.message)
+
+	return dajax.json()
+
+@dajaxice_register
+def downloadFile(request,platform,tokenID,fileID):
+	""" Download a file """
+
+	auth, t = initCheck(request, tokenID)
+	dajax = Dajax()
+	
+	try:
+		sName = md5.new(str(t)).hexdigest()
+		sessionData = request.session[sName]
+
+		if platform == "google":
+			status, fName = googledrive.downloadFile(strip_tags(fileID),sessionData,t)
+			time.sleep(5)
+
+		elif platform == "dropbox":
+			status = False
+			
+		if status:
+			dajax.assign("#status","innerHTML","correct")
+			dajax.assign("#fID","innerHTML",fName)
+		else:
+			dajax.assign("#status","innerHTML","incorrect")
+			dajax.assign("#fID","innerHTML",fName)
+	except:
+		e = sys.exc_info()
+		lineno = e[-1].tb_lineno
+		dajax.assign("#status","innerHTML", str(e) + " at line " + str(lineno))
+
+	return dajax.json()
+
+

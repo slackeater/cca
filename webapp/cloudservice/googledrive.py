@@ -6,7 +6,8 @@ from apiclient.discovery import build
 from dashboard.models import AccountInfo, FileMetadata, MimeType
 from django.template.loader import render_to_string
 from django.utils import timezone
-import md5
+from django.conf import settings
+import md5, os
 ## OAuth Stuff
 
 def serviceBuilder(serviceName, version, httpObj):
@@ -186,8 +187,37 @@ def downloadSize(tokenID):
 	else:
 		downloader = None
 
-	table = render_to_string("dashboard/cloudservice/downloadSize.html",{'size': fileSize,'count':count,'downloader': downloader})
+	table = render_to_string("dashboard/cloudservice/downloadSize.html",{'platform': 'google','size': fileSize,'count':count,'downloader': downloader})
 	return table
+
+def downloadFile(fileID,sessionData,tokenID):
+	""" Download a single file """
+
+	#get download url
+	metaData = getMetaData(tokenID)
+	sName = md5.new(str(tokenID)).hexdigest()
+	downURL = None
+	fName = None
+
+	for m in metaData['items']:
+		if fileID == m['id']:
+			downURL = m['downloadUrl']
+			fName = m['title']
+			break
+	
+	downloadDir = os.path.join(settings.DOWNLOAD_DIR,sName)
+
+	if os.path.isdir(downloadDir):
+		if downURL:
+			s = serviceBuilder("drive","v2",httpCreator(sessionData))
+			resp, content = s._http.request(downURL)
+			
+			if resp.status == 200:
+				return True, fName
+			else:
+				return False, resp.status
+	
+	return False, None
 
 def comparator():
 	""" compare files """

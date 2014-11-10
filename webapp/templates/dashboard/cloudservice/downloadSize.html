@@ -4,7 +4,7 @@
 	<div>File size bigger than 500 MB. Download will happen in background</div>
 	<input type="button" onclick="alert('download')"  name="backgroundDownload" value="Download" />
 {% else %}
-<input type="button" onclick="startForegroundDownload('{{platform}}')" name="foregroundDownload" value="Download" />
+<input type="button" id="downBtn" onclick="startForegroundDownload('{{platform}}')" name="foregroundDownload" value="Download" />
 
 {% if downloader %}
 	{{downloader}}

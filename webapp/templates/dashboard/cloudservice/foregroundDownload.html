@@ -157,11 +157,13 @@
 			<div style="position: relative; width: 200px; height: 30px; left: 43%; top: -14px; z-index: 15; font-size: 8pt;">
 				<span id="file" style="font-weight: bold;">0</span> of <span id="total" style="font-weight: bold;">{{ res|length }}</span> downloaded</div>
 			</div>
+			<input type="hidden" value="" name="p" id="p" />
 			<form id="downListForm">
 				{% for r in res %}
 					<input type="hidden" value="{{r}}" />
 				{% endfor %}
 				<br />
 			</form>
+			<div id="fileDownStatus" style="display: none"></div>
 		</div>
 
