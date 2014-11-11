@@ -7,7 +7,7 @@ from django.utils.html import strip_tags
 from forms import MetaSearch
 from django.conf import settings
 from models import Downloads
-from googleapiclient.discovery import Resource
+from dashboard.models import AccessToken
 
 def isAuhtenticated(request):
 	""" Check if a user is authenticated """
@@ -192,7 +192,7 @@ def startForegroundDownload(request, platform, tokenID):
 			if not os.path.isdir(downFolder):
 				os.mkdir(downFolder)
 				
-			dbDir, created = Downloads.objects.get_or_create(dirName=downFolder,defaults={'dirName':downFolder,'status':0})
+			dbDir, created = Downloads.objects.get_or_create(dirName=downFolder,tokenID=AccessToken.objects.get(id=t),defaults={'tokenID':AccessToken.objects.get(id=t),'dirName':downFolder,'status':0})
 
 			if dbDir.status == 0 and (platform == "google" or platform == "dropbox"):
 				dajax.assign("#status","innerHTML","true")
@@ -216,9 +216,8 @@ def downloadFile(request,platform,tokenID,fileID):
 		sessionData = request.session[sName]
 
 		if platform == "google":
-			status, fName = googledrive.downloadFile(strip_tags(fileID),sessionData,t)
+			status, fName = googledrive.downloadFile(strip_tags(fileID),sessionData,t,sName)
 			time.sleep(5)
-
 		elif platform == "dropbox":
 			status = False
 			
@@ -235,4 +234,26 @@ def downloadFile(request,platform,tokenID,fileID):
 
 	return dajax.json()
 
+
+@dajaxice_register
+def finishDownload(request,tokenID):
+
+	auth, t = initCheck(request, tokenID)
+
+	dajax = Dajax()
+
+	#update 
+	try:
+		tkn = AccessToken.objects.get(id=t)
+		getDown = Downloads.objects.get(tokenID=tkn)
+
+		if getDown.status == 0:
+			if tkn.platform == "google":
+			#TODO
+			elif tkn.platform == "dropbox":
+
+	except Exception as e:
+		dajax.assign("#downError", e)
+
+	return dajax.json()
 

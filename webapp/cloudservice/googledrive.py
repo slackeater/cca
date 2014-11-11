@@ -190,12 +190,11 @@ def downloadSize(tokenID):
 	table = render_to_string("dashboard/cloudservice/downloadSize.html",{'platform': 'google','size': fileSize,'count':count,'downloader': downloader})
 	return table
 
-def downloadFile(fileID,sessionData,tokenID):
+def downloadFile(fileID,sessionData,tokenID,sName):
 	""" Download a single file """
 
 	#get download url
 	metaData = getMetaData(tokenID)
-	sName = md5.new(str(tokenID)).hexdigest()
 	downURL = None
 	fName = None
 
@@ -212,12 +211,30 @@ def downloadFile(fileID,sessionData,tokenID):
 			s = serviceBuilder("drive","v2",httpCreator(sessionData))
 			resp, content = s._http.request(downURL)
 			
-			if resp.status == 200:
+			if resp.status == 200:  
+				fullName = os.path.join(downloadDir,fName)
+
+				if not os.path.isfile(fullName):
+					f = open(fullName, "wb+")
+					f.write(content)
+					f.close()
+
 				return True, fName
 			else:
 				return False, resp.status
 	
 	return False, None
+
+
+def finishDownload(tokenID):
+	""" update db """
+
+	meta = getMetaData(tokenID)
+	sName = md5.new(tokenID).hexdigest()
+	downDir = os.path.join(settings.DOWNLOAD_DIR,sName)
+
+
+
 
 def comparator():
 	""" compare files """

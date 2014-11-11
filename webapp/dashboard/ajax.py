@@ -103,7 +103,7 @@ def insertToken(platform, uid, token, importID):
 		obj, created = AccessToken.objects.get_or_create(importID=Upload.objects.get(id=importID), userID=uid, serviceType=platform,  defaults={'accessToken': parseToken})
 
 		if not created:
-			obj.accessToken = token
+			obj.accessToken = parseToken
 			obj.save()
 
 	except MultipleObjectsReturned:

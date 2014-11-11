@@ -8,6 +8,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('dashboard', '0001_initial'),
     ]
 
     operations = [
@@ -18,6 +19,7 @@ class Migration(migrations.Migration):
                 ('dirName', models.CharField(max_length=255)),
                 ('downTime', models.DateTimeField(default=django.utils.timezone.now)),
                 ('status', models.IntegerField(max_length=1)),
+                ('tokenID', models.ForeignKey(to='dashboard.AccessToken')),
             ],
             options={
             },

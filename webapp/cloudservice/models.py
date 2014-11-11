@@ -8,3 +8,4 @@ class Downloads(models.Model):
 	dirName = models.CharField(max_length=255)
 	downTime = models.DateTimeField(default=timezone.now)
 	status = models.IntegerField(max_length=1)
+	tokenID = models.ForeignKey('dashboard.AccessToken')
