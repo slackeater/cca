@@ -197,11 +197,13 @@ def downloadFile(fileID,sessionData,tokenID,sName):
 	metaData = getMetaData(tokenID)
 	downURL = None
 	fName = None
+	fID = None
 
 	for m in metaData['items']:
 		if fileID == m['id']:
 			downURL = m['downloadUrl']
 			fName = m['title']
+			fID = m['id']
 			break
 	
 	downloadDir = os.path.join(settings.DOWNLOAD_DIR,sName)
@@ -210,12 +212,12 @@ def downloadFile(fileID,sessionData,tokenID,sName):
 		if downURL:
 			s = serviceBuilder("drive","v2",httpCreator(sessionData))
 			resp, content = s._http.request(downURL)
-			
+		
 			if resp.status == 200:  
 				fullName = os.path.join(downloadDir,fName)
 
 				if not os.path.isfile(fullName):
-					f = open(fullName, "wb+")
+					f = open(fullName+"_"+fID, "wb+")
 					f.write(content)
 					f.close()
 
@@ -228,11 +230,30 @@ def downloadFile(fileID,sessionData,tokenID,sName):
 
 def finishDownload(tokenID):
 	""" update db """
-
+	
 	meta = getMetaData(tokenID)
-	sName = md5.new(tokenID).hexdigest()
+	sName = md5.new(str(tokenID)).hexdigest()
 	downDir = os.path.join(settings.DOWNLOAD_DIR,sName)
+	
+	fList = os.listdir(downDir)
 
+	print fList
+
+	for f in fList:
+		fPath = os.path.join(downDir,f)
+		print os.path.isfile(fPath)
+		if os.path.isfile(fPath): #to avoid directories
+			print "osfile: " + fPath
+
+			for i in meta['items']:
+				metaTitle = i['title'] + "_" + i['id']
+				print "file: " + metaTitle
+				if 'fileSize' in i: #only google drive entries have this
+					print "GBYTE: " + str(i['fileSize'])
+					print "OSBYTE: " + str(os.path.getsize(fPath))
+					if metaTitle == os.path.basename(fPath) and os.path.getsize(fPath) == i['fileSize']:
+						print fPath + " equals " + metaTitle
+						#break
 
 
 

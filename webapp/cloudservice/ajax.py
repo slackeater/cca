@@ -248,12 +248,13 @@ def finishDownload(request,tokenID):
 		getDown = Downloads.objects.get(tokenID=tkn)
 
 		if getDown.status == 0:
-			if tkn.platform == "google":
-			#TODO
-			elif tkn.platform == "dropbox":
-
+			print "service " + tkn.serviceType
+			if tkn.serviceType == "google":
+				googledrive.finishDownload(t)
+			elif tkn.serviceType == "dropbox":
+				pass
 	except Exception as e:
-		dajax.assign("#downError", e)
+		dajax.assign("#downError","innerHTML", e.message)
 
 	return dajax.json()
 

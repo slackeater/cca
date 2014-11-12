@@ -127,10 +127,7 @@ function downFileCallBack(data){
 
 		//we reached the end 
 		if (tot == totalFile){
-			oldText = $("#fileDownStatus").html()
-			$("#fileDownStatus").html(oldText + "<p>Completed</p>")
-			$("#fileDownStatus").fadeIn("slow")
-			$("#downBtn").fadeIn("slow")
+			Dajaxice.cloudservice.finishDownload(finishCallBack,{'tokenID': tVal()})
 		}
 	}
 	else{
@@ -141,5 +138,12 @@ function downFileCallBack(data){
 	}
 }
 
+function finishCallBack(data){
+	Dajax.process(data)
+	oldText = $("#fileDownStatus").html()
+	$("#fileDownStatus").html(oldText + "<p>Completed</p>")
+	$("#fileDownStatus").fadeIn("slow")
+	$("#downBtn").fadeIn("slow")
+}
 
 /* End */

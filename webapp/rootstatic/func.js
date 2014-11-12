@@ -90,11 +90,14 @@ function foregroundCallBack(data){
 	Dajax.process(data)
 	$("#downStatus").fadeIn("slow")
 	$("#downError").fadeIn("slow")
-		alert(data[0].val)
+	$("#downBtn").fadeOut("slow")
 	if(data[0].val == "true"){
 		$("form#downListForm :input[type=hidden]").each(function(){
 			var input = $(this)
-			Dajaxice.cloudservice.downloadFile(downFileCallBack,{'platform':$("#p").val(),'fileName': input.val()})
+			setTimeout(function(){
+				Dajaxice.cloudservice.downloadFile(downFileCallBack,
+				{'tokenID': tVal(),'platform':$("#p").val(),'fileID': input.val()})
+			},4000)
 		});
 
 	}
@@ -118,22 +121,27 @@ function downFileCallBack(data){
 		tot = html + 1
 		$("#file").text(tot)
 
+		//status
+		oldText = $("#fileDownStatus").html()
+		$("#fileDownStatus").html(oldText + "<div>Download complete:" + data[1].val + "</div>").fadeIn("slow")
+
 		//we reached the end 
 		if (tot == totalFile){
-			oldText = $("#fileDownStatus").text()
-			 $("#fileDownStatus").html(oldText + "<p>Completed</p>")
-			 $("#fileDownStatus").fadeIn("slow")
-			 $("#waitDown").fadeOut("slow")
-			 $("#downBnt").fadeIn("slow")
-		}
+			oldText = $("#fileDownStatus").html()
+			Dajaxice.cloudservice.finishDownload(finishCallBack,{'tokenID': tVal()})
 	}
 	else{
-		cont = data[0].val
+		cont = data[1].val
 		oldText = $("#fileDownStatus").text()
 		$("#fileDownStatus").text(oldText+cont)
 		$("#fileDownStatus").fadeIn("slow")
 	}
 }
 
+function finishCallBack(data){
+	$("#fileDownStatus").html(oldText + "<p>Completed</p>")
+	$("#fileDownStatus").fadeIn("slow")
+	$("#downBtn").fadeIn("slow")
+}
 
 /* End */

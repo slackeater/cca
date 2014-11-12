@@ -101,3 +101,20 @@ div#metaAnalysis{
 	width: 75%;
 	text-align: center;
 }
+
+table#funcTab{
+	width: 200px;
+	margin-left: 20px;
+}
+
+table#funcTab td{
+	padding: 4px;
+}
+
+table#funcTab tr>td:first-child{
+	text-align: center;
+}
+
+table#funcTab tr>td:last-child{
+	font-weight: bold;
+}

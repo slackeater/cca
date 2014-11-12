@@ -35,6 +35,10 @@ var Dajaxice = {
     
     cloudservice: {
     
+    finishDownload: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.finishDownload', 'POST', callback_function, argv, custom_settings);
+    },
+
     showDownload: function(callback_function, argv, custom_settings){
         return Dajaxice.call('cloudservice.showDownload', 'POST', callback_function, argv, custom_settings);
     },

@@ -3,17 +3,25 @@
 {% block menudash %}
 
 <span id="dashMenu">
-	<span><a href="/dashboard/?i={{ objID }}&s=display"><img src="/static/checklist1.png" alt="Client Report" /></a></span>
-	<span><a href="/dashboard/?i={{ objID }}&s=cloud"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
-	<span><a href="?i={{ objID }}&t=display"><img src="/static/timeline.png" alt="Timeline" /></a></span>
-	<span><a href="?i={{ objID }}&r=display"><img src="/static/seo2.png" alt="Report" /></a></span>
+	<span><a href="/importer/{{ objID }}/"><img src="/static/low27.png" alt="Client Report" /></a></span>
+	<span><a href="/download/{{ objID }}/"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
+	<span><a href="/analyse/{{ objID }}/"><img src="/static/timeline.png" alt="Timeline" /></a></span>
+	<span><a href="/report/{{ objID }}/"><img src="/static/seo2.png" alt="Report" /></a></span>
 </span>
 
 {% endblock %}
 
 {% block content %}
 <div id="right">
-	{% block rightcont %}{% endblock %}
+	{% block rightcont %}
+	<p>Choose one of the funcionalities below:</p>
+	<table id="funcTab">
+		<tr><td><img src="/static/low27.png" /></td><td><a href="/importer/{{objID}}/">Import</a></td></tr>
+		<tr><td><img src="/static/internet43.png" /></td><td><a href="/download/{{objID}}/">Download</a></td></tr>
+		<tr><td><img src="/static/timeline.png" /></td><td><a href="/analyse/{{objID}}/">Analyse</a></td></tr>
+		<tr><td><img src="/static/seo2.png" /></td><td><a href="/report/{{objID}}/">Report</a></td></tr>
+	</table>
+	{% endblock %}
 </div>
 
 {% endblock %}

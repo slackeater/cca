@@ -3,7 +3,7 @@ from dajaxice.decorators import dajaxice_register, dajaxice_functions
 from django.conf import settings
 import sys, os, json, zipfile
 from models import Upload
-
+from webapp.func import isAuthenticated, parseAjaxParam
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
 
@@ -14,61 +14,12 @@ del cryptoPath
 import crypto
 
 @dajaxice_register
-def decrypt(request):
-	
+def showReport(request,up,ci):
+	if not isAuthenticated(request):
+		return None
+
 	dajax = Dajax()
+
+	#check that the import belong to the clouditem
+	#TODO
 	
-	try:
-		fileName = request.session['fileName']
-		fileCont = open(os.path.join(settings.UPLOAD_DIR,fileName), "r")
-		jsonParsed = json.load(fileCont)
-		cont = jsonParsed['enc']
-		k = jsonParsed['k']
-
-		#decrypt AES key
-		aes = crypto.decryptRSA(k)
-		
-		#decrypt ZIP - first write encrypted cont into a temp file, read it, decrypt it and store the ZIP
-		tempFileName = os.path.join(settings.UPLOAD_DIR, fileName+".tmp")
-		open(tempFileName, "w+b").write(cont)
-		
-		# fernet wants "bytes" as token
-		fileBytes = crypto.decryptFernetFile(open(tempFileName, "rb").read(), aes)
-		#write decrypted filea
-
-		if fileName.endswith(".enc"):
-			name = fileName[:-4] 
-		else:
-			dajax.assign("#parseStatus","innerHTML", "Invalid name")
-			return dajax.json()
-
-		decZipFile = os.path.join(settings.UPLOAD_DIR, name)
-		open(decZipFile, "w+b").write(fileBytes)
-		
-		#delete temp file
-		os.remove(tempFileName)
-
-		aes = None
-		del aes
-
-		msg = "File decrypted correctly"
-
-		try:
-			fileZip = zipfile.ZipFile(decZipFile)
-			fileZip.extractall(settings.UPLOAD_DIR)
-			
-			msg += "<br />ZIP extracted correctly"
-			dajax.assign("#parseStatus","innerHTML",msg)
-
-			# set this report parsed	
-			up = Upload.objects.get(id=request.session['lastID'])
-			up.parsed = True
-			up.save()
-
-			return dajax.json()
-		except Exception as e:
-			dajax.assign("#parseStatus","innerHTML",str(e.message))
-			return dajax.json()
-	except Exception as e:
-		dajax.assign("#parseStatus","innerHTML",str(e.message))
-		return dajax.json()

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block content %}
+<div style="margin-top: 8px;" onclick='$("#addCloudItem").fadeToggle("slow")'><img src="/static/icons/add.png" ><h2 style="display: inline; margin-left: 4px;">Create a new cloud item</h2></div>
+<table id="addCloudItem" style="display: none">
+	<form action="" method="POST">
+	{% csrf_token %}
+	{% for i in form %}
+	<tr><td>{{i.label}}</td><td>{{i}}</td></tr>
+	{% endfor %}
+	<tr><td></td><td><input type="submit" name="sub" value="Insert" /></td></tr>
+</form>
+</table>
+
+<h2>Cloud Item</h2>
+<table><tr><td>ID</td><td>Name</td><td>Description</td><td>Reporter</td><td>Creation Time</td></tr>
+{% for i in cloudItem %}
+<tr><td><a href="/clouditem/{{i.id}}/">{{i.id}}</a></td><td>{{i.reportName}}</td><td>{{i.desc}}</td><td>{{i.reporterName}}</td><td>{{i.itemTime|localtime}}</td></tr>
+{% empty %}
+	<tr><td colspan=2>Sorry no items have been found.</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}
