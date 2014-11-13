@@ -14,9 +14,9 @@
 </table>
 
 <h2>Cloud Item</h2>
-<table><tr><td>ID</td><td>Name</td><td>Description</td><td>Reporter</td><td>Creation Time</td></tr>
+<table><tr><td>ID</td><td>Name</td><td>Description</td><td>Creation Time</td></tr>
 {% for i in cloudItem %}
-<tr><td><a href="/clouditem/{{i.id}}/">{{i.id}}</a></td><td>{{i.reportName}}</td><td>{{i.desc}}</td><td>{{i.reporterName}}</td><td>{{i.itemTime|localtime}}</td></tr>
+<tr><td><a href="/clouditem/{{i.id}}/">{{i.id}}</a></td><td>{{i.reportName}}</td><td>{{i.desc}}</td><td>{{i.itemTime|localtime}}</td></tr>
 {% empty %}
 	<tr><td colspan=2>Sorry no items have been found.</td></tr>
 {% endfor %}

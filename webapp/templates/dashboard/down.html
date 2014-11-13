@@ -1,0 +1,52 @@
+{% extends 'dashboard/dash.html' %}
+
+{% block js %}
+<script type="text/javascript">
+function startDownload(t){
+	Dajaxice.downloader.checkDownload(Dajax.process,{'t':t})
+}
+
+{% if downStatus != -1 %}
+	setInterval(function(){ startDownload({{tokenID}})},5000)
+{% endif %}
+
+</script>
+
+{% endblock %}
+
+
+{% block rightcont %}
+
+<h2>Account</h2>
+
+{{acc}}
+
+<h2>Download</h2>
+
+<p>The download will include:
+<ol>
+	<li>the metadata</li>
+	<li>the files themselves</li>
+	<li>the history of the files if any</li>
+</ol>
+
+<p>The download may take some times depending on the network speed, the load of the API service of Google/Dropbox/OneDrive and
+the size of the files.<p>
+
+<p>
+The download will happen in background and notifications will appear in this page about the status of download.
+</p>
+
+
+<input type="button" onclick="startDownload('{{tokenID}}')" name="start" value="Download" />
+
+</p>
+
+<div id="errors"></div>
+<div id="downStatus"></div>
+<div id="metaStatus"></div>
+<div id="fileStatus"></div>
+<div id="historyStatus"></div>
+<div id="finishStatus"></div>
+<input type="hidden" name="i" value="{{objID}}" />
+{% endblock %}

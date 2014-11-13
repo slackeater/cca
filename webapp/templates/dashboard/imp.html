@@ -8,6 +8,8 @@ function showReport(up,ci){
 
 function showReportCallBack(data){
 	Dajax.process(data)
+	$("#repStatus").fadeIn("slow")
+	$("#reportTable").fadeIn("slow")
 }
 </script>
 {% endblock %}
@@ -15,8 +17,9 @@ function showReportCallBack(data){
 {% block content %}
 
 
-<h2>Import a report</h2>
 
+{% if form %}
+<h2>Import a report</h2>
 <form method='post' action='/importer/{{objID}}/' id="upForm" enctype="multipart/form-data">
 	{% csrf_token %}
 	<table><tr>
@@ -27,22 +30,21 @@ function showReportCallBack(data){
 	<tr><td><input type='submit' value='upload' /></td></tr>
 	</tr></table>
 </form>
-
-{% if upload %}
-	<p>{{ upload }}</p>
 {% endif %}
 
 <div id="parseStatus"></div>
 
 <h2>Report</h2>
 
-<table>
-	<tr><td>Report</td><td>Date</td><td>IP</td><td>Parsed</td></tr>
+<table id="listReportTable">
+	<tr><td>ID</td><td>Date</td><td>IP</td><td>Parsed</td></tr>
 	
 	{% for report in repList %}
-	<tr><td><a href="javascript:void(0)" onclick="showReport('{{report.uploadID}}','{{objID}}')">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}</td><td>{{ report.parsed }}</td></tr>
+	<tr><td><a href="javascript:void(0)" onclick="showReport('{{report.id}}','{{objID}}')">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}</td><td>{{ report.parsed }}</td></tr>
 	{% endfor %}
 </table>
 
+<div id="repStatus" style="display: none"></div>
+<div id="reportTable" style="display: none"></div>
 {% endblock %}
 

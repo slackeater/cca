@@ -22,8 +22,8 @@ var Dajaxice = {
     
     importer: {
     
-    decrypt: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('importer.decrypt', 'POST', callback_function, argv, custom_settings);
+    showReport: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('importer.showReport', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -33,63 +33,26 @@ var Dajaxice = {
     
 ,
     
-    cloudservice: {
+    downloader: {
     
-    finishDownload: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.finishDownload', 'POST', callback_function, argv, custom_settings);
-    },
-
-    showDownload: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.showDownload', 'POST', callback_function, argv, custom_settings);
-    },
-
-    searchMetaData: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.searchMetaData', 'POST', callback_function, argv, custom_settings);
-    },
-
-    downloadFile: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.downloadFile', 'POST', callback_function, argv, custom_settings);
-    },
-
-    metadataAnalysis: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.metadataAnalysis', 'POST', callback_function, argv, custom_settings);
-    },
-
-    userInfo: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.userInfo', 'POST', callback_function, argv, custom_settings);
-    },
-
-    fileRevision: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.fileRevision', 'POST', callback_function, argv, custom_settings);
-    },
-
-    fileInfo: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.fileInfo', 'POST', callback_function, argv, custom_settings);
-    },
-
-    startForegroundDownload: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('cloudservice.startForegroundDownload', 'POST', callback_function, argv, custom_settings);
-    }
-
-
-    
-    
-    }
-    
-,
-    
-    dashboard: {
-    
-    submitGoogleCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
-    },
-
     submitDropboxCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
+        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
     },
 
-    showTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.showTokens', 'POST', callback_function, argv, custom_settings);
+    submitGoogleCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
+    },
+
+    showDropboxTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.showDropboxTokens', 'POST', callback_function, argv, custom_settings);
+    },
+
+    checkDownload: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.checkDownload', 'POST', callback_function, argv, custom_settings);
+    },
+
+    showGoogleTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.showGoogleTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 

@@ -5,24 +5,24 @@
 
 function dropboxAuthCode(){
 	$("#loadDrop").fadeIn("slow")
-	Dajaxice.dashboard.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'impID':iVal()})
+	Dajaxice.downloader.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'ci':iVal()})
 }
 
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'dropbox', 'impID': iVal()})
+	Dajaxice.downloader.showDropboxTokens(Dajax.process, {'ci': iVal()})
 }
 
 function googleAuthCode(){
 	$("#loadGoogle").fadeIn("slow")
-	Dajaxice.dashboard.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'impID':iVal()})
+	Dajaxice.downloader.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'ci':iVal()})
 }
 
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.dashboard.showTokens(Dajax.process, {'platform':'google','impID': iVal()})
+	Dajaxice.downloader.showGoogleTokens(Dajax.process, {'ci': iVal()})
 }
 
 
@@ -32,8 +32,8 @@ function googleCallBack(data){
 
 {% block rightcont %}
 
-<h2 onclick="toggleHide('credTab')">Credentials</h2>
-<table id="credTab">
+<h2 onclick='$("#credTab").fadeToggle("slow")'>Credentials</h2>
+<table id="credTab" style="display: none">
 	<tr><td><b>Hostname</b></td><td><b>Username</b></td><td><b>Password</b></td></tr>
 	{% for b in browsers %}
 		{% for p in b.profiles %}
@@ -45,8 +45,9 @@ function googleCallBack(data){
 </table>
 
 <h2>Dropbox</h2>
+<div id="dStat"></div>
 <ol>
-	<li>First login with <a target="_blank" href="{{ dropAuthurl }}">Dropbox</a></li>
+	<li>First login with <a target="_blank" href="{{ dropAuthURL }}">Dropbox</a></li>
 	<li>Copy the authorization code below and submit to obtain an access token
 
 		<form method="post">
@@ -61,17 +62,19 @@ function googleCallBack(data){
 			</table>
 		</form>
 	</li>
+	<li>
+		Display the <a href="javascript:void(0)" onclick="Dajaxice.downloader.showDropboxTokens(Dajax.process,{'ci': iVal()})">tokens</a>
+	</li>
+	<li>
+		<div id="dropTokenTable"></div>
+	</li>
 </ol>
 
-<div id="dStat"></div>
-<ul>
-	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'dropbox', 'impID': iVal()})">Tokens</a></li>
-</ul>
 
-<div id="dropTokenTable"></div>
 <h2>Google Drive</h2>
+<div id="gStat"></div>
 <ol>
-	<li>First login with <a target="_blank" href="{{gdriveAuthurl}}">Google Drive</a></li>
+	<li>First login with <a target="_blank" href="{{gdriveAuthURL}}">Google Drive</a></li>
 	<li>Copy the authorization code below and submit to obtain an access token
 
 		<form method="post">
@@ -86,13 +89,9 @@ function googleCallBack(data){
 			</table>	
 		</form>
 	</li>
+	<li>Display the <a href="javascript:void(0)" onclick="Dajaxice.downloader.showGoogleTokens(Dajax.process,{'ci': iVal()})">tokens</a></li>
+	<li><div id="googleTokenTable"></div></lI>
 </ol>
-
-<div id="gStat"></div>
-<ul>
-	<li><a href="javascript:void(0)" onclick="Dajaxice.dashboard.showTokens(Dajax.process,{'platform':'google','impID': iVal()})">Tokens</a></li>
-</ul>
-<div id="googleTokenTable"></div>
 
 <h2>Microsoft OneDrive</h2>
 

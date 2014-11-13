@@ -36,7 +36,6 @@ div#reportHeader{
 }
 
 div.reportCategory{
-	font-size: 9pt;
 	font-weight: bold;
 	margin-top: 6px;
 }
@@ -46,7 +45,6 @@ div#attribContainer, div#browserContainer, div#cloudContainer{
 }
 
 table.reportInfo{
-	font-size: 8pt;	
 	border: solid 1px black;
 	border-collapse: collapse;
 	width: 100%;
@@ -100,4 +98,21 @@ div#metaAnalysis{
 	padding-top: 4px;
 	width: 75%;
 	text-align: center;
+}
+
+table#funcTab{
+	width: 200px;
+	margin-left: 20px;
+}
+
+table#funcTab td{
+	padding: 4px;
+}
+
+table#funcTab tr>td:first-child{
+	text-align: center;
+}
+
+table#funcTab tr>td:last-child{
+	font-weight: bold;
 }

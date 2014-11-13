@@ -1,12 +1,19 @@
-{% extends "dashboard/dash.html" %}
+<script type="text/javascript">
+	function showElem(id,img){
+		if ($(id).is(":visible")){
+			$(img).attr("src","/static/icons/add.png")
+			$(id).fadeOut("slow")
+		}
+		else if($(id).is(":hidden")){
+			$(img).attr("src","/static/icons/delete.png")
+			$(id).fadeIn("slow")
+		}
+	}
 
-{% block rightcont %}
-
-{% if up %}
-<div id="reportHeader">Import ID: {{ up.id }}<br />Import Name: {{ up.fileName }} <br />Import Time: {{ up.uploadDate }}</div>
-
-	<div class="reportCategory" onclick="toggleHide('attribContainer')">Attributes</div>
+</script>
+<div class="reportCategory" onclick='showElem("#attribContainer","#aImg")'><img id="aImg" src="/static/icons/add.png" />Attributes</div>
 	<div id="attribContainer">
+		<br />
 		<table class="reportInfo">
 			<tr><td class="tdReportInfo">Client Report ID:</td><td>{{attributes.id}}</td></tr>
 			<tr><td class="tdReportInfo">Date:</td><td>{{attributes.time}}</td></tr>
@@ -20,17 +27,29 @@
 		</table>
 	</div>
 
-	<div class="reportCategory" onclick="toggleHide('browserContainer')">Browser</div>
+	<div class="reportCategory" onclick='showElem("#browserContainer","#bImg")'><img id="bImg" src="/static/icons/add.png" />Browser</div>
 	<div id="browserContainer">
+	<br />
 	{% for b in browser %}
 		<table class="reportInfo">
-			<tr><td colspan="2">{{ b.name }}</td></tr>
+			<tr>
+			{% if 'Chrome' in b.name %}
+		       		<td style="text-align: center"><img src="/static/gchrome.png" /></td>
+			{% elif 'Firefox' in b.name %}
+		       		<td style="text-align: center"><img src="/static/Firefox.png" /></td>
+			{% elif 'Thunderbird' in b.name %}
+		       		<td style="text-align: center"><img src="/static/Thunderbird.png" /></td>
+			{% else %}
+				<td>NO IMG</td>
+			{% endif %}
+			
+			<td>{{b.name}}</td></tr>
 
 			{% for p in b.profiles %}
-				<tr><td colspan=2 class="profileHeader">{{ p.profileName }}</td></tr>
+			<tr><td></td><td class="profileHeader"><img src="/static/icons/user.png" />{{ p.profileName }}</td></tr>
 				
 				<tr>
-				<td>Files</td>
+				<td><img src="/static/icons/page_white_stack.png" />Files</td>
 						
 				{% if p.listHashes|length == 0 %}
 					<td>Sorry, no useful files have been found.</td>
@@ -41,12 +60,11 @@
 				
 				{% for h in p.fileListHashes %}
 					{% if forloop.counter0 != 0 %}
-						<tr><td></td><td>{{ h.path }}</td></tr>
-						<tr><td></td><td>{{ h.hash }}</td></tr>
+					<tr><td></td><td>{{ h.path }}<br />{{h.hash}}</td></tr>
 					{% endif %}
 				{% endfor %}
 
-				<tr><td>Credentials</td>
+				<tr><td><img src="/static/icons/key.png" />Credentials</td>
 				{% if p.credentialList|length == 0 %}
 					<td>Sorry, no credentials have been found.</td>
 				{% else %}
@@ -67,8 +85,9 @@
 	</div>	
 
 
-	<div class="reportCategory" onclick="toggleHide('cloudContainer')">Cloud</div>
+	<div class="reportCategory" onclick='showElem("#cloudContainer","#cImg")'><img id="cImg" src="/static/icons/add.png" />Cloud</div>
 	<div id="cloudContainer">
+	<br />
 	{% for c in cloud %}
 		<table class="reportInfo">
 			<tr><td colspan=4 class="profileHeader">{{ c.cloudService }}</td></tr>
@@ -82,8 +101,3 @@
 		<br />
 	{% endfor %}
 	</div>
-{% endif %}
-
-
-
-{% endblock %}

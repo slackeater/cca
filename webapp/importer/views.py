@@ -9,6 +9,8 @@ from dajaxice.core import dajaxice_functions
 from dajaxice.core import dajaxice_config
 from django.conf import settings
 import sys, os, json, zipfile
+from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 # Create your views here.
 
@@ -16,26 +18,26 @@ class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File')
 
 def importer(request,cloudItem):
+	form = None
+	status = None
+	rep = None
+
 	if request.user.is_authenticated():
-		# get all report imported
-		rep = Upload.objects.all()
-		status = ""
+		try:
+			if request.method == "POST":
+				form = UploadForm(request.POST, request.FILES)
 
-		if request.method == "POST":
-			
-			form = UploadForm(request.POST, request.FILES)
-
-			if form.is_valid():
-				try:
+				if form.is_valid():
 					manageReportUpload(request,cloudItem)
-				except Exception as e:
-					status = e.message
+		
+			# get all report imported for this clouditem
+			cloudItemQuery = CloudItem.objects.get(reporterID=User.objects.get(id=request.user.id))
+			rep = Upload.objects.filter(cloudItemID=cloudItemQuery)
+			form = UploadForm() if rep.count() == 0 else None 
+		except Exception as e:
+			status = e.message
 
-				return render_to_response("dashboard/imp.html", {'objID': cloudItem,'form': form, 'upload': status, 'repList': rep}, context_instance=RequestContext(request))
-		else:
-			
-			form = UploadForm()
-			return render_to_response("dashboard/imp.html", {'objID': cloudItem,'form': form, 'repList': rep}, context_instance=RequestContext(request))
+		return render_to_response("dashboard/imp.html", {'parseStatus': status,'objID': cloudItem,'form': form, 'repList': rep}, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
 
@@ -53,13 +55,14 @@ def manageReportUpload(request,cloudItem):
 	import crypto
 
 	fileUpload = request.FILES['fileUp']
+	fileName = strip_tags(fileUpload.name)
 
 	#write to disk
-	with open(os.path.join(settings.UPLOAD_DIR,fileUpload.name), 'wb+') as destination:
+	with open(os.path.join(settings.UPLOAD_DIR,fileName), 'wb+') as destination:
 		for chunk in fileUpload.chunks():
 			destination.write(chunk)
 	
-	fileCont = open(os.path.join(settings.UPLOAD_DIR,fileUpload.name), "r")
+	fileCont = open(os.path.join(settings.UPLOAD_DIR,fileName), "r")
 	jsonParsed = json.load(fileCont)
 
 	cont = jsonParsed['enc']
@@ -69,15 +72,14 @@ def manageReportUpload(request,cloudItem):
 	aes = crypto.decryptRSA(k)
 
 	#decrypt ZIP - first write encrypted cont into a temp file, read it, decrypt it and store the ZIP
-	tempFileName = os.path.join(settings.UPLOAD_DIR, fileUpload.name+".tmp")
+	tempFileName = os.path.join(settings.UPLOAD_DIR, fileName+".tmp")
 	open(tempFileName, "w+b").write(cont)
 
 	# fernet wants "bytes" as token
 	fileBytes = crypto.decryptFernetFile(open(tempFileName, "rb").read(), aes)
-	print fileUpload.name[-4:]
 
-	if fileUpload.name.endswith(".enc"):
-		name = fileUpload.name[:-4] 
+	if fileName.endswith(".enc"):
+		name = fileName[:-4] 
 	else:
 		raise Exception("Invalid filename.")
 
@@ -94,12 +96,7 @@ def manageReportUpload(request,cloudItem):
 	#unzip
 	fileZip = zipfile.ZipFile(decZipFile)
 	fileZip.extractall(settings.UPLOAD_DIR)
-
+	print "DB"
 	# set this report parsed	
-	newUpload = Upload(fileName=fileUpload.name,uploadIP=request.META['REMOTE_ADDR'],parsed=True)
+	newUpload = Upload(fileName=name[:-4],uploadIP=request.META['REMOTE_ADDR'],parsed=True,cloudItemID=CloudItem.objects.get(id=cloudItem))
 	newUpload.save()
-
-	#add foreign key to cloud item
-	cItem = CloudItem.objects.get(id=cloudItem)
-	cItem.importID = newUpload
-	cItem.save()

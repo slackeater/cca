@@ -36,7 +36,6 @@ div#reportHeader{
 }
 
 div.reportCategory{
-	font-size: 9pt;
 	font-weight: bold;
 	margin-top: 6px;
 }
@@ -46,7 +45,6 @@ div#attribContainer, div#browserContainer, div#cloudContainer{
 }
 
 table.reportInfo{
-	font-size: 8pt;	
 	border: solid 1px black;
 	border-collapse: collapse;
 	width: 100%;
