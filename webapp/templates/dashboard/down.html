@@ -7,7 +7,7 @@ function startDownload(t){
 }
 
 {% if downStatus != -1 %}
-	setInterval(function(){ startDownload({{tokenID}})},5000)
+setInterval(function(){ startDownload({{tokenID}})},5000)
 {% endif %}
 
 </script>
@@ -38,10 +38,13 @@ The download will happen in background and notifications will appear in this pag
 </p>
 
 
-<input type="button" onclick="startDownload('{{tokenID}}')" name="start" value="Download" />
-
+<form name="d" method="POST" action="">
+	{% csrf_token %}
+	<input type="submit" name="start" value="Download" />
+</form>
 </p>
 
+<p>Download is <div id="thStatus"></div></p>
 <div id="errors"></div>
 <div id="downStatus"></div>
 <div id="metaStatus"></div>

@@ -1,8 +1,12 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
-from webapp.func import isAuthenticated
+from webapp.func import isAuthenticated,sessionName
 import oauth
 from models import AccessToken,Download
+from clouditem.models import CloudItem
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.models import User
+from threadmanager import ThreadManager
 
 # Create your views here.
 
@@ -19,6 +23,7 @@ def showTokenDash(request,cloudItem):
 	else:
 		return redirect("/login/")
 
+@csrf_protect
 def showDownloadDash(request,cloudItem,t):
 	""" Displays the dashboard of the download """
 
@@ -26,18 +31,38 @@ def showDownloadDash(request,cloudItem,t):
 		down = None
 		data = {}
 
-		try:
-			# check to start 
-			down = Download.objects.get(tokenID=AccessToken.objects.get(id=t))
-		except Download.DoesNotExist:
-			down = Download(status=-1,tokenID=AccessToken.objects.get(id=t))
-			down.save()
+		#check if the user has this clouditem
+		ci = CloudItem.objects.filter(id=cloudItem,reporterID=User.objects.get(id=request.user.id))
 
-		if down:
-			data['downStatus'] = down.status
+		if ci.count() == 1:
+			#check if the token belong to the clouditem
+			checkToken = AccessToken.objects.filter(id=t,cloudItem=CloudItem.objects.get(id=cloudItem))
 
-		data['objID'] = cloudItem
-		data['tokenID'] = t
+			if checkToken.count() == 1:
+	
+				at = AccessToken.objects.get(id=t)
+
+				#button has been clicked
+				if request.method == "POST" and request.POST['start']:
+					down = Download.objects.get(tokenID=at)
+					if down.status == -1:
+						#start the download thread
+						tm = ThreadManager(t)
+						tm.download()
+				
+				#default check to start the periodically ajax function
+				try:
+					# check to start 
+					down = Download.objects.get(tokenID=at)
+				except Download.DoesNotExist:
+					down = Download(status=-1,tokenID=at,folder=sessionName(t))
+					down.save()
+
+				if down:
+					data['downStatus'] = down.status
+
+				data['objID'] = cloudItem
+				data['tokenID'] = t
 
 		return render_to_response("dashboard/down.html", data, context_instance=RequestContext(request))
 	else:

@@ -41,3 +41,5 @@ class Download(models.Model):
 	tokenID = models.ForeignKey('AccessToken')
 	status = models.IntegerField()
 	downTime = models.DateTimeField(default=timezone.now)
+	folder = models.CharField(max_length=255,blank=True)
+	threadStatus = models.CharField(max_length=10,default=None)

@@ -1,26 +1,26 @@
-from models import AccessToken,FileDownload,FileMetadata,FileHistory
-## OAuth Stuff
+from models import AccessToken,FileDownload,FileMetadata,FileHistory,Download
+import base64,json
 
-def serviceBuilder(serviceName, version, httpObj):
-	""" Create a service used to perform future API calls """
-	return build(serviceName, version, httpObj)
+def downloadMetaData(driveService,at):
+	""" Download the metadata """
 
-def httpCreator(credentials):
-	""" Create an HTTP object to be passed to a build service """
+	#download
+	fileMetaData = json.dumps(driveService.files().list().execute())
+	
+	#store
+	fm = FileMetadata.objects.filter(tokenID=at)
 
-	http = httplib2.Http()
+	# we do not have any record for this token
+	if fm.count() == 0:
+		storeFM = FileMetadata(metadata=base64.b64encode(fileMetaData),tokenID=at)
+		storeFM.save()
 
-	#get credentials 
-	credentials = OAuth2Credentials.from_json(credentials)
+		#now update download status
+		downloadItem = Download.objects.get(tokenID=at)
+		
+		#metadata downloaded and stored
+		downloadItem.status = 1
+		downloadItem.threadStatus = "running"
+		downloadItem.save()
 
-	return credentials.authorize(http)
-
-
-def driveService(credentials)
-	""" A Google Drive Service """
-	h = httpCreator(credential)
-	return serviceBuilder("drive","v2",h)
-
-
-def downloadMetaData(tokenID):
-	pass	
+		return True

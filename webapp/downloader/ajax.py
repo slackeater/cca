@@ -53,7 +53,8 @@ def checkDownload(request,t):
 			downloadToken = Download.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
 
 			#check the status
-			# Download has not been started
+			dajax.assign("#thStatus","innerHTML",downloadToken.threadStatus)	
+
 			if downloadToken.status == 0:
 				dajax.assign("#downStatus","innerHTML","Starting download...")
 			elif downloadToken.status == 1:
