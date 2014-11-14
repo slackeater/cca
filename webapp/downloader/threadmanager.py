@@ -45,10 +45,11 @@ class ThreadManager:
 			credentials = base64.b64decode(accessToken.accessToken)
 			service = self.makeGoogleService("drive",credentials)
 			#download metadata
-			googleDownloader.downloadMetaData(service,accessToken)
+			#googleDownloader.downloadMetaData(service,accessToken)
 			#download files
-			googleDownloader.downloadFiles(service,accessToken)
-			# TODO add others
+			#googleDownloader.downloadFiles(service,accessToken)
+			#download history
+			googleDownloader.downloadHistory(service,accessToken)
 		except httplib2.ServerNotFoundError as e:
 			#update db
 			d = Download.objects.get(tokenID=accessToken)

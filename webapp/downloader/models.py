@@ -32,6 +32,7 @@ class FileHistory(models.Model):
 
 	revision = models.CharField(max_length=255)
 	status = models.IntegerField()
+	revisionMetadata = models.TextField()
 	fileDownloadID = models.ForeignKey('FileDownload')
 
 class Download(models.Model):
