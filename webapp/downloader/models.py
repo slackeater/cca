@@ -24,9 +24,8 @@ class FileDownload(models.Model):
 	fileName = models.CharField(max_length=255)
 	alternateName = models.CharField(max_length=255)
 	status = models.IntegerField()
-	fileHistory = models.TextField()
 	downloadTime = models.DateTimeField(default=timezone.now)
-	metadataID = models.ForeignKey('FileMetadata')
+	tokenID = models.ForeignKey('AccessToken')
 
 class FileHistory(models.Model):
 	""" A model for storing if a file of the history has been downloaded or not """
@@ -42,4 +41,5 @@ class Download(models.Model):
 	status = models.IntegerField()
 	downTime = models.DateTimeField(default=timezone.now)
 	folder = models.CharField(max_length=255,blank=True)
-	threadStatus = models.CharField(max_length=10,default=None)
+	threadStatus = models.CharField(max_length=10,default="stopped")
+	threadMessage = models.TextField(default="-")

@@ -3,7 +3,11 @@
 {% block js %}
 <script type="text/javascript">
 function startDownload(t){
-	Dajaxice.downloader.checkDownload(Dajax.process,{'t':t})
+	Dajaxice.downloader.checkDownload(downCallBack,{'t':t})
+}
+
+function downCallBack(data){
+	Dajax.process(data)	
 }
 
 {% if downStatus != -1 %}
@@ -44,8 +48,10 @@ The download will happen in background and notifications will appear in this pag
 </form>
 </p>
 
-<p>Download is <div id="thStatus"></div></p>
-<div id="errors"></div>
+<p id="downString">Download status:</p>
+<div id="thStatus">-</div>
+<div id="thMessage">-</div>
+<div id="errors">-</div>
 <div id="downStatus"></div>
 <div id="metaStatus"></div>
 <div id="fileStatus"></div>

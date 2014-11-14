@@ -54,21 +54,23 @@ def checkDownload(request,t):
 
 			#check the status
 			dajax.assign("#thStatus","innerHTML",downloadToken.threadStatus)	
+			dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
 
 			if downloadToken.status == 0:
-				dajax.assign("#downStatus","innerHTML","Starting download...")
+				dajax.assign("#downStatus","innerHTML","Download has started...")
 			elif downloadToken.status == 1:
-				dajax.assign("#metaStatus","innerHTML","Metadata download...")
+				dajax.assign("#metaStatus","innerHTML","Metadata have been  download...")
 			elif downloadToken.status == 2:
-				dajax.assign("#fileStatus","innerHTML","File download...")
+				dajax.assign("#fileStatus","innerHTML","Files have been download...")
 			elif downloadToken.status == 3:
-				dajax.assign("#historyStatus","innerHTML","History download...")
+				dajax.assign("#historyStatus","innerHTML","History has been download...")
 			elif downloadToken.status == 4:
 				dajax.assign("#finishStatus","innerHTML","Completed.")
 
 	except Exception as e:
 		dajax.assign("#errors","innerHTML",e.message)
-
+	
+	print dajax.json()
 	return dajax.json()
 
 def showTokens(request, platform, ci, eID, tab):

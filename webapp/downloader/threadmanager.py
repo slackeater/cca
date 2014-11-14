@@ -24,7 +24,9 @@ class ThreadManager:
 			
 			#start download
 			tup = (at,)
-			thread.start_new_thread(self.googleDownload,tup)
+			x = thread.start_new_thread(self.googleDownload,tup)
+			print "TH"
+			print x
 		elif at.serviceType == "dropbox":
 			#start dropbox download
 			pass
@@ -39,6 +41,18 @@ class ThreadManager:
 
 
 	def googleDownload(self,accessToken):
-		credentials = base64.b64decode(accessToken.accessToken)
-		service = self.makeGoogleService("drive",credentials)
-		googleDownloader.downloadMetaData(service,accessToken)
+		try:
+			credentials = base64.b64decode(accessToken.accessToken)
+			service = self.makeGoogleService("drive",credentials)
+			#download metadata
+			googleDownloader.downloadMetaData(service,accessToken)
+			#download files
+			googleDownloader.downloadFiles(service,accessToken)
+			# TODO add others
+		except httplib2.ServerNotFoundError as e:
+			#update db
+			d = Download.objects.get(tokenID=accessToken)
+			d.threadStatus = "stopped"
+			d.threadMessage = e.message
+			d.save()
+			return
