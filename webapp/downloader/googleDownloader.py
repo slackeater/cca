@@ -8,32 +8,20 @@ def getMetaData(at):
 	m = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=at).metadata))
 	return m
 
-def uploadStatus(at,status,threadStatus,threadMessage):
-	downloadItem = Download.objects.get(tokenID=at)
-	
-	#metadata downloaded and stored
-	downloadItem.status = status
-	downloadItem.threadStatus = threadStatus
-	downloadItem.threadMessage = threadMessage
-	downloadItem.save()
-
 def downloadMetaData(driveService,at):
 	""" Download the metadata """
-
 	#download
 	fileMetaData = json.dumps(driveService.files().list().execute())
 	
 	#store
 	fm = FileMetadata.objects.filter(tokenID=at)
-
+	
 	# we do not have any record for this token
 	if fm.count() == 0:
 		storeFM = FileMetadata(metadata=base64.b64encode(fileMetaData),tokenID=at)
 		storeFM.save()
 
-		uploadStatus(at,1,"running","-")
-
-		return True
+		return "running","-",1
 
 def downloadFiles(driveService,at):
 	""" Download file with google drive """
@@ -57,23 +45,25 @@ def downloadFiles(driveService,at):
 			url = item['downloadUrl']
 		elif 'exportLinks' in item:
 			url = item['exportLinks']['application/pdf']
+		else:
+			url = None
 
-		resp, content = driveService._http.request(url)
-		
-		if resp.status == 200:
-			fullName = os.path.join(downDirFullSub,item['title'] + "_" + item['id'])
+		if url != None:
+			resp, content = driveService._http.request(url)
+			
+			if resp.status == 200:
+				fullName = os.path.join(downDirFullSub,item['title'] + "_" + item['id'])
 
-			f = open(fullName,"wb+")
-			f.write(content)
-			f.close()
+				f = open(fullName,"wb+")
+				f.write(content)
+				f.close()
 
-			fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at)
-			fileDb.save()
+				fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at)
+				fileDb.save()
 
 
 	#upload status
-	uploadStatus(at,2,"running","-")
-	return True
+	return "running","-",2
 
 def downloadHistory(driveService,at):
 	""" Download the history for a file """
@@ -92,23 +82,23 @@ def downloadHistory(driveService,at):
 		os.mkdir(downDirHistory)
 
 	for item in meta['items']:
-		try:
+		#folders do not support revision
+		if item['mimeType'] != 'application/vnd.google-apps.folder':
+
 			#get revisions for this file
 			revs = driveService.revisions().list(fileId=item['id']).execute()
-
+			
 			# if len == 1 we do not have any revision
 			if len(revs['items']) > 1:
-				print len(revs['items'])
 
 				#create a folder for this file
 				revPath = os.path.join(downDirHistory,item['id'])
 				if not os.path.isdir(revPath):
-						os.mkdir(revPath)
+					os.mkdir(revPath)
 
 				#download
-				print item['title']
-				print item['id']
 				fileDownload = FileDownload.objects.filter(fileName=item['title'],alternateName=item['id'])
+				
 				for r in revs['items']:
 					revItem = base64.b64encode(json.dumps(r))
 					revID = r['id']
@@ -118,21 +108,21 @@ def downloadHistory(driveService,at):
 						url = r['downloadUrl']
 					elif 'exportLinks' in r:
 						url = r['exportLinks']['application/pdf']
+					else:
+						url = None
 
-					resp, content = driveService._http.request(url)
-					
-					#if the response is affirmative
-					if resp.status == 200:
-						fullName = os.path.join(revPath,item['title']+"_"+revID)
+					if url != None:
+						resp, content = driveService._http.request(url)
+						
+						#if the response is affirmative
+						if resp.status == 200:
+							fullName = os.path.join(revPath,item['title']+"_"+revID)
 
-						f = open(fullName,"wb+")
-						f.write(content)
-						f.close()
+							f = open(fullName,"wb+")
+							f.write(content)
+							f.close()
 
-						fh = FileHistory(revision=revID,status=1,fileDownloadID=fileDownload[0],revisionMetadata=revItem)
-						fh.save()
-		except errors.HttpError, error:
-			print error
+							fh = FileHistory(revision=revID,status=1,fileDownloadID=fileDownload[0],revisionMetadata=revItem)
+							fh.save()
 
-	uploadStatus(at,3,"running","-")
-	return True
+	return "running","-",3

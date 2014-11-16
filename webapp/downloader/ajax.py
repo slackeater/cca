@@ -55,17 +55,25 @@ def checkDownload(request,t):
 			#check the status
 			dajax.assign("#thStatus","innerHTML",downloadToken.threadStatus)	
 			dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
+			dajax.assign("#metaStatus","innerHTML","<img src='/static/loadersmall.gif' />")
+			dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
+			dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 
-			if downloadToken.status == 0:
-				dajax.assign("#downStatus","innerHTML","Download has started...")
-			elif downloadToken.status == 1:
-				dajax.assign("#metaStatus","innerHTML","Metadata have been  download...")
+			if downloadToken.status == 1:
+				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
+				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 			elif downloadToken.status == 2:
-				dajax.assign("#fileStatus","innerHTML","Files have been download...")
+				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 			elif downloadToken.status == 3:
-				dajax.assign("#historyStatus","innerHTML","History has been download...")
-			elif downloadToken.status == 4:
-				dajax.assign("#finishStatus","innerHTML","Completed.")
+				downloadToken.threadStatus = "completed"
+				downloadToken.save()
+				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#historyStatus","innerHTML","<img src='/static/icons/accept.png' />")
+				dajax.assign("#thMessage","innerHTML","Completed.")
 
 	except Exception as e:
 		dajax.assign("#errors","innerHTML",e.message)

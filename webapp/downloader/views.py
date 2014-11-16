@@ -35,6 +35,10 @@ def showDownloadDash(request,cloudItem,t):
 		ci = CloudItem.objects.filter(id=cloudItem,reporterID=User.objects.get(id=request.user.id))
 
 		if ci.count() == 1:
+			data['metaWait'] = "Not started"
+			data['fileWait'] = "Not started"
+			data['historyWait'] = "Not started"
+
 			#check if the token belong to the clouditem
 			checkToken = AccessToken.objects.filter(id=t,cloudItem=CloudItem.objects.get(id=cloudItem))
 
@@ -45,11 +49,12 @@ def showDownloadDash(request,cloudItem,t):
 				#button has been clicked
 				if request.method == "POST" and request.POST['start']:
 					down = Download.objects.get(tokenID=at)
-					if down.status == -1:
+					if down.status == -1 and down.threadStatus != "running":
 						#start the download thread
 						tm = ThreadManager(t)
 						tm.download()
-				
+						data['btnClicked'] = True
+
 				#default check to start the periodically ajax function
 				try:
 					# check to start 

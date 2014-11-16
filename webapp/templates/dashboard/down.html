@@ -10,8 +10,12 @@ function downCallBack(data){
 	Dajax.process(data)	
 }
 
-{% if downStatus != -1 %}
-setInterval(function(){ startDownload({{tokenID}})},5000)
+{% if btnClicked %}
+startDownload({{tokenID}})
+{% endif %}
+
+{% if downStatus != -1 and downStatus != 3%}
+setInterval(function(){ startDownload({{tokenID}})},2500)
 {% endif %}
 
 </script>
@@ -48,14 +52,14 @@ The download will happen in background and notifications will appear in this pag
 </form>
 </p>
 
-<p id="downString">Download status:</p>
-<div id="thStatus">-</div>
-<div id="thMessage">-</div>
-<div id="errors">-</div>
-<div id="downStatus"></div>
-<div id="metaStatus"></div>
-<div id="fileStatus"></div>
-<div id="historyStatus"></div>
-<div id="finishStatus"></div>
+<div id="errors"></div>
+
+<table id="downTable">
+	<tr><td>Download status</td><td><div id="thStatus">-</div></td><td><div id="thMessage">-</div</td></tr>
+	<tr><td>Metadata</td><td><div id="metaStatus">{{metaWait}}</div></td></tr>
+	<tr><td>Files</td><td><div id="fileStatus">{{fileWait}}</div></td></tr>
+	<tr><td>History</td><td><div id="historyStatus">{{historyWait}}</div></td></tr>
+</table>
+
 <input type="hidden" name="i" value="{{objID}}" />
 {% endblock %}

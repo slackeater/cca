@@ -116,3 +116,7 @@ table#funcTab tr>td:first-child{
 table#funcTab tr>td:last-child{
 	font-weight: bold;
 }
+
+table#downTable{
+	width: 300px;
+}
