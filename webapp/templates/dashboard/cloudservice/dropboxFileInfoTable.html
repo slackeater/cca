@@ -11,6 +11,6 @@
 	<tr><td>Video Location<td><a target="_blank" href="https://maps.google.com/maps?q={{item.video_info.lat_long.0}},{{item.video_info.lat_long.1}}">Location</a></td></tr>
 	<tr><td>Video Duration</td><td>{{item.video_info.duration}}</td></tr>
 	{% endif %}
-	<tr><td><a href="javascript:void(0)" onclick="showRevision('{{item.path}}','{{platform}}')">Revision</td><td><img src="/static/47.GIF" id="revisionWait" style="display: none"/></td></tr>
+	<tr><td><a href="javascript:void(0)" onclick="showRevision('{{item.fileID}}')">Revision</td><td><img src="/static/47.GIF" id="revisionWait" style="display: none"/></td></tr>
 	<tr><td colspan=2 style="display: none" id="revisionHistory"></td></tr>
 </table>

@@ -18,6 +18,9 @@ function iVal(){
 	return document.getElementById("i").value
 }
 
+function tVal(){
+	return document.getElementById("t").value
+}
 </script>
 
 {% block js %}{% endblock %}
@@ -30,9 +33,14 @@ function iVal(){
 {% if isAuthenticated %}
 <div id="menuTop">
 <span id="helloMenu">
-	Hello {{ uname }} 
-	| <a href="/import/">Import</a>
-	| <a href="/logout/">Logout</a>
+	<table style="width: 400px; height: 42px;"><tr>
+		<td><img src="/static/icons/user.png" /></td><td>Hello {{ uname }}</td> 
+		<td>|</td><td><img src="/static/icons/weather_clouds.png" /></td><td><a href="/clouditem/">Cloud Item</a></td>
+	{% if showToken %}
+	<td>|</td><td><img src="/static/icons/key.png" /></td><td><a href="/token/{{objID}}/">Select Token</a></td>
+	{% endif %}
+	<td>|</td><td><img src="/static/icons/user_go.png" /></td><td><a href="/logout/">Logout</a></td>
+	</tr></table>
 </span>
 {% block menudash %}{% endblock %}
 

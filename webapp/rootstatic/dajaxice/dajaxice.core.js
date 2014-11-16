@@ -33,6 +33,31 @@ var Dajaxice = {
     
 ,
     
+    cloudservice: {
+    
+    metadataAnalysis: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.metadataAnalysis', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileInfo: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.fileInfo', 'POST', callback_function, argv, custom_settings);
+    },
+
+    searchMetaData: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.searchMetaData', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileRevision: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('cloudservice.fileRevision', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
     downloader: {
     
     submitDropboxCode: function(callback_function, argv, custom_settings){

@@ -2,5 +2,7 @@
 	<tr><td>Revision</td><td>Modified</td><td>Client Modified Time</td><td>Size</td></tr>
 	{% for r in revisions %}
 		<tr><td>{{r.rev}}</td><td>{{r.modified}}</td><td>{{r.client_mtime}}</td><td>{{r.size}}</td></tr>
+	{% empty %}
+		<tr><td colspan=3>No reivions have been found.</td></tr>
 	{% endfor %}
 </table>

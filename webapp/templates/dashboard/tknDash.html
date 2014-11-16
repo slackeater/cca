@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block menudash %}
+
+<span id="dashMenu">
+	<span><a href="/token/{{ objID }}/{{tokenID}}/"><img src="/static/dwelling1.png" alt="Home" /></a></span>
+	<span><a href="/download/{{ objID }}/{{tokenID}}/"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
+	<span><a href="/analyse/{{ objID }}/{{tokenID}}/"><img src="/static/timeline.png" alt="Timeline" /></a></span>
+	<span><a href="/report/{{ objID }}/{{tokenID}}/"><img src="/static/seo2.png" alt="Report" /></a></span>
+</span>
+
+{% endblock %}
+
+{% block content %}
+<div id="right">
+	{% block rightcont %}
+	<p>Choose one of the funcionalities below:</p>
+	<table id="funcTab">
+		<tr><td><img src="/static/internet43.png" alt="Cloud Downloader" /></td><td><a href="/download/{{ objID }}/{{tokenID}}/">Download</a></td></tr>
+		<tr><td><img src="/static/timeline.png" alt="Timeline" /></td>
+			<td>
+				<table id="funcList">
+					<tr><td><img src="/static/icons/table.png" /></td><td><a href="/analyse/{{ objID }}/{{tokenID}}/">Metadata</a></td></tr>
+					<tr><td><img src="/static/icons/time.png" /></td><td><a>Timelines</a></td></tr>
+					<tr><td><img src="/static/icons/table_relationship.png" /></td><td>Comparator</a></td></tr>
+					<tr><td><img src="/static/icons/group_link.png" /></td><td><a>Relation Map</a></td></tr>
+				</table>
+		</td></tr>
+		<tr><td><img src="/static/seo2.png" alt="Report" /></td><td><a href="/report/{{ objID }}/{{tokenID}}/"> Report</a></td></tr>
+	</table>
+	{% endblock %}
+</div>
+
+{% endblock %}

@@ -16,12 +16,29 @@ def showTokenDash(request,cloudItem):
 	data = {}
 	
 	if isAuthenticated(request):
+		data['showToken'] = True
 		data['objID'] = cloudItem
 		data['dropAuthURL'] = oauth.dropboxAuthorizeURL()
 		data['gdriveAuthURL'] = oauth.googleAuthorizeURL()
 		return render_to_response("dashboard/cloud.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
+
+
+def showTokenSelect(request,cloudItem,tokenID):
+	""" Displays the dashboard and manage the menu choices """
+	data = {}
+	
+	if isAuthenticated(request):
+		data['showToken'] = True
+		data['objID'] = cloudItem
+		data['tokenID'] = tokenID
+		return render_to_response("dashboard/tknDash.html", data, context_instance=RequestContext(request))
+	else:
+		return redirect("/login/")
+
+
+
 
 @csrf_protect
 def showDownloadDash(request,cloudItem,t):
@@ -35,6 +52,7 @@ def showDownloadDash(request,cloudItem,t):
 		ci = CloudItem.objects.filter(id=cloudItem,reporterID=User.objects.get(id=request.user.id))
 
 		if ci.count() == 1:
+			data['showToken'] = True
 			data['metaWait'] = "Not started"
 			data['fileWait'] = "Not started"
 			data['historyWait'] = "Not started"

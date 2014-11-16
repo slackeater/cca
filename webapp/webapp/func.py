@@ -14,3 +14,7 @@ def parseAjaxParam(param):
 def sessionName(identifier):
 	""" Return a session name for a give identifer """
 	return md5.new(str(identifier)).hexdigest()
+
+def dropboxAlternateName(path,modified):
+	""" Return the alternate name for dropbox files """
+	return md5.new(path.encode("utf-8")+modified.encode("utf-8")).hexdigest()

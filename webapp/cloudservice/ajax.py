@@ -7,84 +7,68 @@ from django.utils.html import strip_tags
 from forms import MetaSearch
 from django.conf import settings
 from models import Downloads
-from dashboard.models import AccessToken
+from downloader.models import AccessToken,FileDownload
+from clouditem.models import CloudItem
+from django.contrib.auth.models import User
+from webapp.func import isAuthenticated, parseAjaxParam
 
-def isAuhtenticated(request):
-	""" Check if a user is authenticated """
-	return request.user.is_authenticated()
 
-def initCheck(request,tokenID):
+def checkItems(cloudItemID,userID):
+	""" Check that the clouditem belongs to the user """
 
-	auth = False
-	t = 0
+	#the clouditem belongs to the user
+	ciFromUser = CloudItem.objects.get(id=cloudItemID,reporterID=User.objects.get(id=userID))
+	return ciFromUser
 
-	# check authentication	
-	auth = isAuhtenticated(request)
+def getPlatform(tokenID,ci):
+	""" Get the platform basing on the tokenID """
 
-	if not auth:
-		sys.exit("Authentication requires")
-
-	t = int(tokenID)
-
-	if not t > 0:
-		sys.exit("Invalid token parameters")
-	
-	return auth,t
-
+	#the tokenID belongs to the cloudID
+	tknFromci = AccessToken.objects.get(id=tokenID,cloudItem=ci)
+	return tknFromci.serviceType
 
 @dajaxice_register
-def metadataAnalysis(request,tokenID, update, platform):
+def metadataAnalysis(request,tokenID,cloudItem):
 	""" Analyise the metadata of services """
 
-	auth,t = initCheck(request,tokenID)
+	if not isAuthenticated(request):
+		return None
 
 	dajax = Dajax()
 
 	parsedTable = None
-
+	
 	try:
+		t = parseAjaxParam(tokenID)
+		ciChk = checkItems(cloudItem,request.user.id)
+		platform = getPlatform(tokenID,ciChk)
+		print platform
+
 		if platform == "google":
-			parsedTable = googledrive.metadataAnalysis(request, update, t)
+			parsedTable = googledrive.metadataAnalysis(request, t)
 		elif platform == "dropbox":
-			parsedTable = drop.metadataAnalysis(request,update,t)
+			parsedTable = drop.metadataAnalysis(request,t)
 
 		dajax.assign("#metaAnalysis","innerHTML", parsedTable)
 		dajax.assign("#metaAnalysisError","innerHTML","")
 	except Exception as e:
-		dajax.assign("#metaAnalysisError","innerHTML",e)
+		dajax.assign("#metaAnalysisError","innerHTML",e.message)
 
 	return dajax.json()
 
-@dajaxice_register
-def userInfo(request,tokenID,platform):
-	""" Show user info """
-
-	auth,t = initCheck(request,tokenID)
-
-	dajax = Dajax()
-
-	parsedTable = None
-
-	try:
-		if platform == "google":
-			parsedTable = googledrive.userInformation(request,t)
-		elif platform == "dropbox":
-			parsedTable = drop.userInformation(request,t)
-				
-		dajax.assign("#accountTab","innerHTML",parsedTable)
-		dajax.assign("#userInfoError","innerHTML","")
-	except (Exception,TypeError) as e:
-		dajax.assign("#userInfoError","innerHTML",e)
-
-	return dajax.json()
 
 @dajaxice_register
-def searchMetaData(request,platform,form,tokenID):
-	auth,t = initCheck(request,tokenID)
+def searchMetaData(request,form,tokenID,cloudItem):
+
+	if not isAuthenticated(request):
+		return None
 
 	dajax = Dajax()
 
 	try:
+		t = parseAjaxParam(tokenID)
+		ciChk = checkItems(cloudItem,request.user.id)
+		platform = getPlatform(tokenID,ciChk)
 		f = MetaSearch(deserialize_form(form))
 
 		if f.is_valid():
@@ -103,15 +87,21 @@ def searchMetaData(request,platform,form,tokenID):
 	return dajax.json()
 
 @dajaxice_register
-def fileInfo(request,platform,tokenID,id):
+def fileInfo(request,tokenID,id,cloudItem):
 
-	auth,t = initCheck(request,tokenID)
 
+	if not isAuthenticated(request):
+		return None
+	
 	dajax = Dajax()
 
 	parsedTable = None
 
 	try:
+		t = parseAjaxParam(tokenID)
+		ciChk = checkItems(cloudItem,request.user.id)
+		platform = getPlatform(tokenID,ciChk)
+
 		if platform == "google":
 			parsedTable = googledrive.fileInfo(t,id)
 		elif platform == "dropbox":
@@ -125,21 +115,27 @@ def fileInfo(request,platform,tokenID,id):
 	return dajax.json()
 
 @dajaxice_register
-def fileRevision(request,platform,id,tokenID):
+def fileRevision(request,fId,tokenID,cloudItem):
 
-	auth,t = initCheck(request,tokenID)
+	if not isAuthenticated(request):
+		return None
 
 	dajax = Dajax()
 
 	parsedTable = None
 
 	try:
-		sessionCredentials = request.session[md5.new(str(tokenID)).hexdigest()]
+		t = parseAjaxParam(tokenID)
+		ciChk = checkItems(cloudItem,request.user.id)
+		platform = getPlatform(tokenID,ciChk)
+		#check that the id belongs to the token ID
+
+		fileDB = FileDownload.objects.get(tokenID=AccessToken.objects.get(id=t),alternateName=fId)
 
 		if platform == "google":
-			parsedTable = googledrive.fileHistory(id,sessionCredentials)
+			parsedTable = googledrive.fileHistory(fileDB)
 		elif platform == "dropbox":
-			parsedTable = drop.fileHistory(id,sessionCredentials)
+			parsedTable = drop.fileHistory(fileDB)
 		
 		dajax.assign("#revisionHistory","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
@@ -147,114 +143,3 @@ def fileRevision(request,platform,id,tokenID):
 		dajax.assign("#searchError","innerHTML",e)
 
 	return dajax.json()
-
-@dajaxice_register
-def showDownload(request, tokenID,platform):
-	""" Show the download size """
-
-	auth, t = initCheck(request,tokenID)
-
-	dajax = Dajax()
-
-	parsedTable = None
-
-	try:
-		if platform == "google":
-			parsedTable = googledrive.downloadSize(t)
-		elif platform == "dropbox":
-			parsedTable = drop.downloadSize(t)
-
-		dajax.assign("#downCont","innerHTML",parsedTable)
-		dajax.assign("#downError","innerHTML","")
-	except Exception as e:
-		dajax.assign("#downError","innerHTML",e)
-
-	return dajax.json()
-
-
-@dajaxice_register
-def startForegroundDownload(request, platform, tokenID):
-	""" Initialize a download """
-
-	auth, t = initCheck(request,tokenID)
-
-	#check if there is already a folder
-	fName = md5.new(str(t)).hexdigest()
-	downFolder = os.path.join(settings.DOWNLOAD_DIR,fName)
-	dajax = Dajax()
-
-	#if the folder exists or is not empty return
-	if os.path.isdir(downFolder) and os.listdir(downFolder) != []:
-		dajax.assign("#status","innerHTML","false")
-		dajax.assign("#downError","innerHTML","A folder already exists with the same name / folder not empty")
-	else:
-		try:
-			if not os.path.isdir(downFolder):
-				os.mkdir(downFolder)
-				
-			dbDir, created = Downloads.objects.get_or_create(dirName=downFolder,tokenID=AccessToken.objects.get(id=t),defaults={'tokenID':AccessToken.objects.get(id=t),'dirName':downFolder,'status':0})
-
-			if dbDir.status == 0 and (platform == "google" or platform == "dropbox"):
-				dajax.assign("#status","innerHTML","true")
-				dajax.assign("#p","value",platform)
-			else:
-				dajax.assign("#downError","innerHTML","Error")
-		except (Error,Exception) as e:
-			dajax.assign("#downError","innerHTML",e.message)
-
-	return dajax.json()
-
-@dajaxice_register
-def downloadFile(request,platform,tokenID,fileID):
-	""" Download a file """
-
-	auth, t = initCheck(request, tokenID)
-	dajax = Dajax()
-	
-	try:
-		sName = md5.new(str(t)).hexdigest()
-		sessionData = request.session[sName]
-
-		if platform == "google":
-			status, fName = googledrive.downloadFile(strip_tags(fileID),sessionData,t,sName)
-			time.sleep(5)
-		elif platform == "dropbox":
-			status = False
-			
-		if status:
-			dajax.assign("#status","innerHTML","correct")
-			dajax.assign("#fID","innerHTML",fName)
-		else:
-			dajax.assign("#status","innerHTML","incorrect")
-			dajax.assign("#fID","innerHTML",fName)
-	except:
-		e = sys.exc_info()
-		lineno = e[-1].tb_lineno
-		dajax.assign("#status","innerHTML", str(e) + " at line " + str(lineno))
-
-	return dajax.json()
-
-
-@dajaxice_register
-def finishDownload(request,tokenID):
-
-	auth, t = initCheck(request, tokenID)
-
-	dajax = Dajax()
-
-	#update 
-	try:
-		tkn = AccessToken.objects.get(id=t)
-		getDown = Downloads.objects.get(tokenID=tkn)
-
-		if getDown.status == 0:
-			print "service " + tkn.serviceType
-			if tkn.serviceType == "google":
-				googledrive.finishDownload(t)
-			elif tkn.serviceType == "dropbox":
-				pass
-	except Exception as e:
-		dajax.assign("#downError","innerHTML", e.message)
-
-	return dajax.json()
-
