@@ -10,22 +10,8 @@ from models import Downloads
 from downloader.models import AccessToken,FileDownload
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
-from webapp.func import isAuthenticated, parseAjaxParam
+from webapp.func import *
 
-
-def checkItems(cloudItemID,userID):
-	""" Check that the clouditem belongs to the user """
-
-	#the clouditem belongs to the user
-	ciFromUser = CloudItem.objects.get(id=cloudItemID,reporterID=User.objects.get(id=userID))
-	return ciFromUser
-
-def getPlatform(tokenID,ci):
-	""" Get the platform basing on the tokenID """
-
-	#the tokenID belongs to the cloudID
-	tknFromci = AccessToken.objects.get(id=tokenID,cloudItem=ci)
-	return tknFromci.serviceType
 
 @dajaxice_register
 def metadataAnalysis(request,tokenID,cloudItem):
@@ -40,8 +26,9 @@ def metadataAnalysis(request,tokenID,cloudItem):
 	
 	try:
 		t = parseAjaxParam(tokenID)
-		ciChk = checkItems(cloudItem,request.user.id)
-		platform = getPlatform(tokenID,ciChk)
+		ciChk = checkCloudItem(cloudItem,request.user.id)
+		tknObj = checkAccessToken(t,ciChk)
+		platform = tknObj.serviceType
 		print platform
 
 		if platform == "google":
@@ -67,8 +54,9 @@ def searchMetaData(request,form,tokenID,cloudItem):
 
 	try:
 		t = parseAjaxParam(tokenID)
-		ciChk = checkItems(cloudItem,request.user.id)
-		platform = getPlatform(tokenID,ciChk)
+		ciChk = checkCloudItem(cloudItem,request.user.id)
+		tknObj = checkAccessToken(t,ciChk)
+		platform = tknObj.serviceType
 		f = MetaSearch(deserialize_form(form))
 
 		if f.is_valid():
@@ -99,8 +87,9 @@ def fileInfo(request,tokenID,id,cloudItem):
 
 	try:
 		t = parseAjaxParam(tokenID)
-		ciChk = checkItems(cloudItem,request.user.id)
-		platform = getPlatform(tokenID,ciChk)
+		ciChk = checkCloudItem(cloudItem,request.user.id)
+		tknObj = checkAccessToken(t,ciChk)
+		platform = tknObj.serviceType
 
 		if platform == "google":
 			parsedTable = googledrive.fileInfo(t,id)
@@ -126,8 +115,9 @@ def fileRevision(request,fId,tokenID,cloudItem):
 
 	try:
 		t = parseAjaxParam(tokenID)
-		ciChk = checkItems(cloudItem,request.user.id)
-		platform = getPlatform(tokenID,ciChk)
+		ciChk = checkCloudItem(cloudItem,request.user.id)
+		tknObj = checkAccessToken(t,ciChk)
+		platform = tknObj.serviceType
 		#check that the id belongs to the token ID
 
 		fileDB = FileDownload.objects.get(tokenID=AccessToken.objects.get(id=t),alternateName=fId)

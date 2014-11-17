@@ -7,6 +7,19 @@ var Dajaxice = {
     
 
     
+    timeliner: {
+    
+    documentsTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.documentsTimeliner', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
     webapp: {
     
     sayhello: function(callback_function, argv, custom_settings){

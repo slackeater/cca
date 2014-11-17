@@ -11,8 +11,13 @@ table{
 	width: 100%;
 }
 
+div#menuTop{
+	height: 50px;
+}
+
 span#helloMenu{
-	font-size: 10pt;	
+	font-size: 10pt;
+	float: left;
 }
 
 span#dashMenu{
@@ -120,3 +125,22 @@ table#funcTab tr>td:last-child{
 table#downTable{
 	width: 300px;
 }
+
+ul#funcList{
+	list-style-type: none;	
+}
+
+ul#funcList li{
+	margin-bottom: 6px;
+}
+
+ul#funcList a{
+	line-height: 200%;
+}
+
+ul#funcList a>img{
+	padding-right: 4px;
+	border: solid 1px black;
+}
+
+

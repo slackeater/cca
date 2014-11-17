@@ -3,10 +3,16 @@
 <head>
 <title>Cloud Toolkit</title>
 <link href="/static/style.css" rel="stylesheet" type="text/css">
+<link href="/static/chronoline/chronoline.css" rel="stylesheet" type="text/css">
+<link href="/static/jquery.qtip.min.css" rel="stylesheet" type="text/css">
+
 {% load staticfiles %}
 <script type="text/javascript" src="/dajax/jquery.dajax.core.js"></script>
 <script type="text/javascript" src="{% static "jquery.js" %}"></script>
 <script type="text/javascript" src="/dajaxice/dajaxice.core.js"></script>
+<script type="text/javascript" src="{% static "jquery.qtip.min.js" %}"></script>
+<script type="text/javascript" src="{% static "chronoline/raphael-min.js" %}"></script>
+<script type="text/javascript" src="{% static "chronoline/chronoline.js" %}"></script>
 <script type="text/javascript">
 
 function backToSearch(){
@@ -53,7 +59,8 @@ function tVal(){
 <br />
 <span style="font-size: 6pt">Icons made by Freepik from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></span>
 
-
+<input type="hidden" name="t" value="{{tokenID}}"  id="t" />
+<input type="hidden" name="i" value="{{objID}}" id="i" />
 </body>
 
 

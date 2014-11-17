@@ -1,0 +1,26 @@
+{% extends "dashboard/tknDash.html" %}
+
+{% block js %}
+
+<script type="text/javascript">
+
+function docsTimeline(){
+	Dajaxice.timeliner.documentsTimeliner(Dajax.process,{'tokenID':tVal(),'cloudItem':iVal()})
+}
+
+</script>
+
+{% endblock %}
+
+
+{% block rightcont %}
+
+<h2>History timeline</h2>
+
+<p>Generates a timeline with the information found in browsers history for this specific platform</p>
+
+<input type="button" value="Generate" onclick="docsTimeline()" />
+<div id="timeHistoryError"></div>
+<div id="timeHistory"></div>
+{% endblock %}
+

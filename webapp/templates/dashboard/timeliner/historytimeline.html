@@ -1,0 +1,28 @@
+<style>
+
+div#timeContainer{
+	overflow: auto;
+
+}
+
+</style>
+
+<script>
+
+
+var eventsChrono = [
+	{% for ev in events %}
+{dates: [new Date({{ev.time}})], title: "<table><tr><td><b>{{ev.site}}</b></td></tr><tr><td>{{ev.trans}}</td></tr></table>"},
+	{% endfor %}
+];
+
+
+
+
+
+	var timeline = new Chronoline(document.getElementById("timeContainer2"), eventsChrono,
+			    {defaultStartDate: new Date(2014,9,10),draggable: true,animated: true,tooltips: true});
+</script>
+
+<div id="timeContainer2"></div>
+

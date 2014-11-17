@@ -1,11 +1,33 @@
 {% extends "base.html" %}
 
 {% block menudash %}
+<script>
+
+$(document).ready(function(){
+  $("#hoverAnalyze").hover(function(){
+      pos = $(this).position()
+      $("#menuChoice").css("left",pos.left-30)
+      $("#menuChoice").fadeIn("slow");
+  },function(){
+	  setTimeout(function() {$("#menuChoice").fadeOut("slow");},5500);
+});
+});
+
+</script>
+
 
 <span id="dashMenu">
 	<span><a href="/token/{{ objID }}/{{tokenID}}/"><img src="/static/dwelling1.png" alt="Home" /></a></span>
 	<span><a href="/download/{{ objID }}/{{tokenID}}/"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
-	<span><a href="/analyse/{{ objID }}/{{tokenID}}/"><img src="/static/timeline.png" alt="Timeline" /></a></span>
+	<span><a href="javascript:void(0)" ><img src="/static/timeline.png" alt="Analyze" id="hoverAnalyze" /></a></span>
+	<div id="menuChoice" style="display: none; z-index: 1; position: absolute; background-color: white; border: solid 1px grey">
+		<table id="funcList">
+			<tr><td><img src="/static/icons/table.png" /></td><td><a href="/analyse/{{ objID }}/{{tokenID}}/">Metadata</a></td></tr>
+			<tr><td><img src="/static/icons/time.png" /></td><td><a href="/timeliner/{{objID}}/{{tokenID}}/">Timelines</a></td></tr>
+			<tr><td><img src="/static/icons/table_relationship.png" /></td><td>Comparator</a></td></tr>
+			<tr><td><img src="/static/icons/group_link.png" /></td><td><a>Relation Map</a></td></tr>
+		</table>
+	</div>
 	<span><a href="/report/{{ objID }}/{{tokenID}}/"><img src="/static/seo2.png" alt="Report" /></a></span>
 </span>
 
@@ -21,7 +43,7 @@
 			<td>
 				<table id="funcList">
 					<tr><td><img src="/static/icons/table.png" /></td><td><a href="/analyse/{{ objID }}/{{tokenID}}/">Metadata</a></td></tr>
-					<tr><td><img src="/static/icons/time.png" /></td><td><a>Timelines</a></td></tr>
+					<tr><td><img src="/static/icons/time.png" /></td><td><a href="/timeliner/{{objID}}/{{tokenID}}/">Timelines</a></td></tr>
 					<tr><td><img src="/static/icons/table_relationship.png" /></td><td>Comparator</a></td></tr>
 					<tr><td><img src="/static/icons/group_link.png" /></td><td><a>Relation Map</a></td></tr>
 				</table>

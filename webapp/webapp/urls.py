@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     url('', include('downloader.urls')),
     url('', include('clouditem.urls')),
     url('', include('cloudservice.urls')),
+    url('', include('timeliner.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

@@ -24,7 +24,6 @@ def showTokenDash(request,cloudItem):
 	else:
 		return redirect("/login/")
 
-
 def showTokenSelect(request,cloudItem,tokenID):
 	""" Displays the dashboard and manage the menu choices """
 	data = {}
@@ -36,9 +35,6 @@ def showTokenSelect(request,cloudItem,tokenID):
 		return render_to_response("dashboard/tknDash.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
-
-
-
 
 @csrf_protect
 def showDownloadDash(request,cloudItem,t):
