@@ -4,23 +4,35 @@
 
 <script type="text/javascript">
 
-function docsTimeline(){
-	Dajaxice.timeliner.documentsTimeliner(Dajax.process,{'tokenID':tVal(),'cloudItem':iVal()})
+function formTimeline(){
+	Dajaxice.timeliner.formTimeliner(Dajax.process,{'tokenID':tVal(),'cloudItem':iVal(),'form':$("#formTl").serialize(true)})
 }
 
 </script>
 
 {% endblock %}
 
-
 {% block rightcont %}
 
-<h2>History timeline</h2>
+<h2>Documents timeline</h2>
 
-<p>Generates a timeline with the information found in browsers history for this specific platform</p>
+<p>Generate a timeline with the documents of this account.</p>
 
-<input type="button" value="Generate" onclick="docsTimeline()" />
-<div id="timeHistoryError"></div>
-<div id="timeHistory"></div>
+<form action="" method="POST" id="formTl">
+	{% csrf_token %}
+	<table>
+	{% for f in form %}
+		<tr><td>{{f.label}}</td><td>{{f}}</td></tr>
+	{% endfor %}
+		<tr><td></td><td><input type="button" value="Generate" onclick="formTimeline()" /></td></tr>
+	</table>
+
+</form>
+
+<div id="formHistoryError"></div>
+<div id="fileHistory"></div>
+<div id="formHistory"></div>
+
+
 {% endblock %}
 

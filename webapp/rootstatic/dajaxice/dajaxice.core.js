@@ -9,6 +9,14 @@ var Dajaxice = {
     
     timeliner: {
     
+    formTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
+    },
+
     documentsTimeliner: function(callback_function, argv, custom_settings){
         return Dajaxice.call('timeliner.documentsTimeliner', 'POST', callback_function, argv, custom_settings);
     }

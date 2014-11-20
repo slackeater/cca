@@ -1,0 +1,55 @@
+<div id="fileHistoryContainer">
+<h3>History for: {{fileTitle}} | <a href="javascript:void" onclick="back()">Go Back</a></h3>
+<div id="visualizationFileHistory"></div>
+
+<script type="text/javascript">
+
+function back(){
+	$("#fileHistoryContainer").fadeOut("slow")
+	$("#visualization").fadeIn("slow")
+}
+
+function tip(elem,ev){
+
+	var dec = $("<div/>").html(ev).text();
+	var obj = JSON.parse(dec)
+
+	$(elem).qtip({
+	content: {
+		title: "Properties",
+		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr></table>",
+		button: true},
+	show: 'click',
+	hide: {
+		fixed: true,
+		delay: 1000,
+		effect: function() { $(this).fadeOut(250); }
+	}
+	})
+}
+
+
+  // DOM element where the Timeline will be attached
+  var container = document.getElementById('visualizationFileHistory');
+
+    // Create a DataSet (allows two way data-binding)
+    var items = new vis.DataSet([
+		    {% for ev in events %}
+		    {id: {{forloop.counter}}, 
+			content: "<a id='fh-{{forloop.counter}}'>{{ev.title}}</a>"
+		    
+		    , start: new Date({{ev.time}})},
+		    {% endfor %}
+		      ]);
+
+      // Configuration for the Timeline
+      var options = {orientation: 'top'};
+
+  // Create a Timeline
+  var timeline = new vis.Timeline(container, items, options);
+
+	{% for ev in events %}
+		tip('#fh-{{forloop.counter}}','{{ev.params}}')
+	{% endfor %}
+</script>
+</div>

@@ -1,28 +1,61 @@
-<style>
+<div id="visualization"></div>
 
-div#timeContainer{
-	overflow: auto;
+<script type="text/javascript">
 
+function showHistory(altId){
+	Dajaxice.timeliner.fileHistoryTimeliner(showHistoryCallBack,{'tokenID':tVal(),'cloudItem':iVal(),'altName':altId})	
 }
 
-</style>
+function showHistoryCallBack(data){
+	$("#formHistoryError").html("")
+	Dajax.process(data)
+		
+	if(data[0].id != "#formHistoryError"){
+		$('#visualization').fadeOut("slow")
+	}
+}
 
-<script>
+function tip(elem,ev){
 
+	var dec = $("<div/>").html(ev).text();
+	var obj = JSON.parse(dec)
+	var trashCont = ""
 
-var eventsChrono = [
+	if(obj['trashed'] == "True"){
+		trashCont = "<img src='/static/icons/bin.png' />"
+	}
+	
+	$(elem).qtip({
+	content: {
+		title: "Properties",
+		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr><tr><td><img src='/static/icons/date.png' /><a onclick='showHistory(\""+obj['altName']+"\")'> History</a></td></tr><tr><td>"+trashCont+"</td></tr></table>",
+		button: true},
+	show: 'click',
+	hide: {
+		fixed: true,
+		delay: 1000,
+		effect: function() { $(this).fadeOut(250); }
+	}
+	})
+}
+
+  // DOM element where the Timeline will be attached
+  var container = document.getElementById('visualization');
+
+    // Create a DataSet (allows two way data-binding)
+    var items = new vis.DataSet([
+		    {% for ev in events %}
+			    {id: {{forloop.counter}}, content: "<a id='{{forloop.counter}}'>{{ev.title}}</a>", start: new Date({{ev.time}})},
+		    {% endfor %}
+		      ]);
+
+      // Configuration for the Timeline
+      var options = {orientation: 'top'};
+
+  // Create a Timeline
+  var timeline = new vis.Timeline(container, items, options);
+
 	{% for ev in events %}
-{dates: [new Date({{ev.time}})], title: "<table><tr><td><b>{{ev.site}}</b></td></tr><tr><td>{{ev.trans}}</td></tr></table>"},
+		tip('#{{forloop.counter}}','{{ev.params}}')
 	{% endfor %}
-];
-
-
-
-
-
-	var timeline = new Chronoline(document.getElementById("timeContainer2"), eventsChrono,
-			    {defaultStartDate: new Date(2014,9,10),draggable: true,animated: true,tooltips: true});
 </script>
-
-<div id="timeContainer2"></div>
-
