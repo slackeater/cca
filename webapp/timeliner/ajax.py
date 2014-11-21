@@ -23,12 +23,16 @@ def formTimeliner(request,cloudItem,tokenID,form):
 
 		if f.is_valid():
 			if tkn.serviceType == "google":
-				data = googletimemaker.formTimeline(ci,tkn,int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'])
+				data = googletimemake.formTimeline(ci,tkn,int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'])
 			elif tkn.serviceType == "dropbox":
 				data = droptimemaker.formTimeline(ci,tkn,int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'])
-
-			table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
-			dajax.assign("#formHistory","innerHTML",table)
+			
+			if len(data) > 0:
+				table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
+				dajax.assign("#formHistory","innerHTML",table)
+				dajax.assign("#formHistoryError","innerHTML","")
+			else:
+				raise Exception("No data found.")
 		else:
 			raise Exception("Invalid form")
 			
@@ -51,7 +55,10 @@ def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 
-		data = timemaker.filehistoryTimeline(ci,t,altName)
+		if tkn.serviceType == "google":
+			data = googletimemake.filehistoryTimeline(ci,t,altName)
+		elif tkn.serviceType == "dropbox":
+			data = droptimemaker.filehistoryTimeline(ci,tkn,altName)
 
 		#check that we have at least one item
 		if len(data) > 0:

@@ -144,5 +144,4 @@ def filehistoryTimeline(cloudItem,token,altName):
 		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
 		retval.append(constructLineItem(hMeta,True))
 
-	
 	return retval
