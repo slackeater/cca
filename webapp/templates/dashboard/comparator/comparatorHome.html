@@ -1,0 +1,25 @@
+{% extends "dashboard/tknDash.html" %}
+
+{% block js %}
+
+<script type="text/javascript">
+
+function compare(){
+	Dajaxice.comparator.compareFile(Dajax.process,{'cloudItem':iVal(),'tokenID':tVal()})
+}
+
+</script>
+
+{% endblock %}
+
+{% block rightcont %}
+
+<h2>Compare local and remote files </h2>
+
+<input type="button" value="Compare" onclick="compare()" />
+
+<div id="comparatorError"></div>
+<div id="comparator"></div>
+
+{% endblock %}
+

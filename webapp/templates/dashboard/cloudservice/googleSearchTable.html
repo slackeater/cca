@@ -31,6 +31,8 @@ tr#resHeader td{
 
 	{% for d in data %}
 	<tr><td><img src="/static/icons/page.png" id="{{d.id}}" /></td><td><a href="javascript:void(0)" onclick="showFile('{{d.id}}','{{platform}}')">{{d.title}}</a></td><td>{{d.mimeType}}</td><td>{{d.createdDate}}</td><td>{{d.modifiedByMeDate}}</td><td>{{d.labels.trashed}}</td></tr>
+	{% empty %}
+	<tr><td colspan=6>Sorry no files have been found.</td></tr>
 	{% endfor %}
 
 </table>

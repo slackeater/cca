@@ -12,8 +12,6 @@ import sys, os, json, zipfile
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 
-# Create your views here.
-
 class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File')
 

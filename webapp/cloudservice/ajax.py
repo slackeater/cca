@@ -6,12 +6,10 @@ from dajaxice.utils import deserialize_form
 from django.utils.html import strip_tags
 from forms import MetaSearch
 from django.conf import settings
-from models import Downloads
 from downloader.models import AccessToken,FileDownload
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from webapp.func import *
-
 
 @dajaxice_register
 def metadataAnalysis(request,tokenID,cloudItem):
@@ -22,19 +20,17 @@ def metadataAnalysis(request,tokenID,cloudItem):
 
 	dajax = Dajax()
 
-	parsedTable = None
-	
 	try:
+		parsedTable = None
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
-		print platform
 
 		if platform == "google":
-			parsedTable = googledrive.metadataAnalysis(request, t)
+			parsedTable = googledrive.metadataAnalysis(request,tknObj)
 		elif platform == "dropbox":
-			parsedTable = drop.metadataAnalysis(request,t)
+			parsedTable = drop.metadataAnalysis(request,tknObj)
 
 		dajax.assign("#metaAnalysis","innerHTML", parsedTable)
 		dajax.assign("#metaAnalysisError","innerHTML","")
@@ -46,6 +42,7 @@ def metadataAnalysis(request,tokenID,cloudItem):
 
 @dajaxice_register
 def searchMetaData(request,form,tokenID,cloudItem):
+	""" Make a search through the metadata """
 
 	if not isAuthenticated(request):
 		return None
@@ -61,9 +58,9 @@ def searchMetaData(request,form,tokenID,cloudItem):
 
 		if f.is_valid():
 			if platform == "google":
-				parsedTable = googledrive.metadataSearch(t,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				parsedTable = googledrive.metadataSearch(tknObj,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
 			elif platform == "dropbox":
-				parsedTable = drop.metadataSearch(t,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				parsedTable = drop.metadataSearch(tknObj,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
 			
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")
@@ -76,16 +73,16 @@ def searchMetaData(request,form,tokenID,cloudItem):
 
 @dajaxice_register
 def fileInfo(request,tokenID,id,cloudItem):
-
+	""" Get the information of a file """
 
 	if not isAuthenticated(request):
 		return None
 	
 	dajax = Dajax()
 
-	parsedTable = None
 
 	try:
+		parsedTable = None
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
@@ -111,16 +108,16 @@ def fileRevision(request,fId,tokenID,cloudItem):
 
 	dajax = Dajax()
 
-	parsedTable = None
 
 	try:
+		parsedTable = None
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
-		#check that the id belongs to the token ID
-
-		fileDB = FileDownload.objects.get(tokenID=AccessToken.objects.get(id=t),alternateName=fId)
+		
+		# get the file from the database
+		fileDB = FileDownload.objects.get(tokenID=tknObj,alternateName=fId)
 
 		if platform == "google":
 			parsedTable = googledrive.fileHistory(fileDB)

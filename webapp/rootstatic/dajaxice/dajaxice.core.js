@@ -7,18 +7,10 @@ var Dajaxice = {
     
 
     
-    timeliner: {
+    comparator: {
     
-    formTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
-    },
-
-    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
-    },
-
-    documentsTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.documentsTimeliner', 'POST', callback_function, argv, custom_settings);
+    compareFile: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('comparator.compareFile', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -28,23 +20,26 @@ var Dajaxice = {
     
 ,
     
-    webapp: {
+    downloader: {
     
-    sayhello: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('webapp.sayhello', 'POST', callback_function, argv, custom_settings);
-    }
+    submitDropboxCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
+    },
 
+    submitGoogleCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
+    },
 
-    
-    
-    }
-    
-,
-    
-    importer: {
-    
-    showReport: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('importer.showReport', 'POST', callback_function, argv, custom_settings);
+    showDropboxTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.showDropboxTokens', 'POST', callback_function, argv, custom_settings);
+    },
+
+    checkDownload: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.checkDownload', 'POST', callback_function, argv, custom_settings);
+    },
+
+    showGoogleTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.showGoogleTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -79,26 +74,40 @@ var Dajaxice = {
     
 ,
     
-    downloader: {
+    importer: {
     
-    submitDropboxCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
+    showReport: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('importer.showReport', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
+    timeliner: {
+    
+    formTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
     },
 
-    submitGoogleCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
-    },
+    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
+    }
 
-    showDropboxTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.showDropboxTokens', 'POST', callback_function, argv, custom_settings);
-    },
 
-    checkDownload: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.checkDownload', 'POST', callback_function, argv, custom_settings);
-    },
-
-    showGoogleTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.showGoogleTokens', 'POST', callback_function, argv, custom_settings);
+    
+    
+    }
+    
+,
+    
+    webapp: {
+    
+    sayhello: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('webapp.sayhello', 'POST', callback_function, argv, custom_settings);
     }
 
 

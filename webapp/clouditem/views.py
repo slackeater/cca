@@ -4,14 +4,18 @@ from models import CloudItem
 from django.template import RequestContext
 from django.utils import timezone
 from webapp.func import isAuthenticated
-from forms import CloudItemForm
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
-# Create your views here.
+from django import forms
 
+class CloudItemForm(forms.Form):
+	""" A cloud item form """
+
+	name = forms.CharField(label="Name")
+	description = forms.CharField(label="Description",widget=forms.Textarea)
 
 def cloudItem(request):
-
+	""" View used to show the list of cloud item and add a new one """
 	if isAuthenticated(request):
 		f = CloudItemForm()
 		
@@ -33,7 +37,7 @@ def showCloudItem(request,itemID):
 	""" Display a cloud item """
 
 	if isAuthenticated(request):
-		getItem = CloudItem.objects.filter(id=itemID,reporterID=User.objects.get(id=request.user.id))
+		getItem = CloudItem.objects.get(id=itemID,reporterID=User.objects.get(id=request.user.id))
 		data = {'item': getItem,'objID': itemID}
 		return render_to_response("dashboard/dash.html", data, context_instance=RequestContext(request))
 	else:

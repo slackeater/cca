@@ -5,26 +5,27 @@ from downloader.models import AccessToken,FileMetadata,FileHistory,FileHistory
 from django.template.loader import render_to_string
 from webapp.func import dropboxAlternateName
 
-def metadataAnalysis(request,tokenID):
+def metadataAnalysis(request,token):
 	""" Dropbox metadata analysis """
 
-	fm = FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
+	fm = FileMetadata.objects.get(tokenID=token)
 	metaInfo= json.loads(base64.b64decode(fm.metadata))
+	stat = parseDropTree(metaInfo)	
 
-	dirCount, fileSize, fileCount, fileType, deletedFile, deletedDirs = parseDropTree(metaInfo)	
-	return render_to_string("dashboard/cloudservice/metaAnalysis.html",{'dropbox': True, 'fC':fileCount,'dC': dirCount,'fS':fileSize,'dF':deletedFile,'dD':deletedDirs,'types':fileType})
+	return render_to_string("dashboard/cloudservice/metaAnalysis.html",{'dropbox': True, 'stat':stat})
 
-def metadataSearch(tokenID, resType, selectedMimeType):
+def metadataSearch(token, resType, selectedMimeType):
 	""" Search over metadata """
 
 	#get meta data
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID)).metadata))
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
 	res = list()
 
 	for folder in meta:
 		for cnt in folder['contents']:
 			fID = {'fileID':dropboxAlternateName(cnt['path'],cnt['modified'])}
 			cnt.update(fID)
+
 			#deleted 
 			if resType == 0:
 				deleted = cnt.get("is_deleted",False)
@@ -42,11 +43,11 @@ def metadataSearch(tokenID, resType, selectedMimeType):
 	table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res, 'platform': 'dropbox'})
 	return table
 
-def fileInfo(tokenID, fileID):
+def fileInfo(token, fileID):
 	""" Get the file information """
 
 	#get metadata
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID)).metadata))
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
 	i = None
 
 	for folder in meta:
@@ -130,4 +131,14 @@ def parseDropTree(contList):
 					None
 
 	fileSize = fileSize/(1024*1024)
-	return dirCount, fileSize, fileCount, fileType, deletedFile, deletedDirs
+
+	#dictionary with stats
+	stat = dict()
+	stat['dC'] = dirCount
+	stat['fC'] = fileCount
+	stat['fS'] = fileSize
+	stat['dF'] = deletedFile
+	stat['dD'] = deletedDirs
+	stat['mime'] = fileType
+
+	return stat

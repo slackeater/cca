@@ -19,23 +19,17 @@ td.resTabTitle{
 		<tr><td>Google Docs File Count</td><td>{{stat.docsF}}</td></tr>
 		<tr><td>File Size</td><td>{{stat.driveFS}}</td></tr>
 	{% elif dropbox %}
-		<tr><td><b>Directory Count</b></td><td id="dC">{{ dC }}</td></tr>
-		<tr><td><b>File Count</b></td><td id="fC">{{ fC }}</td></tr>
-		<tr><td><b>File Size</b></td><td id="fS">{{ fS }} MB</td></tr>
-		<tr><td><b>Deleted File</b></td><td id="dF">{{ dF  }}</td></tr>
-		<tr><td><b>Deleted Dirs</b></td><td id="dD">{{ dD  }}</td></tr>
+		<tr><td><b>Directory Count</b></td><td id="dC">{{stat.dC}}</td></tr>
+		<tr><td><b>File Count</b></td><td id="fC">{{stat.fC}}</td></tr>
+		<tr><td><b>File Size</b></td><td id="fS">{{stat.fS}} MB</td></tr>
+		<tr><td><b>Deleted File</b></td><td id="dF">{{stat.dF}}</td></tr>
+		<tr><td><b>Deleted Dirs</b></td><td id="dD">{{stat.dD}}</td></tr>
 	{% endif %}
 
 	<tr><td colspan=2 align="center" class="resTabTitle"><b>MIME Type</b></td></tr>
 	
-	{% if google %}
-		{% for mimeType, fCount in stat.mime.items %}
-			<tr><td><b>{{mimeType}}</b></td><td>{{fCount}}</td></tr>
-		{% endfor %}
-	{% elif dropbox %}
-		{% for mimeType, fCount in types.items %}
-			<tr><td><b>{{mimeType}}</b></td><td>{{fCount}}</td></tr>
-		{% endfor %}
-	{% endif %}
+	{% for mimeType, fCount in stat.mime.items %}
+		<tr><td><b>{{mimeType}}</b></td><td>{{fCount}}</td></tr>
+	{% endfor %}
 
 </table>

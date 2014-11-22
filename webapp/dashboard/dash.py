@@ -33,25 +33,7 @@ def cloudDownloader(importID):
 	data["browsers"] = browser
 
 	return data
-"""
-def cloudService(request, service, tokenID, importID):
 
-	#first, store credentials inside a session variable to avoid multiple db calls
-	sessionCred = request.session.get(sessionName, "none")
-	sessionName = SESSION_NAME+str(importID)+"-"+str(tokenID)
-
-	if sessionCred == "none":
-		try:
-			dbObject = GoogleDriveToken if service == "google" elif service == "dropbox" DropboxToken else ""
-
-			token = dbObject.objects.get(importID=Upload.objects.get(id=importID), id=tokenID)
-
-			#store
-			request.session[sessionName] = base64.b64decode(token.accessToken)
-		except AccessToken.DoesNotExist:
-			return redirect("/dashboard/?i="+str(importID)+"&s=cloud")
-
-"""
 def getReportJson(uploadObject):
 	""" Read the JSON of the report """
 

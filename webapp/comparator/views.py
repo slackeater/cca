@@ -5,17 +5,16 @@ from webapp.func import isAuthenticated
 
 # Create your views here.
 
-def showTimeline(request,cloudItem,tokenID):
+def comparatorView(request,cloudItem,tokenID):
 	""" Show the timeline options """
 
 	if isAuthenticated(request):
 		data = dict()	
 		data['objID'] = cloudItem
 		data['tokenID'] = tokenID
-		data['form'] = MetaSearch()
 		data['showToken'] = True
 
-		return render_to_response("dashboard/timeliner/timeHome.html",data,context_instance=RequestContext(request))
+		return render_to_response("dashboard/comparator/comparatorHome.html",data,context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
 

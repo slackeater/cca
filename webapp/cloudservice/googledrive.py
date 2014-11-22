@@ -5,23 +5,18 @@ from apiclient.discovery import build
 from dashboard.models import MimeType
 from downloader.models import AccessToken,FileMetadata,FileHistory
 from django.template.loader import render_to_string
-from django.utils import timezone
 from django.conf import settings
 import md5, os
 
-## Functions
-def getMetaData(tokenID):
+def getMetaData(token):
 	""" Get the metadata for a given token ID """
-	token = AccessToken.objects.get(id=tokenID)
 	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
 	return meta
 
-def metadataAnalysis(request, tokenID):
+def metadataAnalysis(request, token):
 	""" Analyse metadata """
 	
-	fm = FileMetadata.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
-	files = json.loads(base64.b64decode(fm.metadata))
-	stat = getFileStats(files)
+	stat = getFileStats(getMetaData(token))
 	return render_to_string("dashboard/cloudservice/metaAnalysis.html", {'stat': stat,'google': True})
 
 def getFileStats(files):
@@ -46,7 +41,8 @@ def getFileStats(files):
 
 		mimeType.setdefault(item['mimeType'],0)
 		mimeType[item['mimeType']] += 1
-	
+
+	#dictionary with stats
 	stat = dict()
 	stat['dC'] = deletedCount
 	stat['driveF'] = driveFiles
@@ -56,10 +52,10 @@ def getFileStats(files):
 	
 	return stat
 
-def metadataSearch(tokenID, resType, selectedMimeType):
+def metadataSearch(token, resType, selectedMimeType):
 	""" Search through metadata """
 
-	gMetaInfo = getMetaData(tokenID)	
+	gMetaInfo = getMetaData(token)	
 	
 	searchItem = list()
 
@@ -81,10 +77,10 @@ def metadataSearch(tokenID, resType, selectedMimeType):
 	table = render_to_string("dashboard/cloudservice/googleSearchTable.html", {'data': searchItem,'platform':'google'})
 	return table	
 
-def fileInfo(tokenID, fileID):
+def fileInfo(token, fileID):
 	""" Get information of a file """
 	
-	gMetaInfo = getMetaData(tokenID)
+	gMetaInfo = getMetaData(token)
 	i = None
 
 	for item in gMetaInfo['items']:
@@ -108,7 +104,3 @@ def fileHistory(downFile):
 
 	table = render_to_string("dashboard/cloudservice/googleRevisionTable.html", {'rev': revisions})
 	return table
-	
-def comparator():
-	""" compare files """
-	#TODO

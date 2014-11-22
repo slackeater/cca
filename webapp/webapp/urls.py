@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url('', include('clouditem.urls')),
     url('', include('cloudservice.urls')),
     url('', include('timeliner.urls')),
+    url('', include('comparator.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 
