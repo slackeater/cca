@@ -9,12 +9,6 @@ from django.contrib.auth import authenticate
 
 class CloudItemTestCase(TestCase):
 
-	def setUp(self):
-		self.user = User.objects.create_user(username="reporter",password='reporter',email="rep@rep.com")
-		
-		ci = CloudItem(desc="Set up clouditem",reportName="Set up",reporterID=self.user)
-		ci.save()
-
 	def test_clouditem_view_nologin(self):
 		resp = self.client.get('/clouditem/',follow=True,secure=True)
 		self.assertRedirects(resp,"/login/")

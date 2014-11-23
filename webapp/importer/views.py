@@ -11,16 +11,20 @@ from django.conf import settings
 import sys, os, json, zipfile
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
+from webapp.func import *
 
 class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File')
 
 def importer(request,cloudItem):
-	form = None
-	status = None
-	rep = None
 
-	if request.user.is_authenticated():
+	if isAuthenticated(request):
+	
+		form = None
+		status = None
+		rep = None
+		cloudItemQuery = CloudItem.objects.get(reporterID=User.objects.get(id=request.user.id),id=cloudItem)
+
 		try:
 			if request.method == "POST":
 				form = UploadForm(request.POST, request.FILES)
@@ -29,7 +33,7 @@ def importer(request,cloudItem):
 					manageReportUpload(request,cloudItem)
 		
 			# get all report imported for this clouditem
-			cloudItemQuery = CloudItem.objects.get(reporterID=User.objects.get(id=request.user.id))
+
 			rep = Upload.objects.filter(cloudItemID=cloudItemQuery)
 			form = UploadForm() if rep.count() == 0 else None 
 		except Exception as e:
