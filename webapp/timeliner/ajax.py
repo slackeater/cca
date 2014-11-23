@@ -65,6 +65,7 @@ def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 			ft = FileDownload.objects.get(alternateName=altName,tokenID=t).fileName
 			table = render_to_string("dashboard/timeliner/filehistorytimeline.html",{'events':data,'fileTitle':ft})	
 			dajax.assign("#fileHistory","innerHTML",table)
+			dajax.assign("#formHistoryError","innerHTML","")
 		else:
 			raise Exception("No history for this file")
 	except Exception as e:	

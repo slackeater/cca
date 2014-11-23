@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from cloudservice.forms import MetaSearch
-from webapp.func import isAuthenticated
+from webapp.func import *
 
 # Create your views here.
 
@@ -9,9 +9,13 @@ def showTimeline(request,cloudItem,tokenID):
 	""" Show the timeline options """
 
 	if isAuthenticated(request):
+
+		ci = checkCloudItem(cloudItem,request.user.id)
+		tkn = checkAccessToken(tokenID,ci)
+
 		data = dict()	
-		data['objID'] = cloudItem
-		data['tokenID'] = tokenID
+		data['objID'] = ci.id
+		data['tokenID'] = tkn.id
 		data['form'] = MetaSearch()
 		data['showToken'] = True
 

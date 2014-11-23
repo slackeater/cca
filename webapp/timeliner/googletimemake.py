@@ -13,7 +13,12 @@ def constructLineItem(item,isHistory = False):
 
 	if isHistory:
 		displayDate = item['modifiedDate']
-		title = item['lastModifyingUserName']
+
+		if "lastModifyingUserName" in item:
+			title = item['lastModifyingUserName']
+		else:
+			title = item['id']
+
 		trashed = str(False)
 	else:
 		displayDate = item['createdDate']
