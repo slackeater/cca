@@ -1,13 +1,13 @@
 from django.test import TestCase
 from django.test.client import Client
 from clouditem.models import CloudItem
-from downloader.models import AccessToken, FileMetadata
+from downloader.models import AccessToken, FileMetadata, FileDownload
 from dashboard.models import MimeType
 from django.contrib.auth.models import User
 from django.conf import settings
 import json,os,urllib
-from webapp.dbMaker import MakeDatabase
-class DownloaderTestCase(TestCase):
+
+class CloudserviceTestCase(TestCase):
 
 	@classmethod
 	def setUpClass(self):
@@ -23,8 +23,6 @@ class DownloaderTestCase(TestCase):
 
 	def test_analyse_view_login(self):
 		self.assertTrue(self.login())
-		
-		
 
 		for a in AccessToken.objects.all():
 			resp = self.client.get('/analyse/'+str(self.ci.id)+'/'+str(a.id)+'/',secure=True)
@@ -98,3 +96,38 @@ class DownloaderTestCase(TestCase):
 			rDump = json.loads(r.content)
 			self.assertEqual(rDump[0]['id'],"#searchRes")
 			self.assertEqual(rDump[1]['val'], "")
+
+	def test_analyse_fileinfo(self):
+		self.assertTrue(self.login())
+
+		for a in AccessToken.objects.all():
+			url = "/dajaxice/cloudservice.fileInfo/"
+
+			files = FileDownload.objects.filter(tokenID=a)
+
+			for f in files:
+				#make a request for each file
+				payload = {"tokenID": a.id,"cloudItem": self.ci.id,"id":str(f.alternateName)}
+				data = {"argv": json.dumps(payload)}
+				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+				self.assertEquals(r.status_code,200)
+				self.assertContains(r,f.alternateName)
+
+	def test_analyse_filerevision(self):
+		self.assertTrue(self.login())
+
+		for a in AccessToken.objects.all():
+			url = "/dajaxice/cloudservice.fileRevision/"
+
+			files = FileDownload.objects.filter(tokenID=a)
+
+			for f in files:
+				#make a request for each file
+				payload = {"tokenID": a.id,"cloudItem": self.ci.id,"fId":str(f.alternateName)}
+				data = {"argv": json.dumps(payload)}
+				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+				self.assertEquals(r.status_code,200)
+				
+				#check that there are not errros
+				rDump = json.loads(r.content)
+				self.assertEquals(rDump[1]['val'],"")

@@ -98,7 +98,6 @@ def manageReportUpload(request,cloudItem):
 	#unzip
 	fileZip = zipfile.ZipFile(decZipFile)
 	fileZip.extractall(settings.UPLOAD_DIR)
-	print "DB"
 	# set this report parsed	
 	newUpload = Upload(fileName=name[:-4],uploadIP=request.META['REMOTE_ADDR'],parsed=True,cloudItemID=CloudItem.objects.get(id=cloudItem))
 	newUpload.save()

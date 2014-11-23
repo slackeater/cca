@@ -58,3 +58,15 @@ class ImporterTestCase(TestCase):
 
 		with self.assertRaises(CloudItem.DoesNotExist):
 			self.client.get("/importer/3000/",secure=True)
+
+	def test_importer_import_nonzip_login(self):
+		self.assertTrue(self.login())
+
+		fileName = "1ac584b00c5091e9a74b8c23ba745258"
+		fileImport = os.path.join(settings.BASE_DIR,"webapp","tests",fileName+".zip.enc")
+
+		with open(fileImport,"rb") as fp:
+			r = self.client.post("/importer/"+str(self.ci.id)+"/",data={'fileUp': fp},secure=True)
+			self.assertEquals(r.status_code,200)
+			self.assertContains(r,"No JSON object could be decoded")
+			

@@ -76,28 +76,6 @@ def fileHistory(fileDB):
 	return table
 
 
-def recurseDropTree(folderMetadata, client, depth):
-	""" Recurse in each folder """
-	res = list()
-	
-	if folderMetadata['is_dir'] and depth > 0:
-
-		res.append(folderMetadata)
-
-		#get content
-		for c in folderMetadata['contents']:
-			if c['is_dir']:
-				metadata = client.metadata(c['path'])
-				# go down one level in the tree
-				myres = recurseDropTree(metadata, client, depth-1)
-				res += myres
-				
-		return res
-
-	elif folderMetadata['is_dir'] and depth == 0:
-		res.append(folderMetadata)
-		return res
-
 def parseDropTree(contList):
 	""" Parse the list of file metadata """
 
