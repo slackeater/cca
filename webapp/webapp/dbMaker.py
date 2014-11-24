@@ -3,11 +3,17 @@ from downloader.models import AccessToken, FileMetadata, FileDownload, FileHisto
 from dashboard.models import MimeType
 from django.contrib.auth.models import User
 from django.conf import settings
-import json,os
+import json,os,time
+from django.utils import timezone
 
 class MakeDatabase():
 
 	filePath = os.path.join(settings.BASE_DIR,"webapp","tests")
+
+	def makeDate(self,dateStr):
+		date = list(time.strptime(dateStr,"%Y-%m-%d %H:%M:%S"))[:6]
+		tzDate = timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5])
+		return tzDate
 
 	def populate(self):
 
@@ -40,7 +46,9 @@ class MakeDatabase():
 		atData = json.load(open(atPath,"rb"))
 
 		for a in atData:
-			at = AccessToken(id=a['id'],accessToken=a['accessToken'],userID=a['userID'],serviceType=a['serviceType'],tokenTime=a['tokenTime'],userInfo=a['userInfo'],
+			date = list(time.strptime(,"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5])
+			at = AccessToken(id=a['id'],accessToken=a['accessToken'],userID=a['userID'],serviceType=a['serviceType'],tokenTime=tzDate,userInfo=a['userInfo'],
 					cloudItem=ci)
 			at.save()
 
@@ -67,8 +75,8 @@ class MakeDatabase():
 		fdData = json.load(open(fdPath,"rb"))
 
 		for fd in fdData:
-			fileDown = FileDownload(id=fd['id'],fileName=fd['fileName'],alternateName=fd['alternateName'],status=fd['status'],downloadTime=fd['downloadTime'],
-					tokenID=AccessToken.objects.get(id=fd['tokenID_id']))
+			tzDate = self.makeDate(fd['downloadTime'])
+			fileDown = FileDownload(id=fd['id'],fileName=fd['fileName'],alternateName=fd['alternateName'],status=fd['status'],downloadTime=tzDate,tokenID=AccessToken.objects.get(id=fd['tokenID_id']))
 			fileDown.save()
 
 	def createFileHistory(self):

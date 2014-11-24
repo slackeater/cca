@@ -41,25 +41,24 @@ def downloadFiles(driveService,at):
 
 	#iterate over file and write to disk
 	for item in meta['items']:
-		if 'downloadUrl' in item:
-			url = item['downloadUrl']
-		elif 'exportLinks' in item:
-			url = item['exportLinks']['application/pdf']
-		else:
-			url = None
+			if 'downloadUrl' in item:
+				url = item['downloadUrl']
+			elif 'exportLinks' in item:
+				url = item['exportLinks']["application/pdf"]
+			else:
+				url = None
 
-		if url != None:
-			resp, content = driveService._http.request(url)
-			
-			if resp.status == 200:
-				fullName = os.path.join(downDirFullSub,item['title'] + "_" + item['id'])
+			if url != None:
+				resp, content = driveService._http.request(url)
+				
+				if resp.status == 200:
+					fullName = os.path.join(downDirFullSub,item['title'] + "_" + item['id'])
 
-				f = open(fullName,"wb+")
-				f.write(content)
-				f.close()
+					with open(fullName,"wb+") as f:
+						f.write(content)
 
-				fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at)
-				fileDb.save()
+					fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at)
+					fileDb.save()
 
 
 	#upload status
@@ -87,7 +86,7 @@ def downloadHistory(driveService,at):
 
 			#get revisions for this file
 			revs = driveService.revisions().list(fileId=item['id']).execute()
-			
+		
 			# if len == 1 we do not have any revision
 			if len(revs['items']) > 1:
 
@@ -102,25 +101,23 @@ def downloadHistory(driveService,at):
 				for r in revs['items']:
 					revItem = base64.b64encode(json.dumps(r))
 					revID = r['id']
-					#print revID
 
-					if 'downloadUrl' in r:
+					if 'exportLinks' in r:
+						url = r['exportLinks']["application/pdf"]
+					elif 'downloadUrl' in r:
 						url = r['downloadUrl']
-					elif 'exportLinks' in r:
-						url = r['exportLinks']['application/pdf']
 					else:
 						url = None
 
 					if url != None:
 						resp, content = driveService._http.request(url)
-						
+					
 						#if the response is affirmative
 						if resp.status == 200:
 							fullName = os.path.join(revPath,item['title']+"_"+revID)
 
-							f = open(fullName,"wb+")
-							f.write(content)
-							f.close()
+							with open(fullName,"wb+") as f:
+								f.write(content)
 
 							fh = FileHistory(revision=revID,status=1,fileDownloadID=fileDownload[0],revisionMetadata=revItem)
 							fh.save()
