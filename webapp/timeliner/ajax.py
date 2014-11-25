@@ -63,7 +63,7 @@ def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 		#check that we have at least one item
 		if len(data) > 0:
 			ft = FileDownload.objects.get(alternateName=altName,tokenID=t).fileName
-			table = render_to_string("dashboard/timeliner/filehistorytimeline.html",{'events':data,'fileTitle':ft})	
+			table = render_to_string("dashboard/timeliner/filehistorytimeline.html",{'events':data,'fileTitle':ft,'altName': altName})	
 			dajax.assign("#fileHistory","innerHTML",table)
 			dajax.assign("#formHistoryError","innerHTML","")
 		else:

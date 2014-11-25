@@ -9,8 +9,8 @@ var Dajaxice = {
     
     comparator: {
     
-    compareFile: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('comparator.compareFile', 'POST', callback_function, argv, custom_settings);
+    compareTwoFile: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('comparator.compareTwoFile', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -87,14 +87,18 @@ var Dajaxice = {
     
 ,
     
-    timeliner: {
+    dashboard: {
     
-    formTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
+    submitGoogleCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('dashboard.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
     },
 
-    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
+    submitDropboxCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('dashboard.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
+    },
+
+    showTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('dashboard.showTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -104,10 +108,14 @@ var Dajaxice = {
     
 ,
     
-    webapp: {
+    timeliner: {
     
-    sayhello: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('webapp.sayhello', 'POST', callback_function, argv, custom_settings);
+    formTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
+    },
+
+    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
     }
 
 
