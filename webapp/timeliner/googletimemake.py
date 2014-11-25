@@ -25,15 +25,22 @@ def constructLineItem(item,isHistory = False):
 		title = item['title']
 		trashed = str(item['labels']['trashed'])
 
-	# date
+	isDir = False
+	altName = item['id']
 
+	if item['mimeType'] == "application/vnd.google-apps.folder":
+		isDir = True
+		altName = ""
+
+
+	# date
 	dateTuple = list(time.gmtime(strict_rfc3339.rfc3339_to_timestamp(displayDate)))[:6]
 	#month -1 because javascript Date goes from 0-11
 	dateTuple[1] = dateTuple[1] - 1
 	date = ",".join(map(str,dateTuple))
 
-	jStr = '{"timeStr":"'+displayDate+'","altName":"'+item['id']+'","trashed":"'+trashed+'"}'
-	return {'title': title,'time':date,'params':jStr}
+	jStr = '{"timeStr":"'+displayDate+'","altName":"'+altName+'","trashed":"'+trashed+'"}'
+	return {'title': title,'time':date,'isDir':str(isDir),'params':jStr}
 
 def decodeTransition(trans):
 	""" Return the type of transition """
@@ -113,8 +120,6 @@ def docmentsHistoryTimeline(cloudItem,token):
 								
 								retval.append({'hour':hours,'site':domain,'trans': decodeTransition(row[8]),'timeYear':myTime.tm_year,"timeMonth":myTime.tm_mon,"timeDay":myTime.tm_mday})
 
-
-	
 	return retval
 
 def formTimeline(cloudItem,token,resType,mimeType):
@@ -143,10 +148,13 @@ def filehistoryTimeline(cloudItem,token,altName):
 	fileDownloadObj = FileDownload.objects.get(alternateName=altName,tokenID=token)
 	retval = list()	
 	#get all history for this file
+
+	print fileDownloadObj.id
 	history = FileHistory.objects.filter(fileDownloadID=fileDownloadObj)
 	
 	for h in history:
 		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
+		print hMeta['id']
 		retval.append(constructLineItem(hMeta,True))
 
 	return retval

@@ -1,6 +1,8 @@
 from models import FileMetadata,AccessToken, Download, FileDownload, FileHistory
-import json, base64, os, md5, dropbox
+import json, base64, os, md5, dropbox, requests
 from django.conf import settings
+from webapp.func import dropboxAlternateName
+
 
 
 def getMetaData(at):
@@ -66,11 +68,10 @@ def downloadFiles(client,at):
 		for f in c['contents']:
 			if not f['is_dir']: # if is a file
 				#compute the alternateName
-				s = (f['path']).encode('utf-8') + (f['modified']).encode('utf-8')
-				altName = md5.new(s).hexdigest()
+				altName = dropboxAlternateName(f['path'],f['modified'])
 
 				bName = os.path.basename(f['path'])
-				print bName.encode("utf-8")
+				
 				try:
 					with client.get_file(f['path']) as f:
 						outF = open(os.path.join(downDirFullSub,bName+"_"+altName),"wb+")
@@ -79,7 +80,7 @@ def downloadFiles(client,at):
 						fDb = FileDownload(fileName=bName,alternateName=altName,status=1,tokenID=at)
 						fDb.save()
 				except dropbox.rest.ErrorResponse as e:
-					print e
+					
 					if e.status == 404:
 						#file has been deleted , status=2
 						f = FileDownload(fileName=bName,alternateName=altName,status=2,tokenID=at)
@@ -90,11 +91,6 @@ def downloadFiles(client,at):
 				
 	
 	return "running","-",2
-	if not os.path.isdir(downDirFull):
-		os.mkdir(downDirFull)
-
-	if not os.path.isdir(downDirFullSub):
-		os.mkdir(downDirFullSub)
 	
 def downloadHistory(client,at):
 	""" Download the history for dropbox """
@@ -150,3 +146,11 @@ def downloadHistory(client,at):
 							fDb.save()
 
 	return "running","-",3
+
+def sharedFolder(client,at):
+	""" Find the shared folders """
+
+	#get list of shared folders
+	#response = requests.get('https://api.dropbox.com/1/shared_folders/',headers={'Authorization':'Bearer %s' % base64.b64decode(at.accessToken))
+
+	#TODO

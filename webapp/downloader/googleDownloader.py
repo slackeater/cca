@@ -96,7 +96,7 @@ def downloadHistory(driveService,at):
 					os.mkdir(revPath)
 
 				#download
-				fileDownload = FileDownload.objects.filter(fileName=item['title'],alternateName=item['id'])
+				fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=at)
 				
 				for r in revs['items']:
 					revItem = base64.b64encode(json.dumps(r))
@@ -119,7 +119,7 @@ def downloadHistory(driveService,at):
 							with open(fullName,"wb+") as f:
 								f.write(content)
 
-							fh = FileHistory(revision=revID,status=1,fileDownloadID=fileDownload[0],revisionMetadata=revItem)
+							fh = FileHistory(revision=revID,status=1,fileDownloadID=fileDownload,revisionMetadata=revItem)
 							fh.save()
 
 	return "running","-",3

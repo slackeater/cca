@@ -20,15 +20,20 @@ function tip(elem,ev){
 	var dec = $("<div/>").html(ev).text();
 	var obj = JSON.parse(dec)
 	var trashCont = ""
+	var history = ""
 
 	if(obj['trashed'] == "True"){
 		trashCont = "<img src='/static/icons/bin.png' />"
 	}
-	
+
+	if(obj['altName'] != ""){
+		history = "<tr><td><img src='/static/icons/date.png' /><a onclick='showHistory(\""+obj['altName']+"\")'> History</a></td></tr>"
+	}
+
 	$(elem).qtip({
 	content: {
 		title: "Properties",
-		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr><tr><td><img src='/static/icons/date.png' /><a onclick='showHistory(\""+obj['altName']+"\")'> History</a></td></tr><tr><td>"+trashCont+"</td></tr></table>",
+		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr>"+history+"<tr><td>"+trashCont+"</td></tr></table>",
 		button: true},
 	show: 'click',
 	hide: {
@@ -45,7 +50,8 @@ function tip(elem,ev){
     // Create a DataSet (allows two way data-binding)
     var items = new vis.DataSet([
 		    {% for ev in events %}
-			    {id: {{forloop.counter}}, content: "<a id='{{forloop.counter}}'>{{ev.title}}</a>", start: new Date({{ev.time}})},
+		    		
+		    {id: {{forloop.counter}}, content: "<a id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", start: new Date({{ev.time}})},
 		    {% endfor %}
 		      ]);
 
