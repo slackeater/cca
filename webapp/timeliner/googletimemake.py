@@ -32,15 +32,14 @@ def constructLineItem(item,isHistory = False):
 		isDir = True
 		altName = ""
 
-
 	# date
 	dateTuple = list(time.gmtime(strict_rfc3339.rfc3339_to_timestamp(displayDate)))[:6]
 	#month -1 because javascript Date goes from 0-11
 	dateTuple[1] = dateTuple[1] - 1
 	date = ",".join(map(str,dateTuple))
 
-	jStr = '{"timeStr":"'+displayDate+'","altName":"'+altName+'","trashed":"'+trashed+'"}'
-	return {'title': title,'time':date,'isDir':str(isDir),'params':jStr}
+	jStr = '{"timeStr":"'+displayDate+'"}'
+	return {'title': title,'time':date,'isDir':str(isDir),'trashed':trashed,'altName': altName,'params':jStr}
 
 def decodeTransition(trans):
 	""" Return the type of transition """
@@ -149,12 +148,10 @@ def filehistoryTimeline(cloudItem,token,altName):
 	retval = list()	
 	#get all history for this file
 
-	print fileDownloadObj.id
 	history = FileHistory.objects.filter(fileDownloadID=fileDownloadObj)
 	
 	for h in history:
 		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
-		print hMeta['id']
 		retval.append(constructLineItem(hMeta,True))
 
 	return retval

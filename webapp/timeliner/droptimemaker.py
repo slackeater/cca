@@ -3,20 +3,31 @@ from downloader.models import FileMetadata,FileDownload,FileHistory
 from dashboard.models import MimeType
 from webapp.func import dropboxAlternateName
 
-def constructLineItem(item):
+def constructLineItem(item,isHistory = False):
 
 	trashed = False
 	date = item['modified']
 	parsedDate = list(time.strptime(date,"%a, %d %b %Y %H:%M:%S +0000"))[:6]
+	isDir = False
+	title = os.path.basename(item['path'])
+
 	#subtract -1 from the month
 	parsedDate[1] = parsedDate[1] - 1
 	parsedDateStr = ",".join(map(str,parsedDate))
 
+	if isHistory:
+		altName = item['rev']
+	else:
+		altName = dropboxAlternateName(item['path'],date)
+
 	if 'is_deleted'	in item:
 		trashed = True
 
-	jStr = '{"timeStr":"'+date+'","altName":"'+dropboxAlternateName(item['path'],date)+'","trashed":"'+str(trashed)+'"}'
-	return {'title': os.path.basename(item['path']),'time': parsedDateStr,'params': jStr}
+	if item['is_dir']:
+		isDir = True
+
+	jStr = '{"timeStr":"'+date+'"}'
+	return {'title': title,'isDir': str(isDir),'altName':altName,'trashed':str(trashed),'time': parsedDateStr,'params': jStr}
 	
 def formTimeline(cloudItem,token,resType,mimeType):
 
@@ -51,6 +62,6 @@ def filehistoryTimeline(cloudItem,token,altName):
 
 	for h in history:
 		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
-		retval.append(constructLineItem(hMeta))
+		retval.append(constructLineItem(hMeta,True))
 
 	return retval

@@ -121,7 +121,7 @@ def downloadHistory(client,at):
 
 					bName = os.path.basename(path)
 					#get file download id
-					fDown = FileDownload.objects.get(fileName=bName,alternateName=altName)
+					fDown = FileDownload.objects.get(fileName=bName,alternateName=altName,tokenID=at)
 					print s
 					print altName
 					print fDown.id

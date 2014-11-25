@@ -1,7 +1,6 @@
-<div id="visualization"></div>
+<div id="visualization" style="display: none"></div>
 
 <script type="text/javascript">
-
 function showHistory(altId){
 	Dajaxice.timeliner.fileHistoryTimeliner(showHistoryCallBack,{'tokenID':tVal(),'cloudItem':iVal(),'altName':altId})	
 }
@@ -15,25 +14,20 @@ function showHistoryCallBack(data){
 	}
 }
 
-function tip(elem,ev){
+function tip(elem,ev,altName){
 
 	var dec = $("<div/>").html(ev).text();
 	var obj = JSON.parse(dec)
-	var trashCont = ""
 	var history = ""
 
-	if(obj['trashed'] == "True"){
-		trashCont = "<img src='/static/icons/bin.png' />"
-	}
-
-	if(obj['altName'] != ""){
-		history = "<tr><td><img src='/static/icons/date.png' /><a onclick='showHistory(\""+obj['altName']+"\")'> History</a></td></tr>"
+	if(altName != ""){
+		history = "<tr><td><img src='/static/icons/date.png' /><a href='javascript:void(0)' onclick='showHistory(\""+altName+"\")'> History</a></td></tr>"
 	}
 
 	$(elem).qtip({
 	content: {
 		title: "Properties",
-		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr>"+history+"<tr><td>"+trashCont+"</td></tr></table>",
+		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr>"+history+"</table>",
 		button: true},
 	show: 'click',
 	hide: {
@@ -44,24 +38,31 @@ function tip(elem,ev){
 	})
 }
 
-  // DOM element where the Timeline will be attached
-  var container = document.getElementById('visualization');
+	// DOM element where the Timeline will be attached
+	var container = document.getElementById('visualization');
+	// Configuration for the Timeline
+	var options = {orientation: 'top'};
 
-    // Create a DataSet (allows two way data-binding)
-    var items = new vis.DataSet([
-		    {% for ev in events %}
-		    		
-		    {id: {{forloop.counter}}, content: "<a id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", start: new Date({{ev.time}})},
-		    {% endfor %}
-		      ]);
+	// Create a DataSet (allows two way data-binding)
+	var items = new vis.DataSet([
+		{% for ev in events %}
+		{
+			content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
+			start: new Date({{ev.time}})
 
-      // Configuration for the Timeline
-      var options = {orientation: 'top'};
+			{% if ev.trashed == "True" %}
+			,style: "background-color: darkgray"
+			{% endif %}
+		},
+		{% endfor %}
+	]);
+
+
 
   // Create a Timeline
   var timeline = new vis.Timeline(container, items, options);
 
 	{% for ev in events %}
-		tip('#{{forloop.counter}}','{{ev.params}}')
+	tip('#{{forloop.counter}}','{{ev.params}}','{{ev.altName}}')
 	{% endfor %}
 </script>

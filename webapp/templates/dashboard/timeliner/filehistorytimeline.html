@@ -1,3 +1,4 @@
+<div id="selectItems"></div>
 <div id="fileHistoryContainer">
 <h3>History for: {{fileTitle}} | <a href="javascript:void" onclick="back()">Go Back</a></h3>
 <div id="visualizationFileHistory"></div>
@@ -35,8 +36,8 @@ function tip(elem,ev){
     // Create a DataSet (allows two way data-binding)
     var items = new vis.DataSet([
 		    {% for ev in events %}
-		    {id: {{forloop.counter}}, 
-			content: "<a id='fh-{{forloop.counter}}'>{{ev.title}}</a>"
+		    {id: "{{ev.altName}}", 
+			content: "<a href='javascript:void(0)' id='fh-{{forloop.counter}}'>{{ev.title}}</a>"
 		    
 		    , start: new Date({{ev.time}})},
 		    {% endfor %}
@@ -51,5 +52,14 @@ function tip(elem,ev){
 	{% for ev in events %}
 		tip('#fh-{{forloop.counter}}','{{ev.params}}')
 	{% endfor %}
+
+	timeline.on("select", function(properties){
+			
+			if (properties.items.length == 2){
+				console.log(properties)
+				document.getElementById("selectItems").innerHTML = properties.items
+			}
+	});
 </script>
+
 </div>

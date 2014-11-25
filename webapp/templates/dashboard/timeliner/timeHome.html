@@ -5,7 +5,12 @@
 <script type="text/javascript">
 
 function formTimeline(){
-	Dajaxice.timeliner.formTimeliner(Dajax.process,{'tokenID':tVal(),'cloudItem':iVal(),'form':$("#formTl").serialize(true)})
+	Dajaxice.timeliner.formTimeliner(formTimeCallBack,{'tokenID':tVal(),'cloudItem':iVal(),'form':$("#formTl").serialize(true)})
+}
+
+function formTimeCallBack(data){
+	Dajax.process(data)
+	$("#visualization").fadeIn("slow")
 }
 
 </script>
