@@ -2,10 +2,13 @@ from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
 from webapp.func import *
+from webapp.exceptionFormatter import formatException
 import fileComparator
 from downloader.models import FileDownload, Download
 from django.template.loader import render_to_string
-import time
+from django.utils.html import strip_tags,strip_entities
+import time,sys,traceback
+
 @dajaxice_register
 def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 	
@@ -25,12 +28,14 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 		#get folder name
 		download = Download.objects.get(tokenID=tkn,threadStatus="completed")
 
+		#compute the diff
 		diffName = fileComparator.compareTwo(str(revOne),str(revTwo),f,download.folder,tkn)
+	
+		table = render_to_string("dashboard/timeliner/diffViewer.html",{'fileName': f.fileName,'revOne': strip_tags(strip_entities(revOne)),'revTwo': strip_tags(strip_entities(revTwo)),'fileDiff': diffName})
 		
-		iframe = "<embed src ='/diff/"+diffName+"' height='600' width='100%' style='text-align: center'>"
-		
-		dajax.assign("#comparator","innerHTML",iframe)
+		dajax.assign("#comparator","innerHTML",table)
+		dajax.assign("#comparatorError","innerHTML","")
 	except Exception as e:
-		dajax.assign("#comparatorError","innerHTML",e.message)
+		dajax.assign("#comparatorError","innerHTML",formatException(e))
 
 	return dajax.json()
