@@ -1,16 +1,17 @@
-<div id="selectItems"></div>
-<div id="comparator" style="display: none; width: 100%; border: solid 1px black; text-align: center;"><img src="/static/360.GIF" id="comparatorLoader" /> Computing diff...</div>
-<div id="fileHistoryContainer">
 <h3>History for: {{fileTitle}} | <a href="javascript:void" onclick="back()">Go Back</a></h3>
+<div id="comparatorError"></div>
+<div id="comparatorLoader" style="display: none; width: 100%; text-align: center;"><img src="/static/360.GIF" id="comparatorLoader" /> Computing diff...</div>
+<div id="comparator" style="display: none; width: 100%; text-align: center;"></div>
+<div id="fileHistoryContainer">
 <div id="visualizationFileHistory"></div>
 
 <script type="text/javascript">
 
 function diffCallBack(data){
-	$("comparatorLoader").fadeOut("slow")
+	$("#comparatorLoader").fadeOut("slow")
+	$("#comparator").fadeIn("slow")
 	Dajax.process(data)
 }
-
 
 function back(){
 	$("#fileHistoryContainer").fadeOut("slow")
@@ -65,9 +66,8 @@ function tip(elem,ev){
 			
 			if (properties.items.length == 2){
 				console.log(properties.items)
-				$("#comparator").fadeIn("slow")
 				$("#comparatorLoader").fadeIn("slow")
-				Dajaxice.comparator.compareTwoFile(Dajax.process,{'tokenID': tVal(),'cloudItem': iVal(),'revOne':properties.items[0],'revTwo':properties.items[1],'altName':'{{altName}}'})
+				Dajaxice.comparator.compareTwoFile(diffCallBack,{'tokenID': tVal(),'cloudItem': iVal(),'revOne':properties.items[0],'revTwo':properties.items[1],'altName':'{{altName}}'})
 			}
 	});
 </script>
