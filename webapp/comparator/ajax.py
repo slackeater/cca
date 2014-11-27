@@ -29,9 +29,10 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 		download = Download.objects.get(tokenID=tkn,threadStatus="completed")
 
 		#compute the diff
-		diffName = fileComparator.compareTwo(str(revOne),str(revTwo),f,download.folder,tkn)
-	
-		table = render_to_string("dashboard/timeliner/diffViewer.html",{'fileName': f.fileName,'revOne': strip_tags(strip_entities(revOne)),'revTwo': strip_tags(strip_entities(revTwo)),'fileDiff': diffName})
+		info = fileComparator.compareTwo(str(revOne),str(revTwo),f,download.folder,tkn)
+		
+		imgMimeList = ['image/jpeg','image/png','image/gif','image/bmp']
+		table = render_to_string("dashboard/timeliner/diffViewer.html",{'fileName': f.fileName,'revOne': strip_tags(strip_entities(revOne)),'revTwo': strip_tags(strip_entities(revTwo)),'info': info,'imgMimes': imgMimeList})
 		
 		dajax.assign("#comparator","innerHTML",table)
 		dajax.assign("#comparatorError","innerHTML","")

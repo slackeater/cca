@@ -12,6 +12,7 @@ def formatException(exception):
 	msgList.append(tbInfo[0][0])
 	msgList.append(tbInfo[0][2])
 	msgList.append(tbInfo[0][1])
+	msgList.append(traceback.format_exc())
 
 	excFormatted = render_to_string("exceptions.html",{'info': msgList})
 	return excFormatted

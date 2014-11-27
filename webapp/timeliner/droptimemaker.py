@@ -60,6 +60,20 @@ def filehistoryTimeline(cloudItem,token,altName):
 	#get history for this file
 	history = FileHistory.objects.filter(fileDownloadID=fileDownloadObj)
 
+	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
+
+	#add original file
+	for f in meta:
+		for c in f['contents']:
+			if not c['is_dir']:
+				if os.path.basename(c['path']) == fileDownloadObj.fileName:
+					if 'is_deleted' in c:
+						deleted = True
+					else: 
+						deleted = False
+
+					retval.append(constructLineItem(c,deleted))
+
 	for h in history:
 		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
 		retval.append(constructLineItem(hMeta,True))

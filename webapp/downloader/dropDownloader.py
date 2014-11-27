@@ -112,7 +112,7 @@ def downloadHistory(client,at):
 			if not f['is_dir']:
 				rev = client.revisions(f['path'])
 				
-				if len(rev) > 1: # one revision means original file
+				if len(rev) >= 1: # one revision means original file
 					#compute alternate name for db lookup
 					modified = rev[0]['modified']
 					path = rev[0]['path']

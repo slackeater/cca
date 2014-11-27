@@ -7,12 +7,13 @@ table#diff{
 	margin-top: 5%;
 	width: 85%;
 	height: 85%;
-	border: solid 2px black;
+	border: solid 1px black;
+	padding: 4px;
 }
 
 td#diffHead{
 	font-weight: bold;
-	text-align: center;
+	text-align: left;
 	font-size: 12pt;
 }
 
@@ -25,7 +26,14 @@ td.revHead{
 </style>
 
 <table id="diff">
-	<tr height="20px"><td></td><td id="diffHead">File: {{fileName}}</td><td style="text-align: right"><a href="javascript:void(0)" onclick="$('#comparatorCont').fadeOut('slow')"><img src="/static/close9.png" height=20 width=20 /></a></td></tr>
+	<tr height="35px"><td id="diffHead" colspan=2>File: {{fileName}}</td><td style="text-align: right; margin: 0;padding: 0"><a href="javascript:void(0)" onclick="$('#comparatorCont').fadeOut('slow')"><img src="/static/close9.png" height=20 width=20 /></a></td></tr>
 	<tr height="20px"><td class="revHead">Version A: {{revOne}}</td><td></td><td class="revHead">Version B: {{revTwo}}</td></tr>
-	<tr><td colspan=3 style="text-align: center"><embed src="/diff/{{fileDiff}}" height="100%" width="100%" style="text-align: center"></td></tr>
+	
+	{% if info.mime.0 == "application/pdf" %}
+		<tr><td colspan=3 style="text-align: center"><embed src="/diff/{{info.data.diffName}}" height="100%" width="100%" style="text-align: center"></td></tr>
+	{% elif info.mime.0 and info.mime.1 in imgMimes %}
+	<tr><td>{{info.mime.0}}</td><td></td><td>{{info.mime.1}}</td></tr>
+		<tr><td>Hash: {{info.data.hash1}}</td><td></td><td>Hash: {{info.data.hash2}}</td></tr>
+		<tr><td style="text-align: center"><img style="border: solid 1px black" src="/diff/{{info.data.hash1}}.thumbnail" /></td><td></td><td style="text-align: center"><img style="border: solid 1px black" src="/diff/{{info.data.hash2}}.thumbnail" /></td></tr>
+	{% endif %}
 </table>

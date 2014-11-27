@@ -87,8 +87,7 @@ def downloadHistory(driveService,at):
 			#get revisions for this file
 			revs = driveService.revisions().list(fileId=item['id']).execute()
 		
-			# if len == 1 we do not have any revision
-			if len(revs['items']) > 1:
+			if len(revs['items']) >= 1:
 
 				#create a folder for this file
 				revPath = os.path.join(downDirHistory,item['id'])
