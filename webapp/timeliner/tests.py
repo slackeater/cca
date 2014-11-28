@@ -103,14 +103,12 @@ class TimelinerTestCase(TestCase):
 				
 				self.assertEquals(r.status_code,200)
 
-				fh = FileHistory.objects.filter(fileDownloadID=f)
+				#fh = FileHistory.objects.filter(fileDownloadID=f)
 
 				#we have a history
-				if len(fh) > 0:
+				if rDump[0]['id'] == "#fileHistory":
 					# history element present and no error
-					self.assertEquals(rDump[0]['id'],"#fileHistory")
 					self.assertEqual(rDump[1]['val'], "")
-				else:
+				elif rDump[0]['id'] == "#formHistoryError":
 					# error element if no history
-					self.assertEquals(rDump[0]['id'],"#formHistoryError")
 					self.assertEquals(rDump[0]['val'],"No history for this file")

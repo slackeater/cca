@@ -1,5 +1,5 @@
 from clouditem.models import CloudItem
-from downloader.models import AccessToken, FileMetadata, FileDownload, FileHistory
+from downloader.models import AccessToken, FileMetadata, FileDownload, FileHistory,Download
 from dashboard.models import MimeType
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -23,6 +23,8 @@ class MakeDatabase():
 		self.createCloudItem()
 		# === create access tokens
 		self.createAccessToken()
+		# === create download
+		self.createDownload()
 		# === create file metadata 
 		self.createFileMetadata()
 		# === create file download
@@ -37,19 +39,22 @@ class MakeDatabase():
 
 	def createCloudItem(self):
 		user = User.objects.all()[0]
-		ci = CloudItem(desc="Set up clouditem",reportName="Set up",reporterID=user)
-		ci.save()
+		ciPath = os.path.join(self.filePath,"clouditem_clouditem.json")
+		ciData = json.load(open(ciPath,"rb"))
+		
+		for c in ciData:
+			ci = CloudItem(id=c['id'],desc=c['desc'],reportName=c['reportName'],itemTime=c['itemTime'],reporterID=user)
+			ci.save()
 	
 	def createAccessToken(self):
-		ci = CloudItem.objects.all()[0]
 		atPath = os.path.join(self.filePath,"downloader_accesstoken.json")
 		atData = json.load(open(atPath,"rb"))
 
 		for a in atData:
-			date = list(time.strptime(,"%Y-%m-%d %H:%M:%S"))[:6]
+			date = list(time.strptime(a['tokenTime'],"%Y-%m-%d %H:%M:%S"))[:6]
 			tzDate = timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5])
 			at = AccessToken(id=a['id'],accessToken=a['accessToken'],userID=a['userID'],serviceType=a['serviceType'],tokenTime=tzDate,userInfo=a['userInfo'],
-					cloudItem=ci)
+					cloudItem=CloudItem.objects.get(id=a['cloudItem_id']))
 			at.save()
 
 	def createFileMetadata(self):
@@ -86,3 +91,12 @@ class MakeDatabase():
 		for fd in fhData:
 			fileHist = FileHistory(id=fd['id'],revision=fd['revision'],status=fd['status'],fileDownloadID=FileDownload.objects.get(id=fd['fileDownloadID_id']),revisionMetadata=fd['revisionMetadata'])
 			fileHist.save()
+
+	def createDownload(self):
+		dwPath = os.path.join(self.filePath,"downloader_download.json")
+		dwData = json.load(open(dwPath,"rb"))
+
+		for d in dwData:
+			dwItem = Download(id=d['id'],status=d['status'],tokenID=AccessToken.objects.get(id=d['tokenID_id']),folder=d['folder'],downTime=d['downTime'],threadStatus=d['threadStatus'],threadMessage=d['threadMessage'])
+			dwItem.save()
+

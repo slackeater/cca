@@ -9,24 +9,26 @@ import json,os,urllib
 
 class CloudserviceTestCase(TestCase):
 
-	@classmethod
-	def setUpClass(self):
-		self.ci = CloudItem.objects.all()[0]
-
 	def login(self):
 		return self.client.login(username="reporter",password="reporter")
 	
 	def test_analyse_view_nologin(self):
-		for a in AccessToken.objects.all():
-			resp = self.client.get('/analyse/'+str(self.ci.id)+'/'+str(a.id)+'/',follow=True,secure=True)
-			self.assertRedirects(resp,"/login/")
+		for c in CloudItem.objects.all():
+
+			#get acccess token
+			for a in AccessToken.objects.filter(cloudItem=c):
+				resp = self.client.get('/analyse/'+str(c.id)+'/'+str(a.id)+'/',follow=True,secure=True)
+				self.assertRedirects(resp,"/login/")
 
 	def test_analyse_view_login(self):
 		self.assertTrue(self.login())
 
-		for a in AccessToken.objects.all():
-			resp = self.client.get('/analyse/'+str(self.ci.id)+'/'+str(a.id)+'/',secure=True)
-			self.assertContains(resp,a.serviceType.title())
+		for c in CloudItem.objects.all():
+
+			#get acccess token
+			for a in AccessToken.objects.filter(cloudItem=c):
+				resp = self.client.get('/analyse/'+str(c.id)+'/'+str(a.id)+'/',follow=True,secure=True)
+				self.assertContains(resp,a.serviceType.title())
 
 	def test_analyse_ci_notexist_login(self):
 		self.assertTrue(self.login())
@@ -38,96 +40,102 @@ class CloudserviceTestCase(TestCase):
 		self.assertTrue(self.login())
 
 		with self.assertRaises(AccessToken.DoesNotExist):
-			self.client.get('/analyse/'+str(self.ci.id)+'/1000/',secure=True)
+			for c in CloudItem.objects.all():
+				self.client.get('/analyse/'+str(c.id)+'/1000/',secure=True)
 
 	def test_analyse_metadata(self):
 		self.assertTrue(self.login())
-		
-		for a in AccessToken.objects.all():
-			payload = {"tokenID":a.id,"cloudItem":self.ci.id}
-			data = {'argv': json.dumps(payload)}
+	
+		for c in CloudItem.objects.all():
+			for a in AccessToken.objects.filter(cloudItem=c):
+				payload = {"tokenID":a.id,"cloudItem":c.id}
+				data = {'argv': json.dumps(payload)}
 
-			r = self.client.post(
-					"/dajaxice/cloudservice.metadataAnalysis/",
-					data=urllib.urlencode(data),
-					secure=True,
-					HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-					content_type="application/x-www-form-urlencoded"
-			)
-			
-			rDump = json.loads(r.content)
-			
-			self.assertEqual(rDump[0]['id'],"#metaAnalysis")
-			#error should be empty
-			self.assertEqual(rDump[1]['val'],"")
+				r = self.client.post(
+						"/dajaxice/cloudservice.metadataAnalysis/",
+						data=urllib.urlencode(data),
+						secure=True,
+						HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+						content_type="application/x-www-form-urlencoded"
+				)
+				
+				rDump = json.loads(r.content)
+				
+				self.assertEqual(rDump[0]['id'],"#metaAnalysis")
+				#error should be empty
+				self.assertEqual(rDump[1]['val'],"")
 
 	def test_analyse_searchmetadata(self):
 		self.assertTrue(self.login())
 
-		for a in AccessToken.objects.all():
-			url = "/dajaxice/cloudservice.searchMetaData/"
+		for c in CloudItem.objects.all():
+			for a in AccessToken.objects.filter(cloudItem=c):
+				url = "/dajaxice/cloudservice.searchMetaData/"
 
-			# deleted
-			payload = {'tokenID': a.id, "cloudItem": self.ci.id,"form":"resType=0&mimeType=1090"}
-			data = {"argv": json.dumps(payload)}
-			r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
-			self.assertEquals(r.status_code,200)
-
-			rDump = json.loads(r.content)
-			self.assertEqual(rDump[0]['id'],"#searchRes")
-			self.assertEqual(rDump[1]['val'], "")
-
-			#all
-			payload = {'tokenID': a.id, "cloudItem": self.ci.id,"form":"resType=2&mimeType=1090"}
-			data = {"argv": json.dumps(payload)}
-			r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
-			self.assertEquals(r.status_code,200)
-
-			rDump = json.loads(r.content)
-			self.assertEqual(rDump[0]['id'],"#searchRes")
-			self.assertEqual(rDump[1]['val'], "")
-
-			#mime type
-			payload = {'tokenID': a.id, "cloudItem": self.ci.id,"form":"resType=1&mimeType=1228"}
-			data = {"argv": json.dumps(payload)}
-			r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
-			self.assertEquals(r.status_code,200)
-			
-			rDump = json.loads(r.content)
-			self.assertEqual(rDump[0]['id'],"#searchRes")
-			self.assertEqual(rDump[1]['val'], "")
-
-	def test_analyse_fileinfo(self):
-		self.assertTrue(self.login())
-
-		for a in AccessToken.objects.all():
-			url = "/dajaxice/cloudservice.fileInfo/"
-
-			files = FileDownload.objects.filter(tokenID=a)
-
-			for f in files:
-				#make a request for each file
-				payload = {"tokenID": a.id,"cloudItem": self.ci.id,"id":str(f.alternateName)}
+				# deleted
+				payload = {'tokenID': a.id, "cloudItem": c.id,"form":"resType=0&mimeType=1090"}
 				data = {"argv": json.dumps(payload)}
 				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 				self.assertEquals(r.status_code,200)
-				self.assertContains(r,f.alternateName)
 
-	def test_analyse_filerevision(self):
-		self.assertTrue(self.login())
+				rDump = json.loads(r.content)
+				self.assertEqual(rDump[0]['id'],"#searchRes")
+				self.assertEqual(rDump[1]['val'], "")
 
-		for a in AccessToken.objects.all():
-			url = "/dajaxice/cloudservice.fileRevision/"
+				#all
+				payload = {'tokenID': a.id, "cloudItem": c.id,"form":"resType=2&mimeType=1090"}
+				data = {"argv": json.dumps(payload)}
+				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+				self.assertEquals(r.status_code,200)
 
-			files = FileDownload.objects.filter(tokenID=a)
+				rDump = json.loads(r.content)
+				self.assertEqual(rDump[0]['id'],"#searchRes")
+				self.assertEqual(rDump[1]['val'], "")
 
-			for f in files:
-				#make a request for each file
-				payload = {"tokenID": a.id,"cloudItem": self.ci.id,"fId":str(f.alternateName)}
+				#mime type
+				payload = {'tokenID': a.id, "cloudItem": c.id,"form":"resType=1&mimeType=1228"}
 				data = {"argv": json.dumps(payload)}
 				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 				self.assertEquals(r.status_code,200)
 				
-				#check that there are not errros
 				rDump = json.loads(r.content)
-				self.assertEquals(rDump[1]['val'],"")
+				self.assertEqual(rDump[0]['id'],"#searchRes")
+				self.assertEqual(rDump[1]['val'], "")
+
+	def test_analyse_fileinfo(self):
+		self.assertTrue(self.login())
+
+
+		for c in CloudItem.objects.all():
+			for a in AccessToken.objects.filter(cloudItem=c):
+				url = "/dajaxice/cloudservice.fileInfo/"
+
+				files = FileDownload.objects.filter(tokenID=a)
+
+				for f in files:
+					#make a request for each file
+					payload = {"tokenID": a.id,"cloudItem": c.id,"id":str(f.alternateName)}
+					data = {"argv": json.dumps(payload)}
+					r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+					self.assertEquals(r.status_code,200)
+					self.assertContains(r,f.alternateName)
+
+	def test_analyse_filerevision(self):
+		self.assertTrue(self.login())
+
+		for c in CloudItem.objects.all():
+			for a in AccessToken.objects.filter(cloudItem=c):
+				url = "/dajaxice/cloudservice.fileRevision/"
+
+				files = FileDownload.objects.filter(tokenID=a)
+
+				for f in files:
+					#make a request for each file
+					payload = {"tokenID": a.id,"cloudItem": c.id,"fId":str(f.alternateName)}
+					data = {"argv": json.dumps(payload)}
+					r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+					self.assertEquals(r.status_code,200)
+					
+					#check that there are not errros
+					rDump = json.loads(r.content)
+					self.assertEquals(rDump[1]['val'],"")

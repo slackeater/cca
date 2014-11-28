@@ -12,6 +12,8 @@ import sys, os, json, zipfile
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from webapp.func import *
+from webapp.exceptionFormatter import formatException
+from django.utils import timezone
 
 class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File')
@@ -37,7 +39,7 @@ def importer(request,cloudItem):
 			rep = Upload.objects.filter(cloudItemID=cloudItemQuery)
 			form = UploadForm() if rep.count() == 0 else None 
 		except Exception as e:
-			status = e.message
+			status = formatException(e)
 
 		return render_to_response("dashboard/imp.html", {'parseStatus': status,'objID': cloudItem,'form': form, 'repList': rep}, context_instance=RequestContext(request))
 	else:
@@ -46,6 +48,12 @@ def importer(request,cloudItem):
 
 def manageReportUpload(request,cloudItem):
 	""" Uncrypt and store the report """
+	
+	#check if an item is already in the DB
+	impDb = Upload.objects.filter(cloudItemID=CloudItem.objects.get(id=cloudItem))
+	
+	if len(impDb) != 0:
+		raise ("A report already exists.")
 
 	# add path for crypto
 	cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -58,13 +66,28 @@ def manageReportUpload(request,cloudItem):
 
 	fileUpload = request.FILES['fileUp']
 	fileName = strip_tags(fileUpload.name)
+	#create a folder for this cloud item if do not exists
+	path = os.path.join(settings.UPLOAD_DIR,cloudItem)
+
+	if not os.path.isdir(path):
+		os.mkdir(path)
+
+	#upload name
+	upTime = timezone.now()
+	shaName = fileName
+	uploadName = crypto.sha256(shaName[:-8]+crypto.HASH_SEPARATOR+str(upTime))
+
+	wholeUploadPath = os.path.join(path,uploadName)
+
+	if not os.path.isdir(wholeUploadPath):
+		os.mkdir(wholeUploadPath)
 
 	#write to disk
-	with open(os.path.join(settings.UPLOAD_DIR,fileName), 'wb+') as destination:
+	with open(os.path.join(wholeUploadPath,fileName), 'wb+') as destination:
 		for chunk in fileUpload.chunks():
 			destination.write(chunk)
 	
-	fileCont = open(os.path.join(settings.UPLOAD_DIR,fileName), "r")
+	fileCont = open(os.path.join(wholeUploadPath,fileName), "r")
 	jsonParsed = json.load(fileCont)
 
 	cont = jsonParsed['enc']
@@ -74,7 +97,7 @@ def manageReportUpload(request,cloudItem):
 	aes = crypto.decryptRSA(k)
 
 	#decrypt ZIP - first write encrypted cont into a temp file, read it, decrypt it and store the ZIP
-	tempFileName = os.path.join(settings.UPLOAD_DIR, fileName+".tmp")
+	tempFileName = os.path.join(wholeUploadPath,fileName+".tmp")
 	open(tempFileName, "w+b").write(cont)
 
 	# fernet wants "bytes" as token
@@ -86,7 +109,7 @@ def manageReportUpload(request,cloudItem):
 		raise Exception("Invalid filename.")
 
 	#write decrypted file to disc
-	decZipFile = os.path.join(settings.UPLOAD_DIR, name)
+	decZipFile = os.path.join(wholeUploadPath, name)
 	open(decZipFile, "w+b").write(fileBytes)
 
 	#delete temp file
@@ -97,7 +120,7 @@ def manageReportUpload(request,cloudItem):
 	
 	#unzip
 	fileZip = zipfile.ZipFile(decZipFile)
-	fileZip.extractall(settings.UPLOAD_DIR)
+	fileZip.extractall(wholeUploadPath)
 	# set this report parsed	
-	newUpload = Upload(fileName=name[:-4],uploadIP=request.META['REMOTE_ADDR'],parsed=True,cloudItemID=CloudItem.objects.get(id=cloudItem))
+	newUpload = Upload(fileName=name[:-4],uploadDate=upTime,uploadIP=request.META['REMOTE_ADDR'],parsed=True,cloudItemID=CloudItem.objects.get(id=cloudItem))
 	newUpload.save()

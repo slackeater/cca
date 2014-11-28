@@ -6,9 +6,6 @@ ALLOWED_MIME = ("application/pdf","image/jpeg","image/png","image/gif","image/bm
 
 def compareTwo(revOneID,revTwoID,diffFile,downloadFolder,token):
 	
-	print revOneID
-	print revTwoID
-
 	finalDiffName = None
 
 	#diff file full path

@@ -5,7 +5,6 @@ from django.utils import timezone
 
 class Upload(models.Model):
 	fileName = models.CharField(max_length=256)
-	time = timezone.localtime(timezone.now())
 	uploadDate = models.DateTimeField(default=timezone.now, blank=True)
 	uploadIP = models.IPAddressField(default="0.0.0.0",blank=True)
 	parsed = models.BooleanField(default=False)
