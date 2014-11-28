@@ -28,14 +28,16 @@ class DownloaderTestCase(TestCase):
 
 	def test_token_view_login(self):
 		self.assertTrue(self.login())
-		
-		resp = self.client.get("/token/"+str(self.ci.id)+"/",secure=True)
-		self.assertContains(resp,"Dropbox")
-		self.assertContains(resp,"Google Drive")
+	
+		for c in CloudItem.objects.all():
+			resp = self.client.get("/token/"+str(c.id)+"/",secure=True)
+			self.assertContains(resp,"Dropbox")
+			self.assertContains(resp,"Google Drive")
 
 	def test_token_cloudtokenview_nologin(self):
-		resp = self.client.get("/token/"+str(self.ci.id)+"/8000/",follow=True,secure=True)
-		self.assertRedirects(resp,"/login/")
+		for c in CloudItem.objects.all():
+			resp = self.client.get("/token/"+str(c.id)+"/8000/",follow=True,secure=True)
+			self.assertRedirects(resp,"/login/")
 
 	def test_token_view_notexist_login(self):
 		self.assertTrue(self.login())
@@ -46,24 +48,27 @@ class DownloaderTestCase(TestCase):
 	def test_token_dash_login(self):
 		self.assertTrue(self.login())
 
-		for at in AccessToken.objects.all():
-			resp = self.client.get("/token/"+str(self.ci.id)+"/"+str(at.id)+"/",secure=True)
-			self.assertContains(resp,"Download")
-			self.assertContains(resp,"Metadata")
-			self.assertContains(resp,"Timelines")
-			self.assertContains(resp,"Report")
+		for c in CloudItem.objects.all():
+			for at in AccessToken.objects.filter(cloudItem=c):
+				resp = self.client.get("/token/"+str(c.id)+"/"+str(at.id)+"/",secure=True)
+				self.assertContains(resp,"Download")
+				self.assertContains(resp,"Metadata")
+				self.assertContains(resp,"Timelines")
+				self.assertContains(resp,"Report")
 
 	def test_download_view_nologin(self):
-		for at in AccessToken.objects.all():
-			resp = self.client.get("/download/"+str(self.ci.id)+"/"+str(at.id)+"/",secure=True,follow=True)
-			self.assertRedirects(resp,"/login/")
+		for c in CloudItem.objects.all():
+			for at in AccessToken.objects.filter(cloudItem=c):
+				resp = self.client.get("/download/"+str(c.id)+"/"+str(at.id)+"/",secure=True,follow=True)
+				self.assertRedirects(resp,"/login/")
 
 	def test_download_view_login(self):
 		self.assertTrue(self.login())
 
-		for at in AccessToken.objects.all():
-			resp = self.client.get("/download/"+str(self.ci.id)+"/"+str(at.id)+"/",secure=True)
-			self.assertContains(resp,"The download will include")
+		for c in CloudItem.objects.all():
+			for at in AccessToken.objects.filter(cloudItem=c):
+				resp = self.client.get("/download/"+str(c.id)+"/"+str(at.id)+"/",secure=True)
+				self.assertContains(resp,"The download will include")
 
 	def test_download_view_cinotexist_login(self):
 		self.assertTrue(self.login())
@@ -81,7 +86,9 @@ class DownloaderTestCase(TestCase):
 		self.assertTrue(self.login())
 
 		url = "/dajaxice/downloader.showDropboxTokens/"
-		payload = {"ci":self.ci.id}
+
+		c = CloudItem.objects.get(id=3)
+		payload = {"ci":c.id}
 		data = {"argv": json.dumps(payload)}
 		r = self.client.post(url,urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 		self.assertEquals(r.status_code,200)
@@ -92,8 +99,9 @@ class DownloaderTestCase(TestCase):
 	def test_show_tokens_google_login(self):
 		self.assertTrue(self.login())
 
+		c = CloudItem.objects.get(id=2)
 		url = "/dajaxice/downloader.showGoogleTokens/"
-		payload = {"ci":self.ci.id}
+		payload = {"ci":c.id}
 		data = {"argv": json.dumps(payload)}
 		r = self.client.post(url,urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 
