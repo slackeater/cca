@@ -55,3 +55,38 @@ class ComparatorTestCase(TestCase):
 							#empty revOne and revTwo
 							revOne = None
 							revTwo = None
+	
+	@override_settings(DIFF_DIR="/media/hd1/testDiff/")
+	def test_image_thumbnailer(self):
+		self.assertTrue(self.login())
+
+		url = "/dajaxice/comparator.compareTwoFile/"
+		cloudItemID = 3
+		tokenID = 4
+		fileDownloadID = 142
+		alternateName = "3ddf4299f1b96c992aa818403c49aa53"
+
+		#get revision
+		revs = FileHistory.objects.filter(fileDownloadID=FileDownload.objects.get(id=fileDownloadID))
+
+		revOne = revs[0].revision
+		revTwo = revs[1].revision
+
+		payload = {'tokenID': tokenID,'cloudItem': cloudItemID,'revOne': revOne,'revTwo': revTwo,'altName': alternateName}
+		data = {"argv": json.dumps(payload)}
+
+		r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+		self.assertEquals(r.status_code,200)
+		self.assertContains(r,"aab091a8dad2098fe4645cad6c20ebf4bf4f0a53d76fec6b655f975ce62062fb")
+		self.assertContains(r,"5729da77ea013f78619467de1a325223eda4e655e357ea74539be9dc34d9be3f")
+
+		#test if images exists
+		imgOnePath = os.path.join(settings.DIFF_DIR,"aab091a8dad2098fe4645cad6c20ebf4bf4f0a53d76fec6b655f975ce62062fb.thumbnail")
+		imgTwoPath = os.path.join(settings.DIFF_DIR,"5729da77ea013f78619467de1a325223eda4e655e357ea74539be9dc34d9be3f.thumbnail")
+		self.assertTrue(os.path.isfile(imgOnePath))
+		self.assertTrue(os.path.isfile(imgTwoPath))
+
+		#delete them
+		os.remove(imgOnePath)
+		os.remove(imgTwoPath)
+		
