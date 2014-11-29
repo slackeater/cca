@@ -8,6 +8,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from django import forms
 
+
 class CloudItemForm(forms.Form):
 	""" A cloud item form """
 
@@ -15,6 +16,7 @@ class CloudItemForm(forms.Form):
 	description = forms.CharField(label="Description",widget=forms.Textarea)
 
 def cloudItem(request):
+
 	""" View used to show the list of cloud item and add a new one """
 	if isAuthenticated(request):
 		f = CloudItemForm()

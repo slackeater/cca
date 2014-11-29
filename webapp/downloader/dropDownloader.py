@@ -1,9 +1,17 @@
 from models import FileMetadata,AccessToken, Download, FileDownload, FileHistory
-import json, base64, os, md5, dropbox, requests
+import json, base64, os, md5, dropbox, requests,sys
 from django.conf import settings
 from webapp.func import dropboxAlternateName
+from django.utils import timezone
+from django.utils.dateformat import format
+# add path for crypto
+cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
 
+if not cryptoPath in sys.path:
+	sys.path.insert(1, cryptoPath)
+	del cryptoPath
 
+import crypto
 
 def getMetaData(at):
 	""" Get the metadata """
@@ -21,7 +29,11 @@ def downloadMetaData(client,at):
 	fm = FileMetadata.objects.filter(tokenID=at)
 
 	if fm.count() == 0:
-		storeFM = FileMetadata(metadata=base64.b64encode(fileMetaData),tokenID=at)
+		meta = base64.b64encode(fileMetaData)
+		metaTime = timezone.now()
+		metaHash = crypto.sha256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"))
+
+		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
 
 		return "running","-",1
@@ -74,10 +86,12 @@ def downloadFiles(client,at):
 				
 				try:
 					with client.get_file(f['path']) as f:
-						outF = open(os.path.join(downDirFullSub,bName+"_"+altName),"wb+")
+						fullPath = os.path.join(downDirFullSub,bName+"_"+altName)
+						outF = open(fullPath,"wb+")
 						outF.write(f.read())
 						outF.close()
-						fDb = FileDownload(fileName=bName,alternateName=altName,status=1,tokenID=at)
+						h = crypto.sha256File(fullPath)
+						fDb = FileDownload(fileName=bName,alternateName=altName,status=1,tokenID=at,fileHash=h)
 						fDb.save()
 				except dropbox.rest.ErrorResponse as e:
 					
@@ -112,8 +126,8 @@ def downloadHistory(client,at):
 			if not f['is_dir']:
 				rev = client.revisions(f['path'])
 				
-				if len(rev) >= 1: # one revision means original file
-					#compute alternate name for db lookup
+				if len(rev) > 1: # one revision means original file
+					#compute alternate name for db lookup, from the first revision that is the original file
 					modified = rev[0]['modified']
 					path = rev[0]['path']
 					s = path.encode('utf-8') + modified.encode('utf-8')
@@ -122,9 +136,6 @@ def downloadHistory(client,at):
 					bName = os.path.basename(path)
 					#get file download id
 					fDown = FileDownload.objects.get(fileName=bName,alternateName=altName,tokenID=at)
-					print s
-					print altName
-					print fDown.id
 					del rev[0]
 					
 					# create a directory to store file revision
@@ -133,16 +144,30 @@ def downloadHistory(client,at):
 						os.mkdir(revPath)
 
 					for r in rev:
-						rEnc = base64.b64encode(json.dumps(r))
 						revID = r['rev']
-						print "-" + str(revID)
 						
 						#get revision
 						with client.get_file(f['path'],revID) as revF:
-							outF = open(os.path.join(revPath,bName+"_"+revID),"wb+")
+							fullPath = os.path.join(revPath,bName+"_"+revID)
+							outF = open(fullPath,"wb+")
 							outF.write(revF.read())
 							outF.close()
-							fDb = FileHistory(revision=revID,status=1,fileDownloadID=fDown,revisionMetadata=rEnc)
+
+							#hash
+							rEnc = base64.b64encode(json.dumps(r))
+							downloadTime = timezone.now()
+							fileRevisionHash = crypto.sha256File(fullPath)
+							revisionMetadataHash = crypto.sha256(rEnc+crypto.HASH_SEPARATOR+format(downloadTime,"U"))
+
+							fDb = FileHistory(
+									revision=revID,
+									status=1,
+									fileDownloadID=fDown,
+									revisionMetadata=rEnc,
+									downloadTime=downloadTime,
+									revisionMetadataHash=revisionMetadataHash,
+									fileRevisionHash=fileRevisionHash
+								)
 							fDb.save()
 
 	return "running","-",3

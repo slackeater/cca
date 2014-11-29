@@ -17,6 +17,7 @@ class FileMetadata(models.Model):
 	metadata = models.TextField()
 	tokenID = models.ForeignKey('AccessToken')
 	metaTime = models.DateTimeField(default=timezone.now)
+	metadataHash = models.CharField(max_length=255,default="-")
 
 class FileDownload(models.Model):
 	""" A model for storing if a file has been downloaded or not """
@@ -26,6 +27,7 @@ class FileDownload(models.Model):
 	status = models.IntegerField()
 	downloadTime = models.DateTimeField(default=timezone.now)
 	tokenID = models.ForeignKey('AccessToken')
+	fileHash = models.CharField(max_length=255,default="-")	
 
 class FileHistory(models.Model):
 	""" A model for storing if a file of the history has been downloaded or not """
@@ -34,6 +36,9 @@ class FileHistory(models.Model):
 	status = models.IntegerField()
 	revisionMetadata = models.TextField()
 	fileDownloadID = models.ForeignKey('FileDownload')
+	revisionMetadataHash = models.CharField(max_length=255,default="-")
+	fileRevisionHash = models.CharField(max_length=255,default="-")
+	downloadTime = models.DateTimeField(default=timezone.now)
 
 class Download(models.Model):
 	""" A model to keep track of the download """
@@ -44,3 +49,5 @@ class Download(models.Model):
 	folder = models.CharField(max_length=255,blank=True)
 	threadStatus = models.CharField(max_length=10,default="stopped")
 	threadMessage = models.TextField(default="-")
+	verificationZIP = models.CharField(max_length=255,default="-")
+	verificationZIPHash = models.CharField(max_length=255,default="-")

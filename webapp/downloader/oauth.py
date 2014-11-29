@@ -4,7 +4,7 @@ from django.conf import settings
 import os
 from oauth2client.client import OAuth2WebServerFlow, FlowExchangeError
 import logging
-logging.basicConfig(filename=os.path.join(settings.BASE_DIR,"debug.log"),level=logging.DEBUG)
+#logging.basicConfig(filename=os.path.join(settings.BASE_DIR,"debug.log"),level=logging.DEBUG)
 
 def dropboxAuthorizeURL():
 	""" Generate the authorization URl for Dropbox login """
