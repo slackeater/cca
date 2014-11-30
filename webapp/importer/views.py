@@ -75,7 +75,7 @@ def manageReportUpload(request,cloudItem):
 	#upload name
 	upTime = timezone.now()
 	shaName = fileName
-	uploadName = crypto.sha256(shaName[:-8]+crypto.HASH_SEPARATOR+str(upTime))
+	uploadName = crypto.sha256(shaName[:-8]+crypto.HASH_SEPARATOR+str(upTime)).hexdigest()
 
 	wholeUploadPath = os.path.join(path,uploadName)
 

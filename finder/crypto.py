@@ -26,8 +26,10 @@ def sha256(string):
 		enc = string.decode('iso-8859-1').encode('utf-8')
 	else:
 		enc = string
-
-	return  SHA256.new(enc)
+	
+	hasher = SHA256.new()
+	hasher.update(enc)
+	return hasher
 
 def sha256File(fileName):
 	""" Hash of a file (http://www.pythoncentral.io/hashing-files-with-python/) """
@@ -73,7 +75,7 @@ def rsaSignatureSHA256(data,privkey,isFile=False):
 	else: 
 		logger.log("No private key found")
 
-def verifiyRSAsignatureSHA256(hashObject,sourceSignature,pubkey,isFile=False):
+def verifyRSAsignatureSHA256(hashObject,sourceSignature,pubkey):
 
 	if os.path.isfile(pubkey) and os.access(pubkey, os.R_OK):
 		try:
@@ -83,7 +85,7 @@ def verifiyRSAsignatureSHA256(hashObject,sourceSignature,pubkey,isFile=False):
 			if verifier.verify(hashObject,base64.b64decode(sourceSignature)): 
 				return True
 			else:
-				raise Exception("Signatures not equal")
+				return False
 		except Exception as e:
 			logger.log(e)
 			return None

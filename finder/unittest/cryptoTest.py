@@ -123,7 +123,7 @@ class CryptoTest(unittest.TestCase):
 		#verify
 		for s in sign:
 			h = SHA256.new(msg[s])
-			self.assertTrue(crypto.verifiyRSAsignatureSHA256(h,sign[s],"pubkey.pem"))
+			self.assertTrue(crypto.verifyRSAsignatureSHA256(h,sign[s],"pubkey.pem"))
 		
 
 if __name__ == '__main__':

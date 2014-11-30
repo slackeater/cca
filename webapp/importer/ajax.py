@@ -36,7 +36,7 @@ def showReport(request,up,ci):
 		uploadQuery = Upload.objects.get(cloudItemID=cloudQuery,id=uploadID)
 
 		#build the name of the folder
-		hashFolder = str(crypto.sha256(uploadQuery.fileName+crypto.HASH_SEPARATOR+str(uploadQuery.uploadDate)))
+		hashFolder = str(crypto.sha256(uploadQuery.fileName+crypto.HASH_SEPARATOR+str(uploadQuery.uploadDate)).hexdigest())
 			
 		#parse with JSON
 		report = os.path.join(settings.UPLOAD_DIR,str(cloudQuery.id),hashFolder,uploadQuery.fileName,uploadQuery.fileName+".report")

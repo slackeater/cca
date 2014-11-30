@@ -30,7 +30,6 @@ def downloadMetaData(driveService,at):
 	if fm.count() == 0:
 		meta = base64.b64encode(fileMetaData)
 		metaTime = timezone.now()
-		print settings.PRIV_KEY
 		metaHash = crypto.rsaSignatureSHA256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"),settings.PRIV_KEY)
 
 		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)

@@ -27,7 +27,7 @@ def recurseDir(path):
 
 		for f in files:
 			try:
-				sig = crypto.sha256File(os.path.join(root,f))
+				sig = crypto.sha256File(os.path.join(root,f)).hexdigest()
 				fName = os.path.join(root,f).encode("UTF-8")
 				fType = mimetypes.guess_type(fName)[0]
 				entry = {"path":fName, "hash": sig, "size": os.path.getsize(fName), "type": fType}

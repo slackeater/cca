@@ -10,7 +10,7 @@ class Credentials(object):
 		self._profile = profile
 
 		if self.hostname and self.username and self.password:
-			self._signature = crypto.sha256(self.hostname + crypto.HASH_SEPARATOR + self.username + crypto.HASH_SEPARATOR + self.password)
+			self._signature = crypto.sha256(self.hostname + crypto.HASH_SEPARATOR + self.username + crypto.HASH_SEPARATOR + self.password).hexdigest()
 		else:
 			self._signature = "<empty signature>"
 

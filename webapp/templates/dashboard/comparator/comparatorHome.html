@@ -8,11 +8,24 @@ function compare(){
 	Dajaxice.comparator.compareFile(Dajax.process,{'cloudItem':iVal(),'tokenID':tVal()})
 }
 
+function verify(){
+	Dajaxice.comparator.verifyFile(Dajax.process,{'cloudItem':iVal(),'tokenID':tVal()})
+}
+
 </script>
 
 {% endblock %}
 
 {% block rightcont %}
+
+<h2>Veirify file health</h2>
+
+Verify that files are in the same state of the download.
+
+<input type="button" value="Compare" onclick="verify()" />
+
+<div id="verifyerError"></div>
+<div id="verifyer"></div>
 
 <h2>Compare local and remote files </h2>
 

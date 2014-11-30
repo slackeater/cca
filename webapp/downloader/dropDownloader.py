@@ -31,7 +31,7 @@ def downloadMetaData(client,at):
 	if fm.count() == 0:
 		meta = base64.b64encode(fileMetaData)
 		metaTime = timezone.now()
-		metaHash = crypto.sha256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"))
+		metaHash = crypto.rsaSignatureSHA256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"),settings.PRIV_KEY)
 
 		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
@@ -90,7 +90,7 @@ def downloadFiles(client,at):
 						outF = open(fullPath,"wb+")
 						outF.write(f.read())
 						outF.close()
-						h = crypto.sha256File(fullPath)
+						h = crypto.rsaSignatureSHA256(fullPath,settings.PRIV_KEY,True)
 						fDb = FileDownload(fileName=bName,alternateName=altName,status=1,tokenID=at,fileHash=h)
 						fDb.save()
 				except dropbox.rest.ErrorResponse as e:
@@ -156,8 +156,8 @@ def downloadHistory(client,at):
 							#hash
 							rEnc = base64.b64encode(json.dumps(r))
 							downloadTime = timezone.now()
-							fileRevisionHash = crypto.sha256File(fullPath)
-							revisionMetadataHash = crypto.sha256(rEnc+crypto.HASH_SEPARATOR+format(downloadTime,"U"))
+							fileRevisionHash = crypto.rsaSignatureSHA256(fullPath,settings.PRIV_KEY,True)
+							revisionMetadataHash = crypto.rsaSignatureSHA256(rEnc+crypto.HASH_SEPARATOR+format(downloadTime,"U"),settings.PRIV_KEY)
 
 							fDb = FileHistory(
 									revision=revID,

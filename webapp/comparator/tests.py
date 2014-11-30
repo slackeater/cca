@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 import json,os,urllib,base64
 from django.test.utils import override_settings
+import fileComparator
 
 class ComparatorTestCase(TestCase):
 
@@ -63,7 +64,7 @@ class ComparatorTestCase(TestCase):
 		url = "/dajaxice/comparator.compareTwoFile/"
 		cloudItemID = 2
 		tokenID = 4
-		fileDownloadID = 142
+		fileDownloadID = 451
 		alternateName = "3ddf4299f1b96c992aa818403c49aa53"
 
 		#get revision
@@ -89,4 +90,28 @@ class ComparatorTestCase(TestCase):
 		#delete them
 		os.remove(imgOnePath)
 		os.remove(imgTwoPath)
+	
+	@override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads/")
+	def test_verifyer_filedownload(self):
+		self.assertTrue(self.login())
+
+		for a in AccessToken.objects.all():
+			hList = fileComparator.verifyFileDownload(a)
+
+			for i in hList:
+				f = FileDownload.objects.get(id=i['fID'])
+	
+				if f.status == 1:
+					self.assertTrue(i['verificationResult'])
+				elif f.status == 2:
+					self.assertEquals(-1,i['verificationResult'])
+
+
+	def test_verifyer_metadata(self):
+		self.assertTrue(self.login())
+
+		for a in AccessToken.objects.all():
+			res = fileComparator.verifyMetadata(a)
+			self.assertTrue(res['verificationResult'])
+
 		

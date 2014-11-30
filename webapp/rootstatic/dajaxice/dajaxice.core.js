@@ -9,6 +9,10 @@ var Dajaxice = {
     
     comparator: {
     
+    verifyFile: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('comparator.verifyFile', 'POST', callback_function, argv, custom_settings);
+    },
+
     compareTwoFile: function(callback_function, argv, custom_settings){
         return Dajaxice.call('comparator.compareTwoFile', 'POST', callback_function, argv, custom_settings);
     }

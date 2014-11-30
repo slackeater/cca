@@ -1,6 +1,16 @@
 from django.conf import settings
-from downloader.models import FileDownload,FileHistory, Download
-import os,subprocess,magic,sys,shutil,Image,sha
+from downloader.models import FileDownload,FileHistory, Download, FileMetadata
+import os,subprocess,magic,sys,shutil,Image,base64
+
+#import crypto for hash
+cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
+
+if not cryptoPath in sys.path:
+	sys.path.insert(1, cryptoPath)
+	del cryptoPath
+
+import crypto
+
 
 ALLOWED_MIME = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
 
@@ -79,18 +89,9 @@ def pdfDiff(pdfOne,pdfTwo,diffPath,pdfName):
 
 def imgDiff(imgOne,imgTwo):
 
-	#import crypto for hash
-	cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-	if not cryptoPath in sys.path:
-		sys.path.insert(1, cryptoPath)
-		del cryptoPath
-
-	import crypto
-
 	#compute an hash of each image over the content
-	hash1 = crypto.sha256File(imgOne)
-	hash2 = crypto.sha256File(imgTwo)
+	hash1 = crypto.sha256File(imgOne).hexdigest()
+	hash2 = crypto.sha256File(imgTwo).hexdigest()
 
 	img1DiffPath = os.path.join(settings.DIFF_DIR,hash1+".thumbnail")
 	img2DiffPath = os.path.join(settings.DIFF_DIR,hash2+".thumbnail")
@@ -131,3 +132,46 @@ def computeThumbnailSize(startWidth,startHeight):
 		newHeight = (startHeight-(startHeight-maxHeight))
 
 	return int(newWidth),int(newHeight)
+
+
+def verifyFileDownload(token):
+	""" Verify the files of a token """
+
+	hList = list()
+	downloadFolder = Download.objects.get(tokenID=token).folder
+
+	for f in FileDownload.objects.filter(tokenID=token):
+		
+		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",f.fileName+"_"+f.alternateName)
+
+		if f.status == 1 and os.path.isfile(path):
+			#first compute the hash
+			h = crypto.sha256File(path)
+
+			#now verify the hash
+			sourceSignature = f.fileHash
+
+			verification = crypto.verifyRSAsignatureSHA256(h,sourceSignature,settings.PUB_KEY)
+		
+			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':verification})
+		elif f.status == 2:
+			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':-1})
+
+	return hList
+
+def verifyMetadata(token):
+	""" Verifiy the file metadata """
+
+	hList = list()
+	meta = FileMetadata.objects.get(tokenID=token)
+
+	metaFile = meta.metadata
+	metaTime = format(meta.metaTime,"U")
+	
+	#compute hash
+	h = crypto.sha256(metaFile+crypto.HASH_SEPARATOR+metaTime)
+
+	#verify
+	verification = crypto.verifyRSAsignatureSHA256(h,meta.metadataHash,settings.PUB_KEY)
+
+	return ({'metaID': meta.id,'verificationResult': verification})

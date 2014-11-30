@@ -40,3 +40,24 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 		dajax.assign("#comparatorError","innerHTML",formatException(e))
 
 	return dajax.json()
+			
+@dajaxice_register
+def verifyFile(request,cloudItem,tokenID):
+
+	if not isAuthenticated(request):
+		return None
+
+	dajax = Dajax()
+
+	try:
+		t = parseAjaxParam(tokenID)
+		ci = checkCloudItem(cloudItem,request.user.id)
+		tkn = checkAccessToken(t,ci)
+
+		table = render_to_string("dashboard/comparator/comparatorVerify.html",{})
+
+		dajax.assign("#verifyer","innerHTML",table)
+	except Exception as e:
+		dajax.assign("#verifyerError","innerHTML",formatException(e))
+
+	return dajax.json()

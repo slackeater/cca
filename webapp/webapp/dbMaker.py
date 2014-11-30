@@ -63,7 +63,7 @@ class MakeDatabase():
 	
 		# create db data
 		for r in fmData:
-			f = FileMetadata(id=r['id'],metadata=r['metadata'],metaTime=r['metaTime'],tokenID=AccessToken.objects.get(id=r['tokenID_id']))
+			f = FileMetadata(id=r['id'],metadata=r['metadata'],metaTime=r['metaTime'],tokenID=AccessToken.objects.get(id=r['tokenID_id']),metadataHash=r['metadataHash'])
 			f.save()
 
 
@@ -81,7 +81,7 @@ class MakeDatabase():
 
 		for fd in fdData:
 			tzDate = self.makeDate(fd['downloadTime'])
-			fileDown = FileDownload(id=fd['id'],fileName=fd['fileName'],alternateName=fd['alternateName'],status=fd['status'],downloadTime=tzDate,tokenID=AccessToken.objects.get(id=fd['tokenID_id']))
+			fileDown = FileDownload(id=fd['id'],fileName=fd['fileName'],alternateName=fd['alternateName'],fileHash=fd['fileHash'],status=fd['status'],downloadTime=tzDate,tokenID=AccessToken.objects.get(id=fd['tokenID_id']))
 			fileDown.save()
 
 	def createFileHistory(self):
@@ -89,7 +89,7 @@ class MakeDatabase():
 		fhData = json.load(open(fhPath,"rb"))
 
 		for fd in fhData:
-			fileHist = FileHistory(id=fd['id'],revision=fd['revision'],status=fd['status'],fileDownloadID=FileDownload.objects.get(id=fd['fileDownloadID_id']),revisionMetadata=fd['revisionMetadata'])
+			fileHist = FileHistory(id=fd['id'],revision=fd['revision'],status=fd['status'],fileDownloadID=FileDownload.objects.get(id=fd['fileDownloadID_id']),revisionMetadata=fd['revisionMetadata'],fileRevisionHash=fd['fileRevisionHash'],revisionMetadataHash=fd['revisionMetadataHash'])
 			fileHist.save()
 
 	def createDownload(self):

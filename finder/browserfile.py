@@ -42,11 +42,11 @@ def fileCheckerCopy(profileDir, fileName, reportFolder):
 		logger.log("Copying\n\t" + wholePath + "\n\t" + dstFile, "no")
 	
 		# check that the hash is the same
-		hashSrc = crypto.sha256File(wholePath)
+		hashSrc = crypto.sha256File(wholePath).hexdigest()
 
 		shutil.copy2(wholePath, reportFolder)
 
-		hashDst = crypto.sha256File(dstFile)
+		hashDst = crypto.sha256File(dstFile).hexdigest()
 
 		# compare the source and destination file hashes
 		if hashSrc == hashDst:
