@@ -61,7 +61,7 @@ class ComparatorTestCase(TestCase):
 		self.assertTrue(self.login())
 
 		url = "/dajaxice/comparator.compareTwoFile/"
-		cloudItemID = 3
+		cloudItemID = 2
 		tokenID = 4
 		fileDownloadID = 142
 		alternateName = "3ddf4299f1b96c992aa818403c49aa53"

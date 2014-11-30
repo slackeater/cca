@@ -87,7 +87,7 @@ class DownloaderTestCase(TestCase):
 
 		url = "/dajaxice/downloader.showDropboxTokens/"
 
-		c = CloudItem.objects.get(id=3)
+		c = CloudItem.objects.get(id=2)
 		payload = {"ci":c.id}
 		data = {"argv": json.dumps(payload)}
 		r = self.client.post(url,urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
@@ -99,7 +99,7 @@ class DownloaderTestCase(TestCase):
 	def test_show_tokens_google_login(self):
 		self.assertTrue(self.login())
 
-		c = CloudItem.objects.get(id=2)
+		c = CloudItem.objects.get(id=1)
 		url = "/dajaxice/downloader.showGoogleTokens/"
 		payload = {"ci":c.id}
 		data = {"argv": json.dumps(payload)}

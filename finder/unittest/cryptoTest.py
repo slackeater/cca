@@ -5,9 +5,9 @@ import sys
 sys.path.insert(0, '../')
 
 import unittest
-import crypto
+import crypto, base64
 from cryptography.fernet import Fernet
-
+from Crypto.Hash import SHA256
 
 class CryptoTest(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class CryptoTest(unittest.TestCase):
 			string = split[0]
 			hashString = split[1]
 
-			self.assertEquals(hashString, crypto.sha256(string))
+			self.assertEquals(hashString, crypto.sha256(string).hexdigest())
 
 	def test_sha256File(self):
 		""" Test sha-256 of file """
@@ -36,7 +36,7 @@ class CryptoTest(unittest.TestCase):
 		precomputed["file3.txt"] = "54ad54758b4975ae8235db588dedeef041b637d34ccb4f9f26b26dd2f283c3dd"
 
 		for key in precomputed:
-			self.assertEquals(precomputed[key], crypto.sha256File(key))
+			self.assertEquals(precomputed[key], crypto.sha256File(key).hexdigest())
 
 	def test_md5(self):
 		""" Test md5 of string """
@@ -69,7 +69,7 @@ class CryptoTest(unittest.TestCase):
 
 		#decrypt
 		for key in encText:
-			self.assertEquals(crypto.decryptRSA(encText[key], "privkey.pem", "pass"), text[key])
+			self.assertEquals(crypto.decryptRSA(encText[key], "privkey.pem", "mypass"), text[key])
 
 	def test_Fernet(self):
 		""" Test Fernet encryption and decryption """
@@ -84,9 +84,9 @@ class CryptoTest(unittest.TestCase):
 		files[2] = "file3.txt"
 
 		filesHash = dict()
-		filesHash[0] = crypto.sha256File(files[0])
-		filesHash[1] = crypto.sha256File(files[1])
-		filesHash[2] = crypto.sha256File(files[2])
+		filesHash[0] = crypto.sha256File(files[0]).hexdigest()
+		filesHash[1] = crypto.sha256File(files[1]).hexdigest()
+		filesHash[2] = crypto.sha256File(files[2]).hexdigest()
 		
 		encText = dict()
 
@@ -102,8 +102,28 @@ class CryptoTest(unittest.TestCase):
 			testFile = "decFile"+str(key)+".txt"
 			open(testFile, "w+b").write(filesBytes)
 
-			self.assertEquals(crypto.sha256File(testFile), filesHash[key])
+			self.assertEquals(crypto.sha256File(testFile).hexdigest(), filesHash[key])
 			
+	def test_signRSA(self):
+	
+		msg = dict()
+		msg[0] = "msgone"
+		msg[1] = "msgtwo"
+		msg[2] = "msgthree"
+		msg[3] = "msgfour"
+		msg[4] = "msgfive"
+
+		sign = dict()
+		
+		#sign 
+		for m in msg:
+			h = msg[m]
+			sign[m] = crypto.rsaSignatureSHA256(msg[m],"privkey.pem")
+	
+		#verify
+		for s in sign:
+			h = SHA256.new(msg[s])
+			self.assertTrue(crypto.verifiyRSAsignatureSHA256(h,sign[s],"pubkey.pem"))
 		
 
 if __name__ == '__main__':

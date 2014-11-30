@@ -30,7 +30,8 @@ def downloadMetaData(driveService,at):
 	if fm.count() == 0:
 		meta = base64.b64encode(fileMetaData)
 		metaTime = timezone.now()
-		metaHash = crypto.sha256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"))
+		print settings.PRIV_KEY
+		metaHash = crypto.rsaSignatureSHA256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"),settings.PRIV_KEY)
 
 		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
@@ -45,7 +46,6 @@ def downloadFiles(driveService,at):
 	downDirFull = os.path.join(settings.DOWNLOAD_DIR,downDir)
 	downDirFullSub = os.path.join(settings.DOWNLOAD_DIR,downDir,"files")
 	
-
 	#create directory if necessary
 	if not os.path.isdir(downDirFull):
 		os.mkdir(downDirFull)
@@ -72,7 +72,7 @@ def downloadFiles(driveService,at):
 						f.write(content)
 					
 					#compute hash
-					h = crypto.sha256File(fullName)
+					h = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
 					
 					fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at,fileHash=h)
 					fileDb.save()
@@ -138,8 +138,10 @@ def downloadHistory(driveService,at):
 
 							# compute hash
 							downloadTime = timezone.now()
-							fileRevisionHash = crypto.sha256File(fullName)
-							revisionMetadataHash = crypto.sha256(revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"))
+							fileRevisionHash = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
+							revisionMetadataHash = crypto.rsaSignatureSHA256(
+									revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"),
+									settings.PRIV_KEY)
 
 							fh = FileHistory(
 								revision=revID,

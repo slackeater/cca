@@ -11,7 +11,9 @@
 import hashlib, base64, hmac
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA256
 import config, os, logger, struct
+from Crypto.Signature import PKCS1_PSS
 from cryptography.fernet import Fernet
 
 HASH_SEPARATOR = "|"
@@ -25,24 +27,21 @@ def sha256(string):
 	else:
 		enc = string
 
-	return hashlib.sha256(enc).hexdigest() 
+	return  SHA256.new(enc)
 
-def sha256File(fileName, hmacKey = None):
+def sha256File(fileName):
 	""" Hash of a file (http://www.pythoncentral.io/hashing-files-with-python/) """
 	
 	BLOCKSIZE = 65536
 
-	if hmacKey is None:
-		hasher = hashlib.sha256()
-	else:
-		hasher = hmac.new(hmacKey, None, hashlib.sha256)
+	hasher = SHA256.new()
 
 	with open(fileName, "r") as myFile:
 		buf = myFile.read(BLOCKSIZE)
 		while len(buf) > 0:
 			hasher.update(buf)
 			buf = myFile.read(BLOCKSIZE)
-	return hasher.hexdigest()
+	return hasher
 
 def md5(string):
 	""" MD5 hash of a string """
@@ -52,6 +51,46 @@ def md5(string):
 	else:
 		enc = string
 	return hashlib.md5(enc).hexdigest()
+
+def rsaSignatureSHA256(data,privkey,isFile=False):
+
+	if os.path.isfile(privkey) and os.access(privkey, os.R_OK):
+		try:
+			h = None
+
+			if isFile:
+				h = sha256File(data)
+			elif not isFile:
+				h = sha256(data)
+			
+			key = RSA.importKey(open(privkey,"rb").read(),"mypass")
+			signer = PKCS1_PSS.new(key)
+			signature = signer.sign(h)
+			return base64.b64encode(signature)
+		except Exception as e:
+			logger.log(e)
+			return None
+	else: 
+		logger.log("No private key found")
+
+def verifiyRSAsignatureSHA256(hashObject,sourceSignature,pubkey,isFile=False):
+
+	if os.path.isfile(pubkey) and os.access(pubkey, os.R_OK):
+		try:
+			key = RSA.importKey(open(pubkey,"rb").read())
+			verifier = PKCS1_PSS.new(key)
+			
+			if verifier.verify(hashObject,base64.b64decode(sourceSignature)): 
+				return True
+			else:
+				raise Exception("Signatures not equal")
+		except Exception as e:
+			logger.log(e)
+			return None
+
+	else:
+		logger.log("No public key found")
+
 
 def encryptRSA(text, pubkey = None):
 	""" Encrypt a string using the given public key !!! ONLY 128 Bits at time can be encrypted with PyCrypto"""
