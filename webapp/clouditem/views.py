@@ -12,13 +12,14 @@ from django import forms
 class CloudItemForm(forms.Form):
 	""" A cloud item form """
 
-	name = forms.CharField(label="Name")
+	name = forms.CharField(max_length=15,label="Name")
 	description = forms.CharField(label="Description",widget=forms.Textarea)
 
 def cloudItem(request):
 
 	""" View used to show the list of cloud item and add a new one """
 	if isAuthenticated(request):
+		errors = ""
 		f = CloudItemForm()
 		
 		if request.POST:
@@ -27,9 +28,11 @@ def cloudItem(request):
 			if f.is_valid():
 				c = CloudItem(desc=f.cleaned_data['description'],reportName=f.cleaned_data['name'],reporterID=User.objects.get(id=request.user.id))
 				c.save()
+			else:
+				errors = "Invalid insertion. Please check your data."
 
 		clouds = CloudItem.objects.filter(reporterID=User.objects.get(id=request.user.id))
-		data = {'cloudItem': clouds,'form':f}
+		data = {'cloudItem': clouds,'form':f,'errors': errors}
 		return render_to_response("clouditem/clouditemHome.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")

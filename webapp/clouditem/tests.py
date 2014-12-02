@@ -9,6 +9,9 @@ from django.contrib.auth import authenticate
 
 class CloudItemTestCase(TestCase):
 
+	def login(self):
+		return self.client.login(username="reporter",password="reporter")
+
 	def test_clouditem_view_nologin(self):
 		resp = self.client.get('/clouditem/',follow=True,secure=True)
 		self.assertRedirects(resp,"/login/")
@@ -32,6 +35,15 @@ class CloudItemTestCase(TestCase):
 		#insert clouditem
 		resp = self.client.post("/clouditem/",{'name':'test scan','description':'scan of a suspect test'},secure=True)
 		self.assertContains(resp,"scan of a suspect test")
+
+	def test_clouditem_view_lengthname(self):
+		self.assertTrue(self.login())
+		
+		name = "abc" * 20
+
+		#insert clouditem
+		resp = self.client.post("/clouditem/",{'name': name,'description':'scan of a suspect test'},secure=True)
+		self.assertContains(resp,"Invalid insertion. Please check your data.")
 
 	def test_showclouditem_view_nologin(self):
 		resp = self.client.get('/clouditem/29/',follow=True,secure=True)

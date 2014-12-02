@@ -3,6 +3,9 @@
 
 {% block content %}
 <div style="margin-top: 8px;" onclick='$("#addCloudItem").fadeToggle("slow")'><img src="/static/icons/add.png" ><h2 style="display: inline; margin-left: 4px;">Create a new cloud item</h2></div>
+{% if errors != "" %}
+<div>{{errors}}</div>
+{% endif %}
 <table id="addCloudItem" style="display: none">
 	<form action="" method="POST">
 	{% csrf_token %}
