@@ -44,10 +44,9 @@ class Download(models.Model):
 	""" A model to keep track of the download """
 
 	tokenID = models.ForeignKey('AccessToken')
-	status = models.IntegerField()
 	downTime = models.DateTimeField(default=timezone.now)
 	folder = models.CharField(max_length=255,blank=True)
-	threadStatus = models.CharField(max_length=10,default="stopped")
+	threadStatus = models.IntegerField(default="-1")
 	threadMessage = models.TextField(default="-")
 	verificationZIP = models.CharField(max_length=255,default="-")
 	verificationZIPHash = models.CharField(max_length=255,default="-")

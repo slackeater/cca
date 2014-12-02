@@ -1,4 +1,4 @@
-import thread
+import threading
 import googleDownloader, dropDownloader
 import dropbox
 from apiclient.discovery import build
@@ -7,31 +7,34 @@ from oauth2client.client import OAuth2Credentials
 from models import AccessToken, Download
 from clouditem.models import CloudItem
 import json, base64
+from webapp import constConfig
 
 class ThreadManager:
 	""" Manage the thread for downloading data """
-	def __init__(self,tokenID):
+	def __init__(self,tokenID,isTestThread = False):
 		self.t = tokenID
+		self.isTestThread = isTestThread
+		self.statusList = list()
 
 	def download(self):
 		""" Start the thread """
 		#select platform
 		at = AccessToken.objects.get(id=self.t)
 
-		#set status starting
-		d = Download.objects.get(tokenID=at)
-		d.status = 0
-		d.threadStatus = "running"
-		d.threadMessage = "Download is starting..."
-		d.save()
-		
+		#set status init
+		self.updateStatus(at,constConfig.THREAD_INIT,"-")
+
 		#thread param
 		tup = (at,)
 
 		if at.serviceType == "google":
-			x = thread.start_new_thread(self.googleDownload,tup)
+			threadInstance = threading.Thread(target=self.googleDownload,args=tup)
+			threadInstance.start()
+			return threadInstance
 		elif at.serviceType == "dropbox":
-			x = thread.start_new_thread(self.dropboxDownloader,tup)
+			threadInstance = threading.Thread(target=self.dropboxDownloader,args=tup)
+			threadInstance.start()
+			return threadInstance
 
 	def makeGoogleService(self,serviceType,jsonCredentials):
 		""" Create a google service """
@@ -47,52 +50,74 @@ class ThreadManager:
 		c = dropbox.client.DropboxClient(accessTokenValue)
 		return c
 
-	def updateStatus(self,at,threadStatus,threadMessage,status = None):
+	def updateStatus(self,at,threadStatus,threadMessage):
 		""" Update the status of the download """
 		downloadItem = Download.objects.get(tokenID=at)
-
-		if status != None:
-			downloadItem.status = status
 
 		downloadItem.threadStatus = threadStatus
 		downloadItem.threadMessage = threadMessage
 		downloadItem.save()
 
+		if self.isTestThread:
+			self.statusList.append(downloadItem)
+
 	def googleDownload(self,accessToken):
 		""" Download sequence of google """
+
 		try:
+			self.updateStatus(accessToken,constConfig.THREAD_DOWN,"-")
+
+			#update status to starting
 			credentials = base64.b64decode(accessToken.accessToken)
-			service = self.makeGoogleService("drive",credentials)
+
+			if self.isTestThread:
+				service = None
+			else: 
+				service = self.makeGoogleService("drive",credentials)
+
 			#download metadata
-			thStatus, thMsg, status = googleDownloader.downloadMetaData(service,accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
+			status = googleDownloader.downloadMetaData(service,accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status, "-")
+
 			#download files
-			thStatus, thMsg, status = googleDownloader.downloadFiles(service,accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
+			status = googleDownloader.downloadFiles(service,accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status, "-")
+
 			#download history
-			thStatus, thMsg, status = googleDownloader.downloadHistory(service,accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
-		except httplib2.ServerNotFoundError as e:
+			status = googleDownloader.downloadHistory(service,accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status, "-")
+
+		except (Exception,httplib2.ServerNotFoundError) as e:
 			#update db
-			self.updateStatus(accessToken,"stopped",e.message,None)
+			self.updateStatus(accessToken,constConfig.THREAD_STOP,e.message)
 			return
 
 	def dropboxDownloader(self, accessToken):
 		""" Download sequence of dropbox """
 
 		try:
+			self.updateStatus(accessToken,constConfig.THREAD_DOWN,"-")
+
 			atValue = base64.b64decode(accessToken.accessToken)
-			client = self.makeDropboxService(atValue)
+
+			if self.isTestThread:
+				client = None
+			else: 
+				client = self.makeDropboxService(atValue)
+
 			#metadata
-			thStatus, thMsg , status = dropDownloader.downloadMetaData(client,accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
+			status = dropDownloader.downloadMetaData(client,accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status, "-")
+
 			#files
-			thStatus, thMsg, status  = dropDownloader.downloadFiles(client,accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
+			status  = dropDownloader.downloadFiles(client,accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status,"-")
+
 			#history
-			thStatus, thMsg, status = dropDownloader.downloadHistory(client, accessToken)
-			self.updateStatus(accessToken,thStatus, thMsg, status)
+			status = dropDownloader.downloadHistory(client, accessToken,self.isTestThread)
+			self.updateStatus(accessToken,status,"-")
+
 		except dropbox.rest.ErrorResponse as e:
-			self.updateStatus(accessToken,"stopped",e,None)
+			self.updateStatus(accessToken,constConfig.THREAD_STOP,e.message)
 			return
 

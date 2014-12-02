@@ -8,6 +8,7 @@ from webapp.exceptionFormatter import formatException
 from django.template.loader import render_to_string
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
+from django.utils.dateformat import format
 
 
 # add path for crypto
@@ -36,8 +37,8 @@ def showReport(request,up,ci):
 		uploadQuery = Upload.objects.get(cloudItemID=cloudQuery,id=uploadID)
 
 		#build the name of the folder
-		hashFolder = str(crypto.sha256(uploadQuery.fileName+crypto.HASH_SEPARATOR+str(uploadQuery.uploadDate)).hexdigest())
-			
+		hashFolder = str(crypto.sha256(uploadQuery.fileName+crypto.HASH_SEPARATOR+format(uploadQuery.uploadDate,"U")).hexdigest())
+		
 		#parse with JSON
 		report = os.path.join(settings.UPLOAD_DIR,str(cloudQuery.id),hashFolder,uploadQuery.fileName,uploadQuery.fileName+".report")
 		

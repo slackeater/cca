@@ -14,7 +14,7 @@ function downCallBack(data){
 startDownload({{tokenID}})
 {% endif %}
 
-{% if downStatus != -1 and downStatus != 3%}
+{% if downStatus != -1 and downStatus != 4%}
 setInterval(function(){ startDownload({{tokenID}})},2500)
 {% endif %}
 
@@ -55,7 +55,7 @@ The download will happen in background and notifications will appear in this pag
 <div id="errors">{{errors}}</div>
 
 <table id="downTable">
-	<tr><td>Download status</td><td><div id="thStatus">-</div></td><td><div id="thMessage">-</div</td></tr>
+	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 4 %}Download already completed.{%endif%}</div></td><td><div id="thMessage">-</div</td></tr>
 	<tr><td>Metadata</td><td><div id="metaStatus">{{metaWait}}</div></td></tr>
 	<tr><td>Files</td><td><div id="fileStatus">{{fileWait}}</div></td></tr>
 	<tr><td>History</td><td><div id="historyStatus">{{historyWait}}</div></td></tr>

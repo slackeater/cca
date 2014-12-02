@@ -1,23 +1,41 @@
-from django.test import TestCase
+from django.test import TestCase,TransactionTestCase
 from django.test.client import Client
 from clouditem.models import CloudItem
+from downloader.models import *
 from models import AccessToken
-import json,urllib
+import json,urllib,threading
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from webapp.dbMaker import MakeDatabase
+from threadmanager import ThreadManager
+from webapp import constConfig
+from django.db import connections,transaction
+
+class DownloaderThreadTestCase(TransactionTestCase):
+
+	def test_downloader_full(self):
+
+		#google and dropbox token
+		tList = [1,2]
+
+		for tokenID in tList:
+			t = ThreadManager(tokenID,True)
+			instance = t.download()
+			instance.join()
+
+			#check all different steps
+			statusList = t.statusList
+			self.assertEquals(constConfig.THREAD_INIT,statusList[0].threadStatus)
+			self.assertEquals(constConfig.THREAD_DOWN,statusList[1].threadStatus)
+			self.assertEquals(constConfig.THREAD_PHASE_1,statusList[2].threadStatus)
+			self.assertEquals(constConfig.THREAD_PHASE_2,statusList[3].threadStatus)
+			self.assertEquals(constConfig.THREAD_PHASE_3,statusList[4].threadStatus)
+
+			#database status should be 3, everything has been downloaded
+			dStatus = Download.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
+			self.assertEquals(constConfig.THREAD_PHASE_3,dStatus.threadStatus)
 
 class DownloaderTestCase(TestCase):
-
-	@classmethod
-	def setUpClass(self):
-		"""db = MakeDatabase()
-
-		db.createUser()
-		db.createCloudItem()
-		db.createAccessToken()"""
-
-		self.ci = CloudItem.objects.all()[0]
 
 	def login(self):
 		return self.client.login(username="reporter",password="reporter")
@@ -79,8 +97,9 @@ class DownloaderTestCase(TestCase):
 	def test_download_view_tknnotexist_login(self):
 		self.assertTrue(self.login())
 
-		with self.assertRaises(AccessToken.DoesNotExist):
-			self.client.get("/download/"+str(self.ci.id)+"/1000/",secure=True)
+		for ci in CloudItem.objects.all():
+			with self.assertRaises(AccessToken.DoesNotExist):
+				self.client.get("/download/"+str(ci.id)+"/1000/",secure=True)
 
 	def test_show_tokens_dropbox_login(self):
 		self.assertTrue(self.login())
@@ -109,3 +128,40 @@ class DownloaderTestCase(TestCase):
 		self.assertContains(r,"114260070272708105141")
 		self.assertContains(r,"112263419935383071563")
 		
+
+	def test_downloader_view(self):
+
+		self.assertTrue(self.login())
+
+		tokenID = 1
+		ci = 1
+
+		#first get the normal page
+		r = self.client.get("/download/"+str(ci)+"/"+str(tokenID)+"/",secure=True)
+
+		self.assertEquals(r.status_code,200)
+		self.assertContains(r,"Download already completed")
+
+		#this download has already been made
+		d = Download.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
+		self.assertEquals(constConfig.THREAD_PHASE_3,d.threadStatus)
+
+	def test_downloader_view_new_download(self):
+		self.assertTrue(self.login())
+		ci = 1
+		at = 5
+	
+		newToken = AccessToken(id=at,accessToken="testToken",userID="0",serviceType="google",tokenTime=timezone.now(),userInfo="noInfo",cloudItem=CloudItem.objects.get(id=ci))
+		newToken.save()
+
+		#first get the normal page 
+		r = self.client.get("/download/"+str(ci)+"/"+str(at)+"/",secure=True)
+		
+		self.assertContains(r,"No download have been started")
+
+		#take last download
+		d = Download.objects.latest("downTime")
+
+		self.assertEquals(at,d.tokenID.id)
+		#button has not been click
+		self.assertEquals(constConfig.THREAD_NOTCLICKED,d.threadStatus)

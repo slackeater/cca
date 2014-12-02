@@ -3,7 +3,7 @@ from downloader.models import AccessToken, FileMetadata, FileDownload, FileHisto
 from dashboard.models import MimeType
 from django.contrib.auth.models import User
 from django.conf import settings
-import json,os,time
+import json,os,time,datetime,pytz
 from django.utils import timezone
 
 class MakeDatabase():
@@ -43,7 +43,9 @@ class MakeDatabase():
 		ciData = json.load(open(ciPath,"rb"))
 		
 		for c in ciData:
-			ci = CloudItem(id=c['id'],desc=c['desc'],reportName=c['reportName'],itemTime=c['itemTime'],reporterID=user)
+			date = list(time.strptime(c['itemTime'],"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = pytz.utc.localize(timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
+			ci = CloudItem(id=c['id'],desc=c['desc'],reportName=c['reportName'],itemTime=tzDate,reporterID=user)
 			ci.save()
 	
 	def createAccessToken(self):
@@ -52,7 +54,7 @@ class MakeDatabase():
 
 		for a in atData:
 			date = list(time.strptime(a['tokenTime'],"%Y-%m-%d %H:%M:%S"))[:6]
-			tzDate = timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5])
+			tzDate = pytz.utc.localize(timezone.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
 			at = AccessToken(id=a['id'],accessToken=a['accessToken'],userID=a['userID'],serviceType=a['serviceType'],tokenTime=tzDate,userInfo=a['userInfo'],
 					cloudItem=CloudItem.objects.get(id=a['cloudItem_id']))
 			at.save()
@@ -63,7 +65,9 @@ class MakeDatabase():
 	
 		# create db data
 		for r in fmData:
-			f = FileMetadata(id=r['id'],metadata=r['metadata'],metaTime=r['metaTime'],tokenID=AccessToken.objects.get(id=r['tokenID_id']),metadataHash=r['metadataHash'])
+			date = list(time.strptime(r['metaTime'],"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = pytz.utc.localize(datetime.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
+			f = FileMetadata(id=r['id'],metadata=r['metadata'],metaTime=tzDate,tokenID=AccessToken.objects.get(id=r['tokenID_id']),metadataHash=r['metadataHash'])
 			f.save()
 
 
@@ -80,7 +84,8 @@ class MakeDatabase():
 		fdData = json.load(open(fdPath,"rb"))
 
 		for fd in fdData:
-			tzDate = self.makeDate(fd['downloadTime'])
+			date = list(time.strptime(fd['downloadTime'],"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = pytz.utc.localize(datetime.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
 			fileDown = FileDownload(id=fd['id'],fileName=fd['fileName'],alternateName=fd['alternateName'],fileHash=fd['fileHash'],status=fd['status'],downloadTime=tzDate,tokenID=AccessToken.objects.get(id=fd['tokenID_id']))
 			fileDown.save()
 
@@ -89,7 +94,9 @@ class MakeDatabase():
 		fhData = json.load(open(fhPath,"rb"))
 
 		for fd in fhData:
-			fileHist = FileHistory(id=fd['id'],revision=fd['revision'],status=fd['status'],fileDownloadID=FileDownload.objects.get(id=fd['fileDownloadID_id']),revisionMetadata=fd['revisionMetadata'],fileRevisionHash=fd['fileRevisionHash'],revisionMetadataHash=fd['revisionMetadataHash'])
+			date = list(time.strptime(fd['downloadTime'],"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = pytz.utc.localize(datetime.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
+			fileHist = FileHistory(id=fd['id'],revision=fd['revision'],status=fd['status'],fileDownloadID=FileDownload.objects.get(id=fd['fileDownloadID_id']),revisionMetadata=fd['revisionMetadata'],fileRevisionHash=fd['fileRevisionHash'],revisionMetadataHash=fd['revisionMetadataHash'],downloadTime=tzDate)
 			fileHist.save()
 
 	def createDownload(self):
@@ -97,6 +104,8 @@ class MakeDatabase():
 		dwData = json.load(open(dwPath,"rb"))
 
 		for d in dwData:
-			dwItem = Download(id=d['id'],status=d['status'],tokenID=AccessToken.objects.get(id=d['tokenID_id']),folder=d['folder'],downTime=d['downTime'],threadStatus=d['threadStatus'],threadMessage=d['threadMessage'])
+			date = list(time.strptime(d['downTime'],"%Y-%m-%d %H:%M:%S"))[:6]
+			tzDate = pytz.utc.localize(datetime.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
+			dwItem = Download(id=d['id'],tokenID=AccessToken.objects.get(id=d['tokenID_id']),folder=d['folder'],downTime=tzDate,threadStatus=d['threadStatus'],threadMessage=d['threadMessage'])
 			dwItem.save()
 

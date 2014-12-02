@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from webapp.func import *
 from webapp.exceptionFormatter import formatException
 from django.utils import timezone
+from django.utils.dateformat import format
 
 class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File')
@@ -75,8 +76,8 @@ def manageReportUpload(request,cloudItem):
 	#upload name
 	upTime = timezone.now()
 	shaName = fileName
-	uploadName = crypto.sha256(shaName[:-8]+crypto.HASH_SEPARATOR+str(upTime)).hexdigest()
-
+	uploadName = crypto.sha256(shaName[:-8]+crypto.HASH_SEPARATOR+format(upTime,"U")).hexdigest()
+	
 	wholeUploadPath = os.path.join(path,uploadName)
 
 	if not os.path.isdir(wholeUploadPath):

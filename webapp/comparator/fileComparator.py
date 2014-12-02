@@ -1,6 +1,7 @@
 from django.conf import settings
 from downloader.models import FileDownload,FileHistory, Download, FileMetadata
 import os,subprocess,magic,sys,shutil,Image,base64
+from django.utils.dateformat import format
 
 #import crypto for hash
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -152,10 +153,13 @@ def verifyFileDownload(token):
 			sourceSignature = f.fileHash
 
 			verification = crypto.verifyRSAsignatureSHA256(h,sourceSignature,settings.PUB_KEY)
-		
-			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':verification})
+			
+			#history
+			historyVerification = verifyHistory(f,downloadFolder)
+
+			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':verification,'history':historyVerification})
 		elif f.status == 2:
-			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':-1})
+			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':-1,'history': list()})
 
 	return hList
 
@@ -166,12 +170,40 @@ def verifyMetadata(token):
 	meta = FileMetadata.objects.get(tokenID=token)
 
 	metaFile = meta.metadata
-	metaTime = format(meta.metaTime,"U")
+	mTime = format(meta.metaTime,"U")
 	
 	#compute hash
-	h = crypto.sha256(metaFile+crypto.HASH_SEPARATOR+metaTime)
-
+	h = crypto.sha256(metaFile+crypto.HASH_SEPARATOR+mTime)
 	#verify
 	verification = crypto.verifyRSAsignatureSHA256(h,meta.metadataHash,settings.PUB_KEY)
 
 	return ({'metaID': meta.id,'verificationResult': verification})
+
+def verifyHistory(fileDownload, downloadFolder):
+	""" Verify file history """
+
+	hList = list()
+	
+	for fh in FileHistory.objects.filter(fileDownloadID=fileDownload):
+		#verification of revision metadata
+
+		revMeta = fh.revisionMetadata
+		revDownTime = format(fh.downloadTime,"U")
+
+		h = crypto.sha256(revMeta+crypto.HASH_SEPARATOR+revDownTime)
+		
+		verification = crypto.verifyRSAsignatureSHA256(h,fh.revisionMetadataHash,settings.PUB_KEY)
+
+		#verification of file history 
+		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,fileDownload.fileName+"_"+fh.revision)
+
+		if os.path.isfile(path) and fh.status == 1:
+			fHash = crypto.sha256File(path)
+			verificationFile = crypto.verifyRSAsignatureSHA256(fHash,fh.fileRevisionHash,settings.PUB_KEY)
+			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':verificationFile})
+		else:
+			raise Exception("File history " + path + " not found")
+
+	return hList
+
+	

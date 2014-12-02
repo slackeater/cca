@@ -12,6 +12,7 @@ from django.utils.html import strip_tags
 from webapp.func import isAuthenticated,parseAjaxParam
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
+from webapp import constConfig
 
 @dajaxice_register
 def submitDropboxCode(request, code, ci):
@@ -59,17 +60,15 @@ def checkDownload(request,t):
 			dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 			dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 
-			if downloadToken.status == 1:
+			if downloadToken.threadStatus == constConfig.THREAD_PHASE_1:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif downloadToken.status == 2:
+			elif downloadToken.threadStatus == constConfig.THREAD_PHASE_2:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif downloadToken.status == 3:
-				downloadToken.threadStatus = "completed"
-				downloadToken.save()
+			elif downloadToken.threadStatus == constConfig.THREAD_PHASE_3:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/icons/accept.png' />")
@@ -78,7 +77,6 @@ def checkDownload(request,t):
 	except Exception as e:
 		dajax.assign("#errors","innerHTML",e.message)
 	
-	print dajax.json()
 	return dajax.json()
 
 def showTokens(request, platform, ci, eID, tab):

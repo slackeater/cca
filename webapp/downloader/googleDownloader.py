@@ -1,9 +1,11 @@
 from models import AccessToken,FileDownload,FileMetadata,FileHistory,Download
-import base64,json,os,sys
+import base64,json,os,sys,time
 from apiclient import errors
 from django.conf import settings
 from django.utils import timezone
 from django.utils.dateformat import format
+from webapp import constConfig
+
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
 
@@ -18,8 +20,17 @@ def getMetaData(at):
 	m = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=at).metadata))
 	return m
 
-def downloadMetaData(driveService,at):
+def downloadMetaData(driveService,at,simulateDownload = False):
 	""" Download the metadata """
+
+	downStatus = constConfig.THREAD_PHASE_1
+
+	#used for tests
+	if simulateDownload is True:
+		#simulate the download by waiting 10 seconds
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
+	
 	#download
 	fileMetaData = json.dumps(driveService.files().list().execute())
 	
@@ -30,16 +41,25 @@ def downloadMetaData(driveService,at):
 	if fm.count() == 0:
 		meta = base64.b64encode(fileMetaData)
 		metaTime = timezone.now()
-		metaHash = crypto.rsaSignatureSHA256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"),settings.PRIV_KEY)
+		txt = meta+crypto.HASH_SEPARATOR+format(metaTime,"U")
+		metaHash = crypto.rsaSignatureSHA256(txt,settings.PRIV_KEY)
 
 		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
 
-		return "running","-",1
+		return downStatus
 
-def downloadFiles(driveService,at):
+def downloadFiles(driveService,at,simulateDownload = False):
 	""" Download file with google drive """
 
+	downStatus = constConfig.THREAD_PHASE_2
+
+	#used for tests
+	if simulateDownload is True:
+		#simulate the download by waiting 10 seconds
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
+	
 	meta = getMetaData(at)	
 	downDir = Download.objects.get(tokenID=at).folder
 	downDirFull = os.path.join(settings.DOWNLOAD_DIR,downDir)
@@ -78,10 +98,18 @@ def downloadFiles(driveService,at):
 
 
 	#upload status
-	return "running","-",2
+	return downStatus
 
-def downloadHistory(driveService,at):
+def downloadHistory(driveService,at,simulateDownload = False):
 	""" Download the history for a file """
+
+	downStatus = constConfig.THREAD_PHASE_3
+
+	#used for tests
+	if simulateDownload is True:
+		#simulate the download by waiting 10 seconds
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
 
 	meta = getMetaData(at)
 
@@ -142,6 +170,8 @@ def downloadHistory(driveService,at):
 									revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"),
 									settings.PRIV_KEY)
 
+
+
 							fh = FileHistory(
 								revision=revID,
 								status=1,
@@ -153,4 +183,4 @@ def downloadHistory(driveService,at):
 								)
 							fh.save()
 
-	return "running","-",3
+	return downStatus

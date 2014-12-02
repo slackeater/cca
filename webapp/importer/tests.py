@@ -46,6 +46,7 @@ class ImporterTestCase(TestCase):
 			payload = {"up":up.id,"ci":c.id}
 			data = {"argv": json.dumps(payload)}
 			r = self.client.post(url,urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+			
 			self.assertEquals(r.status_code,200)
 			self.assertContains(r,"John-PC")
 			self.assertContains(r,"Windows")
@@ -57,6 +58,7 @@ class ImporterTestCase(TestCase):
 		with self.assertRaises(CloudItem.DoesNotExist):
 			self.client.get("/importer/3000/",secure=True)
 
+	@override_settings(UPLOAD_DIR="/media/hd1/testUploads/")
 	def test_importer_import_nonzip_login(self):
 		self.assertTrue(self.login())
 

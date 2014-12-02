@@ -26,7 +26,7 @@ def sha256(string):
 		enc = string.decode('iso-8859-1').encode('utf-8')
 	else:
 		enc = string
-	
+
 	hasher = SHA256.new()
 	hasher.update(enc)
 	return hasher
@@ -43,6 +43,7 @@ def sha256File(fileName):
 		while len(buf) > 0:
 			hasher.update(buf)
 			buf = myFile.read(BLOCKSIZE)
+
 	return hasher
 
 def md5(string):
@@ -60,15 +61,17 @@ def rsaSignatureSHA256(data,privkey,isFile=False):
 		try:
 			h = None
 
-			if isFile:
+			if isFile is True:
 				h = sha256File(data)
-			elif not isFile:
+			else:
 				h = sha256(data)
 			
 			key = RSA.importKey(open(privkey,"rb").read(),"mypass")
 			signer = PKCS1_PSS.new(key)
-			signature = signer.sign(h)
-			return base64.b64encode(signature)
+			
+			signature = base64.b64encode(signer.sign(h))
+
+			return signature
 		except Exception as e:
 			logger.log(e)
 			return None

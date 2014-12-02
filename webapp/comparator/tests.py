@@ -9,19 +9,19 @@ import json,os,urllib,base64
 from django.test.utils import override_settings
 import fileComparator
 
+
+@override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads/")
 class ComparatorTestCase(TestCase):
 
 	def login(self):
 		return self.client.login(username="reporter",password="reporter")
 
-	@override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads/")
 	@override_settings(DIFF_DIR="/media/hd1/testDiff/")
 	def test_comparator_diff_login(self):
 		self.assertTrue(self.login())
 		url = "/dajaxice/comparator.compareTwoFile/"
 		revOne = None
 		revTwo = None
-
 		
 		for c in CloudItem.objects.all():
 			for a in AccessToken.objects.filter(cloudItem=c):
@@ -57,7 +57,6 @@ class ComparatorTestCase(TestCase):
 							revOne = None
 							revTwo = None
 	
-	@override_settings(DIFF_DIR="/media/hd1/testDiff/")
 	def test_image_thumbnailer(self):
 		self.assertTrue(self.login())
 
@@ -77,6 +76,7 @@ class ComparatorTestCase(TestCase):
 		data = {"argv": json.dumps(payload)}
 
 		r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+		print r
 		self.assertEquals(r.status_code,200)
 		self.assertContains(r,"aab091a8dad2098fe4645cad6c20ebf4bf4f0a53d76fec6b655f975ce62062fb")
 		self.assertContains(r,"5729da77ea013f78619467de1a325223eda4e655e357ea74539be9dc34d9be3f")
@@ -90,28 +90,53 @@ class ComparatorTestCase(TestCase):
 		#delete them
 		os.remove(imgOnePath)
 		os.remove(imgTwoPath)
+
+	def test_verifyer_filemetadata(self):
+
+		for a in AccessToken.objects.all():
+
+			res = fileComparator.verifyMetadata(a)
+			self.assertTrue(res['verificationResult'])
 	
-	@override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads/")
+
 	def test_verifyer_filedownload(self):
-		self.assertTrue(self.login())
 
 		for a in AccessToken.objects.all():
 			hList = fileComparator.verifyFileDownload(a)
-
+			
 			for i in hList:
 				f = FileDownload.objects.get(id=i['fID'])
-	
 				if f.status == 1:
 					self.assertTrue(i['verificationResult'])
+	
+					for h in i['history']:
+						self.assertTrue(h['metadataVerificationResult'])
+						
+						if h['revID'] == "684" or h['revID'] == "29125":
+							self.assertFalse(h['fileVerificationResult'])
+						else:
+							self.assertTrue(h['fileVerificationResult'])
+	
 				elif f.status == 2:
 					self.assertEquals(-1,i['verificationResult'])
 
-
-	def test_verifyer_metadata(self):
+	def test_verifyer_webcall(self):
 		self.assertTrue(self.login())
 
-		for a in AccessToken.objects.all():
-			res = fileComparator.verifyMetadata(a)
-			self.assertTrue(res['verificationResult'])
-
+		#cloud item 2, token 2 (Dropbox)
+		ci = 2
+		a = 2
 		
+		url = "/dajaxice/comparator.verifyFile/"
+		payload = {'tokenID': a,'cloudItem': ci}
+		data = {"argv": json.dumps(payload)}
+		r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
+					
+		self.assertEquals(r.status_code,200)
+
+		rDump = json.loads(r.content)
+
+		self.assertEquals(rDump[0]['id'],'#verifyer')
+		self.assertEquals(rDump[1]['val'],'')
+						
+

@@ -1,9 +1,11 @@
 from models import FileMetadata,AccessToken, Download, FileDownload, FileHistory
-import json, base64, os, md5, dropbox, requests,sys
+import json, base64, os, md5, dropbox, requests,sys,time
 from django.conf import settings
 from webapp.func import dropboxAlternateName
 from django.utils import timezone
 from django.utils.dateformat import format
+from webapp import constConfig
+
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
 
@@ -18,8 +20,16 @@ def getMetaData(at):
 	m = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=at).metadata))
 	return m
 
-def downloadMetaData(client,at):
+def downloadMetaData(client,at,simulateDownload = False):
 	""" Download metadata """
+
+	downStatus = constConfig.THREAD_PHASE_1
+
+	#used for test
+	if simulateDownload is True:
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
+
 
 	#root
 	root = client.metadata("/",include_deleted=True,include_media_info=True)
@@ -36,7 +46,7 @@ def downloadMetaData(client,at):
 		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
 
-		return "running","-",1
+		return downStatus
 
 def recurseDropTree(folderMetadata, client, depth):
 	""" Recurse in each folder """
@@ -60,8 +70,16 @@ def recurseDropTree(folderMetadata, client, depth):
 		res.append(folderMetadata)
 		return res
 
-def downloadFiles(client,at):
+def downloadFiles(client,at,simulateDownload = False):
 	""" Download files """
+
+	downStatus = constConfig.THREAD_PHASE_2
+
+	#used for test
+	if simulateDownload is True:
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
+
 
 	meta = getMetaData(at)
 	downDir = Download.objects.get(tokenID=at).folder
@@ -104,10 +122,17 @@ def downloadFiles(client,at):
 
 				
 	
-	return "running","-",2
+	return downStatus
 	
-def downloadHistory(client,at):
+def downloadHistory(client,at,simulateDownload = False):
 	""" Download the history for dropbox """
+
+	downStatus = constConfig.THREAD_PHASE_3
+
+	#used for test
+	if simulateDownload is True:
+		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+		return downStatus
 
 	meta = getMetaData(at)
 	downDir = Download.objects.get(tokenID=at).folder
@@ -170,7 +195,7 @@ def downloadHistory(client,at):
 								)
 							fDb.save()
 
-	return "running","-",3
+	return  downStatus
 
 def sharedFolder(client,at):
 	""" Find the shared folders """

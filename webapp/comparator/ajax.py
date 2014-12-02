@@ -8,6 +8,7 @@ from downloader.models import FileDownload, Download
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags,strip_entities
 import time,sys,traceback
+from webapp import constConfig
 
 @dajaxice_register
 def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
@@ -26,7 +27,7 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 		f = FileDownload.objects.get(tokenID=tkn,alternateName=altName)
 
 		#get folder name
-		download = Download.objects.get(tokenID=tkn,threadStatus="completed")
+		download = Download.objects.get(tokenID=tkn,threadStatus=constConfig.THREAD_PHASE_3)
 
 		#compute the diff
 		info = fileComparator.compareTwo(str(revOne),str(revTwo),f,download.folder,tkn)
@@ -54,9 +55,12 @@ def verifyFile(request,cloudItem,tokenID):
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 
-		table = render_to_string("dashboard/comparator/comparatorVerify.html",{})
+		metaVerification = fileComparator.verifyMetadata(t)
+		downVerification = fileComparator.verifyFileDownload(t)
+		table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification})
 
 		dajax.assign("#verifyer","innerHTML",table)
+		dajax.assign("#verifyerError","innerHTML","")
 	except Exception as e:
 		dajax.assign("#verifyerError","innerHTML",formatException(e))
 
