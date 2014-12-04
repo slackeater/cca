@@ -183,16 +183,9 @@ class DownloaderTestCase(TestCase):
 		self.assertTrue(dUp.verificationZIP)
 		
 		#now create the same zip and verify the signatures
-		tempZip = os.path.join(settings.VERIFIED_ZIP,zipName+".zip.test")
-		verificationZip = zipfile.ZipFile(tempZip,"w",zipfile.ZIP_DEFLATED)
-
-		for dirname,subdirs,files in os.walk(os.path.join(settings.DOWNLOAD_DIR,zipName)):
-			verificationZip.write(dirname)
-
-			for f in files:
-				verificationZip.write(os.path.join(dirname,f))
-
-		verificationZip.close()
+		"""tempZip = os.path.join(settings.VERIFIED_ZIP,zipName+".zip.test")
+		newVerifier = Verifier(token)
+		newVerifier.createZIP(".zip.test")
 
 		# add path for crypto
 		cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -203,7 +196,15 @@ class DownloaderTestCase(TestCase):
 
 		import crypto
 
+		#verify the signature
 		h = crypto.sha256File(tempZip)
-		res = crypto.verifyRSAsignatureSHA256(h,base64.b64encode(binascii.unhexlify(dUp.verificationZIPHash)),settings.PUB_KEY)
+		res = crypto.verifyRSAsignatureSHA256(h,dUp.verificationZIPSignatureHash,settings.PUB_KEY)
 
 		self.assertTrue(res)
+		"""
+		#generate a timestamp request
+		v.createTimestampRequest()
+
+		requestCreated = os.path.isfile(os.path.join(settings.VERIFIED_ZIP,dUp.folder+".tsrequest"))
+
+		self.assertTrue(requestCreated)

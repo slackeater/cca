@@ -49,4 +49,5 @@ class Download(models.Model):
 	threadStatus = models.IntegerField(default="-1")
 	threadMessage = models.TextField(default="-")
 	verificationZIP = models.BooleanField(default=False)
-	verificationZIPHash = models.TextField(default="-")
+	verificationZIPSignature = models.TextField(default="-")
+	verificationZIPSignatureHash = models.TextField(default="-")
