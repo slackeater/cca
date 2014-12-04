@@ -3,13 +3,15 @@ from django.test.client import Client
 from clouditem.models import CloudItem
 from downloader.models import *
 from models import AccessToken
-import json,urllib,threading
+import json,urllib,threading,zipfile,os,base64,binascii,sys
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from webapp.dbMaker import MakeDatabase
 from threadmanager import ThreadManager
 from webapp import constConfig
-from django.db import connections,transaction
+from django.test.utils import override_settings
+from django.conf import settings
+from verifier import Verifier
 
 class DownloaderThreadTestCase(TransactionTestCase):
 
@@ -165,3 +167,43 @@ class DownloaderTestCase(TestCase):
 		self.assertEquals(at,d.tokenID.id)
 		#button has not been click
 		self.assertEquals(constConfig.THREAD_NOTCLICKED,d.threadStatus)
+
+	@override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads")
+	@override_settings(VERIFIED_ZIP="/media/hd1/verifiedZIPtest")
+	def test_zip_verifier(self):
+
+		token = AccessToken.objects.get(id=4)
+
+		zipName = Download.objects.get(tokenID=token).folder
+		v = Verifier(token)
+		v.createZIPtoVerify()
+
+		#now the DB should be updated
+		dUp = Download.objects.get(tokenID=token)
+		self.assertTrue(dUp.verificationZIP)
+		
+		#now create the same zip and verify the signatures
+		tempZip = os.path.join(settings.VERIFIED_ZIP,zipName+".zip.test")
+		verificationZip = zipfile.ZipFile(tempZip,"w",zipfile.ZIP_DEFLATED)
+
+		for dirname,subdirs,files in os.walk(os.path.join(settings.DOWNLOAD_DIR,zipName)):
+			verificationZip.write(dirname)
+
+			for f in files:
+				verificationZip.write(os.path.join(dirname,f))
+
+		verificationZip.close()
+
+		# add path for crypto
+		cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
+
+		if not cryptoPath in sys.path:
+			sys.path.insert(1, cryptoPath)
+			del cryptoPath
+
+		import crypto
+
+		h = crypto.sha256File(tempZip)
+		res = crypto.verifyRSAsignatureSHA256(h,base64.b64encode(binascii.unhexlify(dUp.verificationZIPHash)),settings.PUB_KEY)
+
+		self.assertTrue(res)

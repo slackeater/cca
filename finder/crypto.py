@@ -12,7 +12,7 @@ import hashlib, base64, hmac
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
-import config, os, logger, struct
+import config, os, logger, struct, binascii
 from Crypto.Signature import PKCS1_PSS
 from cryptography.fernet import Fernet
 
@@ -69,6 +69,7 @@ def rsaSignatureSHA256(data,privkey,isFile=False):
 			key = RSA.importKey(open(privkey,"rb").read(),"mypass")
 			signer = PKCS1_PSS.new(key)
 			
+			#signature = binascii.hexlify(signer.sign(h))
 			signature = base64.b64encode(signer.sign(h))
 
 			return signature

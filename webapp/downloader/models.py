@@ -48,5 +48,5 @@ class Download(models.Model):
 	folder = models.CharField(max_length=255,blank=True)
 	threadStatus = models.IntegerField(default="-1")
 	threadMessage = models.TextField(default="-")
-	verificationZIP = models.CharField(max_length=255,default="-")
-	verificationZIPHash = models.CharField(max_length=255,default="-")
+	verificationZIP = models.BooleanField(default=False)
+	verificationZIPHash = models.TextField(default="-")
