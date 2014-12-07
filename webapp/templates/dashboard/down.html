@@ -2,20 +2,16 @@
 
 {% block js %}
 <script type="text/javascript">
-function startDownload(t){
-	Dajaxice.downloader.checkDownload(downCallBack,{'t':t})
+function startDownload(){
+	Dajaxice.downloader.checkDownload(downCallBack,{'t':tVal(),'i':iVal()})
 }
 
 function downCallBack(data){
 	Dajax.process(data)	
 }
 
-{% if btnClicked %}
-startDownload({{tokenID}})
-{% endif %}
-
-{% if downStatus != -1 and downStatus != 4%}
-setInterval(function(){ startDownload({{tokenID}})},2500)
+{% if downStatus != None and downStatus != -1  and downStatus != 4 and downStatus != 6%}
+setInterval(function(){ startDownload()},2500)
 {% endif %}
 
 </script>
@@ -45,17 +41,22 @@ the size of the files.<p>
 The download will happen in background and notifications will appear in this page about the status of download.
 </p>
 
+<p>You have to provide the credentials for the TSA (Timestamping Authority) so that a signed timestamp can be generated at the end of the download process</p>
 
 <form name="d" method="POST" action="">
 	{% csrf_token %}
-	<input type="submit" name="start" value="Download" />
+	<table>
+		<tr><td>{{form.uname.label}}</td><td>{{form.uname}}</td></tr>
+		<tr><td>{{form.pwd.label}}</td><td>{{form.pwd}}</td></tr>
+		<tr><td></td><td><input type="submit" name="start" value="Download" /></td></tr>
+	</table>
 </form>
 </p>
 
 <div id="errors">{{errors}}</div>
 
 <table id="downTable">
-	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 4 %}Download already completed.{%endif%}</div></td><td><div id="thMessage">-</div</td></tr>
+	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 4 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
 	<tr><td>Metadata</td><td><div id="metaStatus">{{metaWait}}</div></td></tr>
 	<tr><td>Files</td><td><div id="fileStatus">{{fileWait}}</div></td></tr>
 	<tr><td>History</td><td><div id="historyStatus">{{historyWait}}</div></td></tr>

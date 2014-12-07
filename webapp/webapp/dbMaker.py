@@ -106,6 +106,6 @@ class MakeDatabase():
 		for d in dwData:
 			date = list(time.strptime(d['downTime'],"%Y-%m-%d %H:%M:%S"))[:6]
 			tzDate = pytz.utc.localize(datetime.datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
-			dwItem = Download(id=d['id'],tokenID=AccessToken.objects.get(id=d['tokenID_id']),folder=d['folder'],downTime=tzDate,threadStatus=d['threadStatus'],threadMessage=d['threadMessage'])
+			dwItem = Download(id=d['id'],tokenID=AccessToken.objects.get(id=d['tokenID_id']),folder=d['folder'],downTime=tzDate,threadStatus=d['threadStatus'],threadMessage=d['threadMessage'],verificationZIP=d['verificationZIP'],verificationZIPSignature=d['verificationZIPSignature'],verificationZIPSignatureHash=d['verificationZIPSignatureHash'],verified=d['verified'])
 			dwItem.save()
 

@@ -9,10 +9,11 @@ from apiclient.discovery import build
 from django.template.loader import render_to_string
 import httplib2
 from django.utils.html import strip_tags
-from webapp.func import isAuthenticated,parseAjaxParam
+from webapp.func import *
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from webapp import constConfig
+from webapp.exceptionFormatter import formatException 
 
 @dajaxice_register
 def submitDropboxCode(request, code, ci):
@@ -35,7 +36,7 @@ def showDropboxTokens(request, ci):
 	return showTokens(request,"dropbox",ci,"#dStat","#dropTokenTable")
 
 @dajaxice_register
-def checkDownload(request,t):
+def checkDownload(request,t,i):
 
 	if not isAuthenticated(request):
 		return None
@@ -45,37 +46,39 @@ def checkDownload(request,t):
 	dajax = Dajax()
 
 	try:
-		tokenQuery = AccessToken.objects.get(id=tokenID)
-		cloudItem  = CloudItem.objects.get(id=tokenQuery.cloudItem.id)
+		cloudItem  = checkCloudItem(i,request.user.id)
+		tokenQuery = checkAccessToken(t,cloudItem)
 
-		# if the cloud item reporter corresponds to the user
-		if cloudItem.reporterID == User.objects.get(id=request.user.id):
+		downloadToken = Download.objects.get(tokenID=tokenQuery)
 
-			downloadToken = Download.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
+		#check the status
+		s = downloadToken.threadStatus
+		dajax.assign("#thStatus","innerHTML",s)	
+		dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
 
-			#check the status
-			dajax.assign("#thStatus","innerHTML",downloadToken.threadStatus)	
-			dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
+		if s != constConfig.THREAD_NOTCLICKED and s != constConfig.THREAD_STOP:
 			dajax.assign("#metaStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 			dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 			dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 
-			if downloadToken.threadStatus == constConfig.THREAD_PHASE_1:
+			if s == constConfig.THREAD_PHASE_1:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif downloadToken.threadStatus == constConfig.THREAD_PHASE_2:
+			elif s == constConfig.THREAD_PHASE_2:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif downloadToken.threadStatus == constConfig.THREAD_PHASE_3:
+			elif s == constConfig.THREAD_PHASE_3:
 				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#historyStatus","innerHTML","<img src='/static/icons/accept.png' />")
 				dajax.assign("#thMessage","innerHTML","Completed.")
 
+		dajax.assign("#errors","innerHTML","")
+
 	except Exception as e:
-		dajax.assign("#errors","innerHTML",e.message)
+		dajax.assign("#errors","innerHTML",formatException(e))
 	
 	return dajax.json()
 

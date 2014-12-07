@@ -51,3 +51,4 @@ class Download(models.Model):
 	verificationZIP = models.BooleanField(default=False)
 	verificationZIPSignature = models.TextField(default="-")
 	verificationZIPSignatureHash = models.TextField(default="-")
+	verified = models.BooleanField(default=False)

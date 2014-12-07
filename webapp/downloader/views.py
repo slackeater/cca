@@ -8,9 +8,13 @@ from clouditem.models import CloudItem
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.models import User
 from threadmanager import ThreadManager
+from django import forms
 
 # Create your views here.
 
+class TSCredentialsForm(forms.Form):
+	uname = forms.CharField(max_length=10,label="Account",required=True)
+	pwd = forms.CharField(max_length=20,label="Password",required=True,widget=forms.PasswordInput())
 
 def showTokenDash(request,cloudItem):
 	""" Displays the dashboard and manage the menu choices """
@@ -58,17 +62,24 @@ def showDownloadDash(request,cloudItem,t):
 			data['historyWait'] = "Not started"
 			data['objID'] = cloudItem
 			data['tokenID'] = t
+			data['form'] = TSCredentialsForm()
 
 			#button has been clicked
-			if request.method == "POST" and request.POST['start']:
-				down = Download.objects.get(tokenID=at)
+			if request.method == "POST":
 
-				if down.threadStatus not in [constConfig.THREAD_DOWN,constConfig.THREAD_INIT,constConfig.THREAD_PHASE_1,constConfig.THREAD_PHASE_2,constConfig.THREAD_PHASE_3,constConfig.THREAD_STOP]:
-					#start the download thread
-					tm = ThreadManager(t)
-					tm.download()
-					data['btnClicked'] = True
+				subForm = TSCredentialsForm(request.POST)
 
+				if subForm.is_valid():
+					down = Download.objects.get(tokenID=at)
+
+					if down.threadStatus not in [constConfig.THREAD_DOWN,constConfig.THREAD_INIT,constConfig.THREAD_PHASE_1,constConfig.THREAD_PHASE_2,constConfig.THREAD_PHASE_3,constConfig.THREAD_STOP]:
+						pwd = subForm.cleaned_data['pwd']
+						account = subForm.cleaned_data['uname']
+						#start the download thread
+						tm = ThreadManager(t)
+						tm.download(account,pwd)
+				else:
+					raise Exception("Invalid form")
 			#default check to start the periodically ajax function
 			try:
 				# check to start 
@@ -79,6 +90,7 @@ def showDownloadDash(request,cloudItem,t):
 
 			if down:
 				data['downStatus'] = down.threadStatus
+				data['downMessage'] = down.threadMessage
 
 		except Exception as e:
 			data['errors'] = e.message

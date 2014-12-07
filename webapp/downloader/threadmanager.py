@@ -8,31 +8,32 @@ from models import AccessToken, Download
 from clouditem.models import CloudItem
 import json, base64
 from webapp import constConfig
+from verifier import Verifier
+from webapp.exceptionFormatter import formatException
 
 class ThreadManager:
 	""" Manage the thread for downloading data """
 	def __init__(self,tokenID,isTestThread = False):
-		self.t = tokenID
+		self.t = AccessToken.objects.get(id=tokenID)
 		self.isTestThread = isTestThread
 		self.statusList = list()
+		self.v = Verifier(self.t)
 
-	def download(self):
+	def download(self,uname,pwd):
 		""" Start the thread """
-		#select platform
-		at = AccessToken.objects.get(id=self.t)
+		#verify credentials
+		if self.isTestThread is False:
+			self.v.verifyCredentials(uname,pwd)
 
 		#set status init
-		self.updateStatus(at,constConfig.THREAD_INIT,"-")
+		self.updateStatus(constConfig.THREAD_INIT,"-")
 
-		#thread param
-		tup = (at,)
-
-		if at.serviceType == "google":
-			threadInstance = threading.Thread(target=self.googleDownload,args=tup)
+		if self.t.serviceType == "google":
+			threadInstance = threading.Thread(target=self.googleDownload)
 			threadInstance.start()
 			return threadInstance
-		elif at.serviceType == "dropbox":
-			threadInstance = threading.Thread(target=self.dropboxDownloader,args=tup)
+		elif self.t.serviceType == "dropbox":
+			threadInstance = threading.Thread(target=self.dropboxDownloader)
 			threadInstance.start()
 			return threadInstance
 
@@ -50,25 +51,25 @@ class ThreadManager:
 		c = dropbox.client.DropboxClient(accessTokenValue)
 		return c
 
-	def updateStatus(self,at,threadStatus,threadMessage):
+	def updateStatus(self,threadStatus,threadMessage):
 		""" Update the status of the download """
-		downloadItem = Download.objects.get(tokenID=at)
+		downloadItem = Download.objects.get(tokenID=self.t)
 
 		downloadItem.threadStatus = threadStatus
 		downloadItem.threadMessage = threadMessage
 		downloadItem.save()
 
 		if self.isTestThread:
-			self.statusList.append(downloadItem)
+			self.statusList.append(downloadItem,formatException(e))
 
-	def googleDownload(self,accessToken):
+	def googleDownload(self):
 		""" Download sequence of google """
 
 		try:
-			self.updateStatus(accessToken,constConfig.THREAD_DOWN,"-")
+			self.updateStatus(constConfig.THREAD_DOWN,"-")
 
 			#update status to starting
-			credentials = base64.b64decode(accessToken.accessToken)
+			credentials = base64.b64decode(self.t.accessToken)
 
 			if self.isTestThread:
 				service = None
@@ -76,29 +77,33 @@ class ThreadManager:
 				service = self.makeGoogleService("drive",credentials)
 
 			#download metadata
-			status = googleDownloader.downloadMetaData(service,accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status, "-")
+			#status = googleDownloader.downloadMetaData(service,self.t,self.isTestThread)
+			#self.updateStatus(status, "-")
+			self.updateStatus(constConfig.THREAD_PHASE_1, "-")
 
 			#download files
-			status = googleDownloader.downloadFiles(service,accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status, "-")
+			#status = googleDownloader.downloadFiles(service,self.t,self.isTestThread)
+			self.updateStatus(constConfig.THREAD_PHASE_2, "-")
 
 			#download history
-			status = googleDownloader.downloadHistory(service,accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status, "-")
+			#status = googleDownloader.downloadHistory(service,self.t,self.isTestThread)
+			self.updateStatus(constConfig.THREAD_PHASE_3, "-")
+					
+			#create verification ZIP
+			self.v.verificationProcess()
 
 		except (Exception,httplib2.ServerNotFoundError) as e:
 			#update db
-			self.updateStatus(accessToken,constConfig.THREAD_STOP,e.message)
+			self.updateStatus(constConfig.THREAD_STOP,formatException(e))
 			return
 
-	def dropboxDownloader(self, accessToken):
+	def dropboxDownloader(self):
 		""" Download sequence of dropbox """
 
 		try:
-			self.updateStatus(accessToken,constConfig.THREAD_DOWN,"-")
+			self.updateStatus(constConfig.THREAD_DOWN,"-")
 
-			atValue = base64.b64decode(accessToken.accessToken)
+			atValue = base64.b64decode(self.t.accessToken)
 
 			if self.isTestThread:
 				client = None
@@ -106,18 +111,18 @@ class ThreadManager:
 				client = self.makeDropboxService(atValue)
 
 			#metadata
-			status = dropDownloader.downloadMetaData(client,accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status, "-")
+			status = dropDownloader.downloadMetaData(client,self.t,self.isTestThread)
+			self.updateStatus(status, "-")
 
 			#files
-			status  = dropDownloader.downloadFiles(client,accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status,"-")
+			status  = dropDownloader.downloadFiles(client,self.t,self.isTestThread)
+			self.updateStatus(status,"-")
 
 			#history
-			status = dropDownloader.downloadHistory(client, accessToken,self.isTestThread)
-			self.updateStatus(accessToken,status,"-")
+			status = dropDownloader.downloadHistory(client,self.t,self.isTestThread)
+			self.updateStatus(status,"-")
 
-		except dropbox.rest.ErrorResponse as e:
-			self.updateStatus(accessToken,constConfig.THREAD_STOP,e.message)
+		except (Exception,dropbox.rest.ErrorResponse) as e:
+			self.updateStatus(constConfig.THREAD_STOP,formatException(e))
 			return
 

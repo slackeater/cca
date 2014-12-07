@@ -22,7 +22,7 @@ class DownloaderThreadTestCase(TransactionTestCase):
 
 		for tokenID in tList:
 			t = ThreadManager(tokenID,True)
-			instance = t.download()
+			instance = t.download(None,None)
 			instance.join()
 
 			#check all different steps
@@ -176,6 +176,7 @@ class DownloaderTestCase(TestCase):
 
 		zipName = Download.objects.get(tokenID=token).folder
 		v = Verifier(token)
+
 		v.createZIPtoVerify()
 
 		#now the DB should be updated
@@ -183,7 +184,7 @@ class DownloaderTestCase(TestCase):
 		self.assertTrue(dUp.verificationZIP)
 		
 		#now create the same zip and verify the signatures
-		"""tempZip = os.path.join(settings.VERIFIED_ZIP,zipName+".zip.test")
+		tempZip = os.path.join(settings.VERIFIED_ZIP,zipName+".zip.test")
 		newVerifier = Verifier(token)
 		newVerifier.createZIP(".zip.test")
 
@@ -198,13 +199,11 @@ class DownloaderTestCase(TestCase):
 
 		#verify the signature
 		h = crypto.sha256File(tempZip)
-		res = crypto.verifyRSAsignatureSHA256(h,dUp.verificationZIPSignatureHash,settings.PUB_KEY)
-
+		res = crypto.verifyRSAsignatureSHA256(h,dUp.verificationZIPSignature,settings.PUB_KEY)
 		self.assertTrue(res)
-		"""
+	
 		#generate a timestamp request
 		v.createTimestampRequest()
-
 		requestCreated = os.path.isfile(os.path.join(settings.VERIFIED_ZIP,dUp.folder+".tsrequest"))
-
 		self.assertTrue(requestCreated)
+
