@@ -207,3 +207,10 @@ class DownloaderTestCase(TestCase):
 		requestCreated = os.path.isfile(os.path.join(settings.VERIFIED_ZIP,dUp.folder+".tsrequest"))
 		self.assertTrue(requestCreated)
 
+	@override_settings(VERIFIED_ZIP="/media/hd1/verifiedZIPtest")
+	def test_verify_timestamp(self):
+
+		v = Verifier(None)
+		v.tsRequest = os.path.join(settings.VERIFIED_ZIP,"1679091c5a880faf6fb5e6087eb1b2dc.tsrequest")
+		v.tsResponse = os.path.join(settings.VERIFIED_ZIP,"1679091c5a880faf6fb5e6087eb1b2dc.p7s")
+		self.assertTrue(v.verifyTimestamp())

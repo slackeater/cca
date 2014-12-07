@@ -19,6 +19,7 @@ class Verifier():
 	def __init__(self,token):
 		self.t = token
 		self.tsRequest = None
+		self.tsResponse = None
 		self._account = None
 		self._pwd = None
 
@@ -52,7 +53,6 @@ class Verifier():
 		srcPath = os.path.join(settings.DOWNLOAD_DIR,folder)
 		dstPath = os.path.join(settings.VERIFIED_ZIP,folder+ext)
 
-
 		verificationZip = zipfile.ZipFile(dstPath,"w",zipfile.ZIP_DEFLATED)
 
 		#walk the directory and create the zip
@@ -69,11 +69,21 @@ class Verifier():
 		#get new download first
 		self.download = Download.objects.get(tokenID=self.t)
 
-		self.createZIPtoVerify()
+		zipVer = self.createZIPtoVerify()
 
-		self.createTimestampRequest()
+		createTsReq = self.createTimestampRequest()
 
-		self.timestampRequest()
+		#tsReq = self.timestampRequest()
+		tsReq = True
+
+		ver = self.verifyTimestamp()
+
+		if zipVer and createTsReq and tsReq and ver:
+			#set download verified
+			self.download.verified = True
+			self.download.save()
+
+			return constConfig.THREAD_TS
 
 	def createZIPtoVerify(self):
 		""" Verify a ZIP by computing its """
@@ -89,6 +99,7 @@ class Verifier():
 			self.download.verificationZIPSignatureHash = crypto.sha256(signature).hexdigest()
 			self.download.verificationZIPSignature = signature
 			self.download.save()
+			return True
 		else: 
 			raise Exception("Download not complete or ZIP already exists.")
 
@@ -105,21 +116,34 @@ class Verifier():
 			if os.path.isfile(dstRequest):
 				self.tsRequest = dstRequest
 
+			return True
+
 		except subprocess.CalledProcessError as e:
 			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))
 
 	def timestampRequest(self):
 
-		tsResponse = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".p7s")
+		self.tsResponse = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".p7s")
 	
 		try:
-			p1 = subprocess.Popen("cat {}".format(self.tsRequest),stdout=subprocess.PIPE)
-			p2 = subprocess.Popen("curl -s -S -H 'Content-Type: application/timestamp-query' --data-binary @- https://{}:{}@tsa1.digistamp.com/TSA -o {}".format(self._account,self._pwd,tsResponse),stdin=p1.stdout,stdout=subprocess.PIPE)
+			#obtain a signed timestamp
+			p1 = subprocess.Popen(["cat",self.tsRequest],stdout=subprocess.PIPE)
+			p2 = subprocess.Popen(["curl","-s","-S","-H","Content-Type: application/timestamp-query#","--data-binary","@-","https://{}:{}@tsa1.digistamp.com/TSA".format(self._account,self._pwd,self.tsResponse)],stdin=p1.stdout,stdout=subprocess.PIPE)
 			p1.stdout.close()
 
-			outout = p2.communicate()[0]
+			output = p2.communicate()[0]
+			
+			with open(tsResponse,"wb") as f:
+				f.write(output)
 
+			return True
+		except subprocess.CalledProcessError as e:
+			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))
 
-			print "cat {} | curl -s -S -H 'Content-Type: application/timestamp-query' --data-binary @- https://{}:{}@tsa1.digistamp.com/TSA -o {}".format(self.tsRequest,self._account,self._pwd,tsResponse)
+	def verifyTimestamp(self):
+		try:
+			cmdline = '%s %s' % ("openssl ts","-verify -queryfile {} -in {} -CAfile {}".format(self.tsRequest,self.tsResponse,os.path.join(settings.VERIFIED_ZIP,"digistamp.pem")))
+			subprocess.check_output(shlex.split(cmdline))
+			return True
 		except subprocess.CalledProcessError as e:
 			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))

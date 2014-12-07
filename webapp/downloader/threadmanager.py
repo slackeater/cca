@@ -23,6 +23,7 @@ class ThreadManager:
 		""" Start the thread """
 		#verify credentials
 		if self.isTestThread is False:
+			self.updateStatus(constConfig.THREAD_VERIFY_CRED,"-")
 			self.v.verifyCredentials(uname,pwd)
 
 		#set status init
@@ -77,21 +78,21 @@ class ThreadManager:
 				service = self.makeGoogleService("drive",credentials)
 
 			#download metadata
-			#status = googleDownloader.downloadMetaData(service,self.t,self.isTestThread)
-			#self.updateStatus(status, "-")
-			self.updateStatus(constConfig.THREAD_PHASE_1, "-")
+			status = googleDownloader.downloadMetaData(service,self.t,self.isTestThread)
+			self.updateStatus(status, "-")
 
 			#download files
-			#status = googleDownloader.downloadFiles(service,self.t,self.isTestThread)
+			status = googleDownloader.downloadFiles(service,self.t,self.isTestThread)
 			self.updateStatus(constConfig.THREAD_PHASE_2, "-")
 
 			#download history
-			#status = googleDownloader.downloadHistory(service,self.t,self.isTestThread)
+			status = googleDownloader.downloadHistory(service,self.t,self.isTestThread)
 			self.updateStatus(constConfig.THREAD_PHASE_3, "-")
 					
 			#create verification ZIP
-			self.v.verificationProcess()
-
+			status =self.v.verificationProcess()
+			self.updateStatus(status,"-")
+	
 		except (Exception,httplib2.ServerNotFoundError) as e:
 			#update db
 			self.updateStatus(constConfig.THREAD_STOP,formatException(e))
@@ -120,6 +121,10 @@ class ThreadManager:
 
 			#history
 			status = dropDownloader.downloadHistory(client,self.t,self.isTestThread)
+			self.updateStatus(status,"-")
+
+			#create verification ZIP
+			status = self.v.verificationProcess()
 			self.updateStatus(status,"-")
 
 		except (Exception,dropbox.rest.ErrorResponse) as e:
