@@ -1,0 +1,46 @@
+<!-- http://jsfiddle.net/doktormolle/7cu2F/ --!>
+<pre><div id="map_canvas" style="height:600px"></div></pre>
+<script type="text/javascript">
+
+function loadScript(src){
+	var script = document.createElement("script");
+	script.type = "text/javascript";
+	document.getElementsByTagName("head")[0].appendChild(script);
+	script.src = src;
+}
+  
+  
+loadScript('https://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=initialize&key=AIzaSyCUW9FTfXh4_VNU63jNDq_jAVCF5q9-tYs')
+
+
+function initialize() {
+
+	var mapOptions = {
+		zoom: 2,
+		center: new google.maps.LatLng(47.22, 8.33),
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+
+	map = new google.maps.Map(document.getElementById('map_canvas'),
+					  mapOptions);
+
+
+	{% for e in exif %}
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng({{e.lat}},{{e.lon}}),
+			map: map,
+			title: '<div style="height: 200px; width: 200px;">{{e.title}}</div>'
+		});
+
+		var infowindow = new google.maps.InfoWindow({
+			content : "{{e.title}}",
+			maxWidth : 200
+		});
+
+		google.maps.event.addListener(marker,'click',function(){
+			infowindow.open(map,marker)
+		});
+	{% endfor %}
+}
+
+</script>

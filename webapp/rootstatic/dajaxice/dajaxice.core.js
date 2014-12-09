@@ -78,6 +78,23 @@ var Dajaxice = {
     
 ,
     
+    maps: {
+    
+    mailRelation: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('maps.mailRelation', 'POST', callback_function, argv, custom_settings);
+    },
+
+    exifMap: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('maps.exifMap', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
     importer: {
     
     showReport: function(callback_function, argv, custom_settings){

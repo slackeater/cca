@@ -1,0 +1,48 @@
+{% extends "dashboard/tknDash.html" %}
+
+{% block js %}
+
+<script type="text/javascript">
+
+function exifMap(){
+	Dajaxice.maps.exifMap(exifCallback,{'cloudItem':iVal(),'tokenID':tVal()})	
+}
+
+function exifCallback(data){
+	Dajax.process(data)
+}
+
+function mailRelation(){
+	Dajaxice.maps.mailRelation(mailCallback,{'cloudItem':iVal(),'tokenID':tVal()})	
+}
+
+function mailCallback(data){
+	Dajax.process(data)
+}
+
+
+</script>
+
+{% endblock %}
+
+{% block rightcont %}
+
+<h2>EXIF</h2>
+
+<p>Display on a map the EXIF found in images and video</p>
+
+<input type="button" value="Compare" onclick="exifMap()" />
+<div id="map-canvas"></div>
+<div id="exifError"></div>
+<div id="exif"></div>
+
+<h2>E-Mail relation</h2>
+
+<p>Create a map of relation between e-mail found</p>
+
+<input type="button" value="Compare" onclick="mailRelation()" />
+<div id="relationError"></div>
+<div id="relation"></div>
+
+{% endblock %}
+

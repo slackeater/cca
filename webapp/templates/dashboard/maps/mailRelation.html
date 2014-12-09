@@ -1,0 +1,24 @@
+<div id="network"></div>
+
+<script type="text/javascript">
+
+var nodes = [
+		{id:0, label: "{{relation.mainNode}}"},
+
+	{% for email,connections in relation.linkedNodes.items %}
+		{id:{{forloop.counter}},label: "{{email}}"},
+	{% endfor %}
+];
+
+var edges = [
+		{% for email,connections in relation.linkedNodes.items %}
+			{from: 0, to: {{forloop.counter}},'value': {{connections}},'label': "{{connections}}"},
+		{% endfor %}
+];
+
+var container = document.getElementById("network");
+var data = { nodes: nodes, edges: edges };
+var options = { width: '100%', height: '400px'};
+var network = new vis.Network(container,data,options)
+
+</script>
