@@ -16,8 +16,8 @@ import crypto
 
 class Verifier():
 
-	def __init__(self,token):
-		self.t = token
+	def __init__(self,download):
+		self.download = download
 		self.tsRequest = None
 		self.tsResponse = None
 		self._account = None
@@ -37,21 +37,19 @@ class Verifier():
 			session.get("https://www.digistamp.com/account/logOut.do",allow_redirects=True)
 			self._pwd = pwd
 			self._account = re.escape(uname)
-			return True
+			return constConfig.THREAD_VERIFY_CRED
 		else: 
 			raise Exception("Credentials for the timestamp authority are invalid")	
 
 	def createZIP(self,extension = None):
-
-		folder = self.download.folder
 
 		if extension == None:
 			ext = ".zip"
 		else:
 			ext = extension
 
-		srcPath = os.path.join(settings.DOWNLOAD_DIR,folder)
-		dstPath = os.path.join(settings.VERIFIED_ZIP,folder+ext)
+		srcPath = os.path.join(settings.DOWNLOAD_DIR,self.download.folder)
+		dstPath = os.path.join(settings.VERIFIED_ZIP,self.download.folder+ext)
 
 		verificationZip = zipfile.ZipFile(dstPath,"w",zipfile.ZIP_DEFLATED)
 
@@ -66,15 +64,11 @@ class Verifier():
 		return dstPath
 
 	def verificationProcess(self):
-		#get new download first
-		self.download = Download.objects.get(tokenID=self.t)
-
 		zipVer = self.createZIPtoVerify()
 
 		createTsReq = self.createTimestampRequest()
 
-		#tsReq = self.timestampRequest()
-		tsReq = True
+		tsReq = self.timestampRequest()
 
 		ver = self.verifyTimestamp()
 
@@ -84,12 +78,14 @@ class Verifier():
 			self.download.save()
 
 			return constConfig.THREAD_TS
+		else:
+			raise Exception("A problem occured: zip cannot be created, timestamp request cannot be created or verification of timestamps failed")
 
 	def createZIPtoVerify(self):
 		""" Verify a ZIP by computing its """
 		
 		#the download has completed and there is not another ZIP verified
-		if self.download.threadStatus == constConfig.THREAD_PHASE_3 and self.download.verificationZIP == False:
+		if self.download.threadStatus == constConfig.THREAD_DOWN_FH and self.download.verificationZIP == False:
 			dstPath = self.createZIP()
 			
 			#compute the rsa signature
@@ -105,8 +101,7 @@ class Verifier():
 
 	def createTimestampRequest(self):
 		
-		folder = self.download.folder
-		dstRequest = os.path.join(settings.VERIFIED_ZIP,folder+".tsrequest")
+		dstRequest = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".tsrequest")
 
 		try:
 			cmdline = '%s %s' % ("openssl ts","-query -sha256 -digest {} -cert -no_nonce -out {}".format(self.download.verificationZIPSignatureHash,dstRequest))
@@ -133,7 +128,7 @@ class Verifier():
 
 			output = p2.communicate()[0]
 			
-			with open(tsResponse,"wb") as f:
+			with open(self.tsResponse,"wb") as f:
 				f.write(output)
 
 			return True

@@ -7,100 +7,104 @@ from downloader.models import AccessToken,FileMetadata,FileHistory
 from django.template.loader import render_to_string
 from django.conf import settings
 import md5, os
+from webapp import databaseInterface
+from abstractAnalyzer import AbstractAnalyzer
 
-def getMetaData(token):
-	""" Get the metadata for a given token ID """
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
-	return meta
+class GoogleAnalyzer(AbstractAnalyzer):
 
-def metadataAnalysis(request, token):
-	""" Analyse metadata """
-	
-	stat = getFileStats(getMetaData(token))
-	return render_to_string("dashboard/cloudservice/metaAnalysis.html", {'stat': stat,'google': True})
+	def __init__(self,token):
+		AbstractAnalyzer.__init__(self,token)
 
-def getFileStats(files):
-	""" Get statistics about file on google drive and documents """
+	def metadataAnalysis(self):
+		""" Analyse metadata """
+		
+		stat = self.getFileStats(self.metadata)
+		return stat
 
-	deletedCount = 0
-	driveFiles = 0
-	docsFiles = 0
-	driveFileSize = 0
-	mimeType = dict()
+	def getFileStats(self,files):
+		""" Get statistics about file on google drive and documents """
 
-	for item in files["items"]:
+		deletedCount = 0
+		driveFiles = 0
+		docsFiles = 0
+		driveFileSize = 0
+		mimeType = dict()
 
-		if item['labels']['trashed']:
-			deletedCount += 1	
+		for item in files:
 
-		if 'fileSize' in item:
-			driveFiles += 1
-			driveFileSize += float(item['fileSize'])
+			if item['labels']['trashed']:
+				deletedCount += 1	
+
+			if 'fileSize' in item:
+				driveFiles += 1
+				driveFileSize += float(item['fileSize'])
+			else:
+				docsFiles += 1
+
+			mimeType.setdefault(item['mimeType'],0)
+			mimeType[item['mimeType']] += 1
+
+		#dictionary with stats
+		stat = dict()
+		stat['dC'] = deletedCount
+		stat['driveF'] = driveFiles
+		stat['docsF'] = docsFiles
+		stat['driveFS'] = driveFileSize
+		stat['mime'] = mimeType
+		
+		return stat
+
+	def metadataSearch(self, searchType,mimeType,startDate,endDate):
+		""" Search through metadata """
+
+		searchItem = list()
+
+		# all
+		if searchType == 2:
+			searchItem = self.metadata
 		else:
-			docsFiles += 1
+			for i in self.metadata:
+				#deleted
+				if searchType == 0:
+					if i['labels']['trashed']:
+						searchItem.append(i)
+				# mimetype
+				elif searchType == 1:
+					m = MimeType.objects.get(id=mimeType)
+					if i['mimeType'] == m.mime:
+						searchItem.append(i)
 
-		mimeType.setdefault(item['mimeType'],0)
-		mimeType[item['mimeType']] += 1
+		return searchItem
 
-	#dictionary with stats
-	stat = dict()
-	stat['dC'] = deletedCount
-	stat['driveF'] = driveFiles
-	stat['docsF'] = docsFiles
-	stat['driveFS'] = driveFileSize
-	stat['mime'] = mimeType
-	
-	return stat
+	def textualMetadataSearch(self,searchType,mimeType,startDate,endDate):
+		searchItem = self.metadataSearch(searchType,mimeType,startDate,endDate)
+		table = render_to_string("dashboard/cloudservice/googleSearchTable.html", {'data': searchItem,'platform':'google'})
+		return table
 
-def metadataSearch(token, resType, selectedMimeType):
-	""" Search through metadata """
+	def fileInfo(self, fileID):
+		""" Get information of a file """
+		
+		i = None
 
-	gMetaInfo = getMetaData(token)	
-	
-	searchItem = list()
+		for item in self.metadata:
+			if fileID == item['id']:
+				i = item
+				break;
+		
+		table = render_to_string("dashboard/cloudservice/googleFileInfoTable.html",{'item': i,'platform':'google'})
+		return table
 
-	# all
-	if resType == 2:
-		searchItem = gMetaInfo['items']
-	else:
-		for i in gMetaInfo['items']:
-			#deleted
-			if resType == 0:
-				if i['labels']['trashed']:
-					searchItem.append(i)
-			# mimetype
-			elif resType == 1:
-				m = MimeType.objects.get(id=selectedMimeType)
-				if i['mimeType'] == m.mime:
-					searchItem.append(i)
+	def fileHistory(self,fileId):
+		""" Get the file history """
 
-	table = render_to_string("dashboard/cloudservice/googleSearchTable.html", {'data': searchItem,'platform':'google'})
-	return table	
+		#get all history for the file with that id
+		revisions = list()
 
-def fileInfo(token, fileID):
-	""" Get information of a file """
-	
-	gMetaInfo = getMetaData(token)
-	i = None
+		fileObject = self.db.getFileDownload(self.t,fileId)
 
-	for item in gMetaInfo['items']:
-		if fileID == item['id']:
-			i = item
-			break;
-	
-	table = render_to_string("dashboard/cloudservice/googleFileInfoTable.html",{'item': i,'platform':'google'})
-	return table
+		for r in self.db.getHistoryForFile(fileObject):
+			decR = json.loads(base64.b64decode(r.revisionMetadata))
+			revisions.append(decR)
 
-def fileHistory(downFile):
-	""" Get the file history """
-
-	#get all history for the file with that id
-	allRev = FileHistory.objects.filter(fileDownloadID=downFile)
-	revisions = list()
-
-	for r in allRev:
-		decR = json.loads(base64.b64decode(r.revisionMetadata))
-		revisions.append(decR)
-
-	table = render_to_string("dashboard/cloudservice/googleRevisionTable.html", {'rev': revisions})
-	return table
+		table = render_to_string("dashboard/cloudservice/googleRevisionTable.html", {'rev': revisions})
+		return table

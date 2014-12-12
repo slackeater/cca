@@ -14,6 +14,7 @@ from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from webapp import constConfig
 from webapp.exceptionFormatter import formatException 
+import math
 
 @dajaxice_register
 def submitDropboxCode(request, code, ci):
@@ -57,23 +58,24 @@ def checkDownload(request,t,i):
 		dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
 
 		if s != constConfig.THREAD_NOTCLICKED and s != constConfig.THREAD_STOP:
-			dajax.assign("#metaStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
+			mask = {constConfig.THREAD_VERIFY_CRED: False, constConfig.THREAD_DOWN_META: False, constConfig.THREAD_COMPUTING: False,constConfig.THREAD_DOWN_FH: False, constConfig.THREAD_TS: False}
 
-			if s == constConfig.THREAD_PHASE_1:
-				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#fileStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif s == constConfig.THREAD_PHASE_2:
-				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#historyStatus","innerHTML","<img src='/static/loadersmall.gif' />")
-			elif s == constConfig.THREAD_PHASE_3:
-				dajax.assign("#metaStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#fileStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#historyStatus","innerHTML","<img src='/static/icons/accept.png' />")
-				dajax.assign("#thMessage","innerHTML","Completed.")
+			#set the icons that have to use accept.png
+			for key,value in mask.iteritems():
+				if key <= s:
+					mask[key] = True
+
+
+			#now that states for icon are set, assign to dajax
+			for key,value in mask.iteritems():
+				if value is True:
+					dajax.assign("#status"+str(key),"innerHTML","<img src='/static/icons/accept.png' />")
+
+					if key >= 3:
+						computeSize = float(downloadToken.downloadSize)/math.pow(2,20)
+						dajax.assign("#fileSize","innerHTML",computeSize)
+				else: 
+					dajax.assign("#status"+str(key),"innerHTML","<img src='/static/loadersmall.gif' />")
 
 		dajax.assign("#errors","innerHTML","")
 

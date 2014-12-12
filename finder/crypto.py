@@ -21,13 +21,16 @@ HASH_SEPARATOR = "|"
 def sha256(string):
 	""" Hash of a string """
 
+	#print string
+
 	#encode string to UTF-8
 	if type(string) is str:
 		enc = string.decode('iso-8859-1').encode('utf-8')
 	else:
-		enc = string
+		enc = string.encode("utf-8")
 
 	hasher = SHA256.new()
+
 	hasher.update(enc)
 	return hasher
 

@@ -10,7 +10,7 @@ function downCallBack(data){
 	Dajax.process(data)	
 }
 
-{% if downStatus != None and downStatus != -1  and downStatus != 4 and downStatus != 6%}
+{% if downStatus != None and downStatus != -1  and downStatus != 5 and downStatus != 6%}
 setInterval(function(){ startDownload()},2500)
 {% endif %}
 
@@ -56,10 +56,12 @@ The download will happen in background and notifications will appear in this pag
 <div id="errors">{{errors}}</div>
 
 <table id="downTable">
-	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 4 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
-	<tr><td>Metadata</td><td><div id="metaStatus">{{metaWait}}</div></td></tr>
-	<tr><td>Files</td><td><div id="fileStatus">{{fileWait}}</div></td></tr>
-	<tr><td>History</td><td><div id="historyStatus">{{historyWait}}</div></td></tr>
+	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
+	<tr><td>Credential Verified</td><td colspan=2><div id="status1">{{credVerified}}</div></td></tr>
+	<tr><td>Metadata Download</td><td colspan=2><div id="status2">{{metaWait}}</div></td></tr>
+	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td>Approximate download size (without history):<div id="fileSize"></div></td></tr>
+	<tr><td>Download Files and History</td><td colspan=2><div id="status4">{{fileWait}}</div></td></tr>
+	<tr><td>Verification</td><td colspan=2><div id="status5">{{verificationWait}}</div></td></tr>
 </table>
 
 {% endblock %}

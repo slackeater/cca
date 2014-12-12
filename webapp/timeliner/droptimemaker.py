@@ -2,80 +2,73 @@ import json,base64,time,os
 from downloader.models import FileMetadata,FileDownload,FileHistory
 from dashboard.models import MimeType
 from webapp.func import dropboxAlternateName
+from abstractTimeMaker import AbstractTimeMaker
+from cloudservice.drop import DropboxAnalyzer
 
-def constructLineItem(item,isHistory = False):
+class DropboxTimeMaker(AbstractTimeMaker):
 
-	trashed = False
-	date = item['modified']
-	parsedDate = list(time.strptime(date,"%a, %d %b %Y %H:%M:%S +0000"))[:6]
-	isDir = False
-	title = os.path.basename(item['path'])
+	def __init__(self,token):
+		AbstractTimeMaker.__init__(self,token)
 
-	#subtract -1 from the month
-	parsedDate[1] = parsedDate[1] - 1
-	parsedDateStr = ",".join(map(str,parsedDate))
+	def constructTimeLineItem(self,item,isHistory = False):
 
-	if isHistory:
-		altName = item['rev']
-	else:
-		altName = dropboxAlternateName(item['path'],date)
+		trashed = False
+		date = item['modified']
+		parsedDate = list(time.strptime(date,"%a, %d %b %Y %H:%M:%S +0000"))[:6]
+		isDir = False
+		title = os.path.basename(item['path'])
 
-	if 'is_deleted'	in item:
-		trashed = True
+		#subtract -1 from the month
+		parsedDate[1] = parsedDate[1] - 1
+		parsedDateStr = ",".join(map(str,parsedDate))
 
-	if item['is_dir']:
-		isDir = True
+		if isHistory:
+			altName = item['rev']
+		else:
+			altName = dropboxAlternateName(item['path'],date)
 
-	jStr = '{"timeStr":"'+date+'"}'
-	return {'title': title,'isDir': str(isDir),'altName':altName,'trashed':str(trashed),'time': parsedDateStr,'params': jStr}
-	
-def formTimeline(cloudItem,token,resType,mimeType):
+		if 'is_deleted'	in item:
+			trashed = True
 
-	retval = list()
+		if item['is_dir']:
+			isDir = True
 
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
+		jStr = '{"timeStr":"'+date+'"}'
+		return {'title': title,'isDir': str(isDir),'altName':altName,'trashed':str(trashed),'time': parsedDateStr,'params': jStr}
+			
+	def formTimeLine(self,resType,mimeType,startDate,endDate):
 
-	for f in meta:
-		for c in f['contents']:
-			if not c['is_dir']: 
-				if resType == 0:
-					if 'is_deleted' in c:
-						retval.append(constructLineItem(c))
-				elif resType == 1:
-					mime = MimeType.objects.get(id=mimeType).mime
-					
-					if c['mime_type'] == mime:
-						retval.append(constructLineItem(c))
-				elif resType == 2:
-					retval.append(constructLineItem(c))
+		d = DropboxAnalyzer(self.t)
+		retval = d.metadataSearch(resType,mimeType,startDate,endDate)
+		
+		buildItem = list()
 
-	return retval
+		for f in retval:
+			buildItem.append(self.constructTimeLineItem(f))
 
-def filehistoryTimeline(cloudItem,token,altName):
+		return buildItem
 
-	#get the filedownload
-	fileDownloadObj = FileDownload.objects.get(alternateName=altName,tokenID=token)
-	retval = list()
+	def filehistoryTimeLine(self,altName):
 
-	#get history for this file
-	history = FileHistory.objects.filter(fileDownloadID=fileDownloadObj)
+		#get the filedownload
+		fileDownloadObj = self.db.getFileDownload(self.t,altName)
 
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
+		retval = list()
 
-	#add original file
-	for f in meta:
-		for c in f['contents']:
-			if not c['is_dir']:
-				if os.path.basename(c['path']) == fileDownloadObj.fileName:
-					if 'is_deleted' in c:
-						deleted = True
-					else: 
-						deleted = False
+		#add original file
+		for f in self.db.getMetadataParsed(self.t):
+			for c in f['contents']:
+				if not c['is_dir']:
+					if os.path.basename(c['path']) == fileDownloadObj.fileName:
+						if 'is_deleted' in c:
+							deleted = True
+						else: 
+							deleted = False
 
-					retval.append(constructLineItem(c,deleted))
+						retval.append(self.constructTimeLineItem(c,deleted))
 
-	for h in history:
-		hMeta = json.loads(base64.b64decode(h.revisionMetadata))
-		retval.append(constructLineItem(hMeta,True))
+		for h in self.db.getHistoryForFile(fileDownloadObj):
+			hMeta = json.loads(base64.b64decode(h.revisionMetadata))
+			retval.append(self.constructTimeLineItem(hMeta,True))
 
-	return retval
+		return retval

@@ -7,8 +7,9 @@ from models import AccessToken,Download
 from clouditem.models import CloudItem
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.models import User
-from threadmanager import ThreadManager
 from django import forms
+import json,base64
+from tasks import download
 
 # Create your views here.
 
@@ -57,9 +58,11 @@ def showDownloadDash(request,cloudItem,t):
 
 		try:
 			data['showToken'] = True
+			data['credVerified'] = "Not started"
 			data['metaWait'] = "Not started"
+			data['downSize'] = "Not started"
 			data['fileWait'] = "Not started"
-			data['historyWait'] = "Not started"
+			data['verificationWait'] = "Not started"
 			data['objID'] = cloudItem
 			data['tokenID'] = t
 			data['form'] = TSCredentialsForm()
@@ -71,15 +74,14 @@ def showDownloadDash(request,cloudItem,t):
 
 				if subForm.is_valid():
 					down = Download.objects.get(tokenID=at)
-
-					if down.threadStatus not in [constConfig.THREAD_DOWN,constConfig.THREAD_INIT,constConfig.THREAD_PHASE_1,constConfig.THREAD_PHASE_2,constConfig.THREAD_PHASE_3,constConfig.THREAD_STOP]:
-						pwd = subForm.cleaned_data['pwd']
-						account = subForm.cleaned_data['uname']
-						#start the download thread
-						tm = ThreadManager(t)
-						tm.download(account,pwd)
+					down.threadStatus = constConfig.THREAD_CLICKED
+					down.save()
+					pwd = subForm.cleaned_data['pwd']
+					account = subForm.cleaned_data['uname']
+					download.delay(down,account,pwd)
 				else:
 					raise Exception("Invalid form")
+
 			#default check to start the periodically ajax function
 			try:
 				# check to start 

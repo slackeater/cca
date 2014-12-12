@@ -27,7 +27,7 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 		f = FileDownload.objects.get(tokenID=tkn,alternateName=altName)
 
 		#get folder name
-		download = Download.objects.get(tokenID=tkn,threadStatus=constConfig.THREAD_PHASE_3)
+		download = Download.objects.get(tokenID=tkn,threadStatus=constConfig.THREAD_TS)
 
 		#compute the diff
 		info = fileComparator.compareTwo(str(revOne),str(revTwo),f,download.folder,tkn)

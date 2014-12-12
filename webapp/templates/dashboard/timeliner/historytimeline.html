@@ -57,10 +57,7 @@ function tip(elem,ev,altName){
 		{% endfor %}
 	]);
 
-
-
-  // Create a Timeline
-  var timeline = new vis.Timeline(container, items, options);
+	var timeline = new vis.Timeline(container, items, options);
 
 	{% for ev in events %}
 	tip('#{{forloop.counter}}','{{ev.params}}','{{ev.altName}}')

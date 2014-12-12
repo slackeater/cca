@@ -4,119 +4,123 @@ from dashboard.models import MimeType
 from downloader.models import AccessToken,FileMetadata,FileHistory,FileHistory
 from django.template.loader import render_to_string
 from webapp.func import dropboxAlternateName
+from abstractAnalyzer import AbstractAnalyzer
 
-def metadataAnalysis(request,token):
-	""" Dropbox metadata analysis """
 
-	fm = FileMetadata.objects.get(tokenID=token)
-	metaInfo= json.loads(base64.b64decode(fm.metadata))
-	stat = parseDropTree(metaInfo)	
+class DropboxAnalyzer(AbstractAnalyzer):
 
-	return render_to_string("dashboard/cloudservice/metaAnalysis.html",{'dropbox': True, 'stat':stat})
+	def __init__(self,token):
+		AbstractAnalyzer.__init__(self,token)
 
-def metadataSearch(token, resType, selectedMimeType):
-	""" Search over metadata """
+	def metadataAnalysis(self):
+		""" Dropbox metadata analysis """
 
-	#get meta data
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
-	res = list()
+		stat = self.parseDropTree(self.metadata)	
 
-	for folder in meta:
-		for cnt in folder['contents']:
-			fID = {'fileID':dropboxAlternateName(cnt['path'],cnt['modified'])}
-			cnt.update(fID)
+		return render_to_string("dashboard/cloudservice/metaAnalysis.html",{'dropbox': True, 'stat':stat})
 
-			#deleted 
-			if resType == 0:
-				deleted = cnt.get("is_deleted",False)
-				
-				if deleted:
+	def metadataSearch(self, searchType, mimeType,startDate,endDate):
+		""" Search over metadata """
+
+		res = list()
+
+		for folder in self.metadata:
+			for cnt in folder['contents']:
+				fID = {'fileID':dropboxAlternateName(cnt['path'],cnt['modified'])}
+				cnt.update(fID)
+
+				#deleted 
+				if searchType == 0:
+					deleted = cnt.get("is_deleted",False)
+					
+					if deleted:
+						res.append(cnt)
+				#mime
+				elif searchType == 1:
+					if not cnt['is_dir'] and cnt['mime_type'] == MimeType.objects.get(id=mimeType).mime:
+						res.append(cnt)
+				#all
+				elif searchType == 2:
 					res.append(cnt)
-			#mime
-			elif resType == 1:
-				if not cnt['is_dir'] and cnt['mime_type'] == MimeType.objects.get(id=selectedMimeType).mime:
-					res.append(cnt)
-			#all
-			elif resType == 2:
-				res.append(cnt)
 
-	table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res, 'platform': 'dropbox'})
-	return table
+		return res
 
-def fileInfo(token, fileID):
-	""" Get the file information """
+	def textualMetadataSearch(self,searchType,mimeType,startDate,endDate):
+		res = self.metadataSearch(searchType,mimeType,startDate,endDate)
+		table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res, 'platform': 'dropbox'})
+		return table
 
-	#get metadata
-	meta = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=token).metadata))
-	i = None
+	def fileInfo(self, fileID):
+		""" Get the file information """
 
-	for folder in meta:
-		for cnt in folder['contents']:
-			altName = dropboxAlternateName(cnt['path'],cnt['modified'])
-			if  altName == fileID:
-				i = cnt
-				i['fileID'] = altName
-				break;
-	
-	table = render_to_string("dashboard/cloudservice/dropboxFileInfoTable.html",{'item':i,'platform':'dropbox'})
-	return table
+		i = None
 
-def fileHistory(fileDB):
-	""" Get file history """
+		for folder in self.metadata:
+			for cnt in folder['contents']:
+				altName = dropboxAlternateName(cnt['path'],cnt['modified'])
+				if  altName == fileID:
+					i = cnt
+					i['fileID'] = altName
+					break;
+		
+		table = render_to_string("dashboard/cloudservice/dropboxFileInfoTable.html",{'item':i,'platform':'dropbox'})
+		return table
 
-	#get all revision
-	revDB = FileHistory.objects.filter(fileDownloadID=fileDB)
-	revisions = list()	
+	def fileHistory(self,fileId):
+		""" Get file history """
 
-	for r in revDB:
-		decR = json.loads(base64.b64decode(r.revisionMetadata))
-		revisions.append(decR)
+		#get all revision
+		fileObject = self.db.getFileDownload(self.t,fileId)
+		revisions = list()	
 
-	table = render_to_string("dashboard/cloudservice/dropboxRevisioner.html",{"revisions": revisions})
-	return table
+		for r in self.db.getHistoryForFile(fileObject):
+			decR = json.loads(base64.b64decode(r.revisionMetadata))
+			revisions.append(decR)
 
+		table = render_to_string("dashboard/cloudservice/dropboxRevisioner.html",{"revisions": revisions})
+		return table
 
-def parseDropTree(contList):
-	""" Parse the list of file metadata """
+	def parseDropTree(self,contList):
+		""" Parse the list of file metadata """
 
-	dirCount = len(contList)
-	fileSize = 0
-	fileCount = 0
-	fileType = dict()
-	deletedFile = 0
-	deletedDirs = 0
+		dirCount = len(contList)
+		fileSize = 0
+		fileCount = 0
+		fileType = dict()
+		deletedFile = 0
+		deletedDirs = 0
 
-	for c in contList:
-		for dirCont in c['contents']:
-			if not dirCont['is_dir']:
-				fileCount += 1
-				fileSize += float(dirCont['bytes'])
+		for c in contList:
+			for dirCont in c['contents']:
+				if not dirCont['is_dir']:
+					fileCount += 1
+					fileSize += float(dirCont['bytes'])
 
-				key = dirCont['mime_type']
-				fileType.setdefault(key, 0)
-				fileType[key] += 1
+					key = dirCont['mime_type']
+					fileType.setdefault(key, 0)
+					fileType[key] += 1
 
-				try:
-					if dirCont['is_deleted']:
-						deletedFile += 1
-				except KeyError as e:
-					None
-			elif dirCont['is_dir']:
-				try:
-					if dirCont['is_deleted']:
-						deletedDirs += 1
-				except KeyError as e:
-					None
+					try:
+						if dirCont['is_deleted']:
+							deletedFile += 1
+					except KeyError as e:
+						None
+				elif dirCont['is_dir']:
+					try:
+						if dirCont['is_deleted']:
+							deletedDirs += 1
+					except KeyError as e:
+						None
 
-	fileSize = fileSize/(1024*1024)
+		fileSize = fileSize/(1024*1024)
 
-	#dictionary with stats
-	stat = dict()
-	stat['dC'] = dirCount
-	stat['fC'] = fileCount
-	stat['fS'] = fileSize
-	stat['dF'] = deletedFile
-	stat['dD'] = deletedDirs
-	stat['mime'] = fileType
+		#dictionary with stats
+		stat = dict()
+		stat['dC'] = dirCount
+		stat['fC'] = fileCount
+		stat['fS'] = fileSize
+		stat['dF'] = deletedFile
+		stat['dD'] = deletedDirs
+		stat['mime'] = fileType
 
-	return stat
+		return stat

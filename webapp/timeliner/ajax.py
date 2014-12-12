@@ -5,6 +5,9 @@ from webapp.func import *
 from django.template.loader import render_to_string
 import droptimemaker,googletimemake
 from cloudservice.forms import MetaSearch
+from googletimemake import GoogleTimeMaker
+from droptimemaker import DropboxTimeMaker
+from webapp.exceptionFormatter import formatException
 
 @dajaxice_register
 def formTimeliner(request,cloudItem,tokenID,form):
@@ -23,9 +26,11 @@ def formTimeliner(request,cloudItem,tokenID,form):
 
 		if f.is_valid():
 			if tkn.serviceType == "google":
-				data = googletimemake.formTimeline(ci,tkn,int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'])
+				ga = GoogleTimeMaker(tkn)
+				data = ga.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],None,None)
 			elif tkn.serviceType == "dropbox":
-				data = droptimemaker.formTimeline(ci,tkn,int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'])
+				d = DropboxTimeMaker(tkn)
+				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],None,None)
 			
 			if len(data) > 0:
 				table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
@@ -37,7 +42,7 @@ def formTimeliner(request,cloudItem,tokenID,form):
 			raise Exception("Invalid form")
 			
 	except Exception as e:	
-		dajax.assign("#formHistoryError","innerHTML",e.message)
+		dajax.assign("#formHistoryError","innerHTML",formatException(e))
 	
 	return dajax.json()
 
@@ -56,9 +61,11 @@ def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 		tkn = checkAccessToken(t,ci)
 
 		if tkn.serviceType == "google":
-			data = googletimemake.filehistoryTimeline(ci,t,altName)
+			ga = GoogleTimeMaker(tkn)
+			data = ga.filehistoryTimeLine(altName)
 		elif tkn.serviceType == "dropbox":
-			data = droptimemaker.filehistoryTimeline(ci,tkn,altName)
+			d = DropboxTimeMaker(tkn)
+			data = d.filehistoryTimeLine(altName)
 
 		#check that we have at least one item
 		if len(data) > 0:
@@ -69,6 +76,6 @@ def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 		else:
 			raise Exception("No history for this file")
 	except Exception as e:	
-		dajax.assign("#formHistoryError","innerHTML",e.message)
+		dajax.assign("#formHistoryError","innerHTML",formatException(e))
 
 	return dajax.json()

@@ -1,4 +1,6 @@
-from downloader.models import FileMetadata
+from downloader.models import FileMetadata, FileHistory, FileDownload
+from dashboard.models import MimeType
+
 import base64,json
 
 class MapsFinder():
@@ -6,8 +8,8 @@ class MapsFinder():
 	def __init__(self,token):
 		self.t = token
 
-	def decodeMetaData(self):
-		decodedMetadata = base64.b64decode(FileMetadata.objects.get(tokenID=self.t).metadata)
+	def decodeMetaData(self,metadata):
+		decodedMetadata = base64.b64decode(metadata)
 		jsonMetadata = json.loads(decodedMetadata)
 		return jsonMetadata
 
@@ -23,7 +25,7 @@ class MapsFinder():
 		return r
 
 	def googleExifFinder(self):
-		meta = self.decodeMetaData()
+		meta = self.decodeMetaData(FileMetadata.objects.get(tokenID=self.t).metadata)
 
 		res = list()
 
@@ -36,7 +38,7 @@ class MapsFinder():
 		return res
 
 	def dropboxExifFinder(self):
-		meta = self.decodeMetaData()
+		meta = self.decodeMetaData(FileMetadata.objects.get(tokenID=self.t).metadata)
 
 		res = list()
 
@@ -61,7 +63,7 @@ class MapsFinder():
 		return r
 
 	def googleMailFinder(self):
-		meta = self.decodeMetaData()
+		meta = self.decodeMetaData(FileMetadata.objects.get(tokenID=self.t).metadata)
 
 		#get e-mail in access token, start node
 		atEmail = json.loads(base64.b64decode(self.t.accessToken))["id_token"]["email"]
@@ -74,21 +76,28 @@ class MapsFinder():
 		#add main user to dict
 
 		for r in meta['items']:
-			#search in owners
-			if "owners" in r:
+			#search in owners and must not be a folder
+			if "owners" in r and r['mimeType'] != MimeType.objects.get(id=1340).mime:
 				#look for all owners
 				for o in r['owners']:
 					#add owner email
 					ownerEmail = o['emailAddress']
 
 					if ownerEmail != atEmail:
-						res[ownerEmail] = res.get(ownerEmail,0) + 1
+						res[ownerEmail] = res.get(ownerEmail,float(0)) + float(1)
+						
+					#now look for the history of the file to found modification by users
+					downFile = FileDownload.objects.filter(fileName=r['title'],alternateName=r['id'])
+
+					#take each entry on the history 
+					for h in FileHistory.objects.filter(fileDownloadID=downFile):
+						historyMeta = self.decodeMetaData(h.revisionMetadata);
+						
+						if historyMeta.get("lastModifyingUser") != None:
+							lastModifyingEmail = historyMeta['lastModifyingUser']['emailAddress']
+					
+							if lastModifyingEmail != atEmail:
+								res[lastModifyingEmail] = res.get(lastModifyingEmail,float(0)) + 0.2
 
 		
-			"""if "sharingUser" in r:
-				shareEmail = r['sharingUser']['emailAddress']
-
-				if shareEmail != atEmail:
-					res[shareEmail] = res.get(shareEmail,0) + 1
-					"""
 		return {'mainNode': atEmail, 'linkedNodes':res}

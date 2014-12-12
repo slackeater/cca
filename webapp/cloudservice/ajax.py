@@ -10,6 +10,9 @@ from downloader.models import AccessToken,FileDownload
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from webapp.func import *
+from webapp.exceptionFormatter import formatException
+from googledrive import GoogleAnalyzer
+from drop import DropboxAnalyzer
 
 @dajaxice_register
 def metadataAnalysis(request,tokenID,cloudItem):
@@ -28,14 +31,16 @@ def metadataAnalysis(request,tokenID,cloudItem):
 		platform = tknObj.serviceType
 
 		if platform == "google":
-			parsedTable = googledrive.metadataAnalysis(request,tknObj)
+			ga = GoogleAnalyzer(tknObj)
+			parsedTable = ga.metadataAnalysis()
 		elif platform == "dropbox":
-			parsedTable = drop.metadataAnalysis(request,tknObj)
+			d = DropboxAnalyzer(tknObj)
+			parsedTable = d.metadataAnalysis()
 
 		dajax.assign("#metaAnalysis","innerHTML", parsedTable)
 		dajax.assign("#metaAnalysisError","innerHTML","")
 	except Exception as e:
-		dajax.assign("#metaAnalysisError","innerHTML",e.message)
+		dajax.assign("#metaAnalysisError","innerHTML",formatException(e))
 
 	return dajax.json()
 
@@ -58,16 +63,18 @@ def searchMetaData(request,form,tokenID,cloudItem):
 
 		if f.is_valid():
 			if platform == "google":
-				parsedTable = googledrive.metadataSearch(tknObj,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				ga = GoogleAnalyzer(tknObj)
+				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
 			elif platform == "dropbox":
-				parsedTable = drop.metadataSearch(tknObj,int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				d = DropboxAnalyzer(tknObj)
+				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
 			
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")
 		else:
 			dajax.assign("#searchError","innerHTML","Please fill all fields")
 	except Exception as e:
-		dajax.assign("#searchError","innerHTML",e)
+		dajax.assign("#searchError","innerHTML",formatException(e))
 
 	return dajax.json()
 
@@ -89,14 +96,16 @@ def fileInfo(request,tokenID,id,cloudItem):
 		platform = tknObj.serviceType
 
 		if platform == "google":
-			parsedTable = googledrive.fileInfo(t,id)
+			ga = GoogleAnalyzer(tknObj)
+			parsedTable = ga.fileInfo(id)
 		elif platform == "dropbox":
-			parsedTable = drop.fileInfo(t,id)
+			d = DropboxAnalyzer(tknObj)
+			parsedTable = d.fileInfo(id)
 
 		dajax.assign("#fileRevisionContainer","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
 	except Exception as e:
-		dajax.assign("#searchError","innerHTML",e)
+		dajax.assign("#searchError","innerHTML",formatException(e))
 
 	return dajax.json()
 
@@ -116,17 +125,16 @@ def fileRevision(request,fId,tokenID,cloudItem):
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
 		
-		# get the file from the database
-		fileDB = FileDownload.objects.get(tokenID=tknObj,alternateName=fId)
-
 		if platform == "google":
-			parsedTable = googledrive.fileHistory(fileDB)
+			ga = GoogleAnalyzer(tknObj)
+			parsedTable = ga.fileHistory(fId)
 		elif platform == "dropbox":
-			parsedTable = drop.fileHistory(fileDB)
+			d = DropboxAnalyzer(tknObj)
+			parsedTable = d.fileHistory(fId)
 		
 		dajax.assign("#revisionHistory","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
 	except Exception as e:
-		dajax.assign("#searchError","innerHTML",e)
+		dajax.assign("#searchError","innerHTML",formatException(e))
 
 	return dajax.json()

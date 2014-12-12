@@ -5,6 +5,10 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.dateformat import format
 from webapp import constConfig
+import httplib2
+from oauth2client.client import OAuth2Credentials
+from apiclient.discovery import build
+from abstractDownloader import AbstractDownloader
 
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -15,172 +19,189 @@ if not cryptoPath in sys.path:
 
 import crypto
 
-def getMetaData(at):
-	""" Get the metadata """
-	m = json.loads(base64.b64decode(FileMetadata.objects.get(tokenID=at).metadata))
-	return m
+class GoogleDownloader(AbstractDownloader):
 
-def downloadMetaData(driveService,at,simulateDownload = False):
-	""" Download the metadata """
+	def __init__(self,download,uname,pwd):
+		AbstractDownloader.__init__(self,download,uname,pwd)
 
-	downStatus = constConfig.THREAD_PHASE_1
+	def createService(self):
+		http = httplib2.Http()
+		credentials = OAuth2Credentials.from_json(base64.b64decode(self.t.accessToken))
+		credAuth = credentials.authorize(http)
+		self.service = build("drive","v2",http=credAuth)
 
-	#used for tests
-	if simulateDownload is True:
-		#simulate the download by waiting 10 seconds
-		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
-		return downStatus
-	
-	#download
-	fileMetaData = json.dumps(driveService.files().list().execute())
-	
-	#store
-	fm = FileMetadata.objects.filter(tokenID=at)
-	
-	# we do not have any record for this token
-	if fm.count() == 0:
-		meta = base64.b64encode(fileMetaData)
+	def downloadMetaData(self,simulateDownload = False):
+		""" Download the metadata """
+
+		#used for tests
+		if simulateDownload is True:
+			#simulate the download by waiting 10 seconds
+			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+			return downStatus
+		
+		#download
+		result = []
+		page_token = None
+
+		while True:
+			param = {}
+
+			if page_token:
+				param['pageToken'] = page_token
+				param['maxResults'] = 500
+			
+			files = self.service.files().list(**param).execute()
+			result.extend(files['items'])
+			page_token = files.get('nextPageToken')
+			
+			if not page_token:
+				break
+
+
+		self.metadata = result
+		
+		meta = base64.b64encode(json.dumps(self.metadata))
+
 		metaTime = timezone.now()
+		
 		txt = meta+crypto.HASH_SEPARATOR+format(metaTime,"U")
 		metaHash = crypto.rsaSignatureSHA256(txt,settings.PRIV_KEY)
 
-		storeFM = FileMetadata(metadata=meta,tokenID=at,metaTime=metaTime,metadataHash=metaHash)
+		storeFM = FileMetadata(metadata=meta,tokenID=self.t,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
 
-		return downStatus
+		self.d.threadStatus = constConfig.THREAD_DOWN_META
+		self.d.save()
 
-def downloadFiles(driveService,at,simulateDownload = False):
-	""" Download file with google drive """
-
-	downStatus = constConfig.THREAD_PHASE_2
-
-	#used for tests
-	if simulateDownload is True:
-		#simulate the download by waiting 10 seconds
-		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
-		return downStatus
+	def computeDownload(self):
 	
-	meta = getMetaData(at)	
-	downDir = Download.objects.get(tokenID=at).folder
-	downDirFull = os.path.join(settings.DOWNLOAD_DIR,downDir)
-	downDirFullSub = os.path.join(settings.DOWNLOAD_DIR,downDir,"files")
-	
-	#create directory if necessary
-	if not os.path.isdir(downDirFull):
-		os.mkdir(downDirFull)
+		totalSize = long(0)
+			
+		for item in self.metadata:
 
-	if not os.path.isdir(downDirFullSub):
-		os.mkdir(downDirFullSub)
+			if "quotaBytesUsed" in item:
+				totalSize += long(item['quotaBytesUsed'])
+			elif "fileSize" in item:
+				totalSize += long(item['fileSize'])
 
-	#iterate over file and write to disk
-	for item in meta['items']:
-			if 'downloadUrl' in item:
-				url = item['downloadUrl']
-			elif 'exportLinks' in item:
-				url = item['exportLinks']["application/pdf"]
-			else:
-				url = None
+		self.d.downloadSize = totalSize
+		self.d.threadStatus = constConfig.THREAD_COMPUTING
+		self.d.save()
 
-			if url != None:
-				resp, content = driveService._http.request(url)
-				
-				if resp.status == 200:
-					fullName = os.path.join(downDirFullSub,item['title'] + "_" + item['id'])
-					
-					with open(fullName,"wb+") as f:
-						f.write(content)
-					
-					#compute hash
-					h = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
-					
-					fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=at,fileHash=h)
-					fileDb.save()
+	def downloadFiles(self,simulateDownload = False):
+		""" Download file with google drive """
 
-
-	#upload status
-	return downStatus
-
-def downloadHistory(driveService,at,simulateDownload = False):
-	""" Download the history for a file """
-
-	downStatus = constConfig.THREAD_PHASE_3
-
-	#used for tests
-	if simulateDownload is True:
-		#simulate the download by waiting 10 seconds
-		time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
-		return downStatus
-
-	meta = getMetaData(at)
-
-	downDir = Download.objects.get(tokenID=at).folder
-	downDirFull = os.path.join(settings.DOWNLOAD_DIR,downDir)
-	downDirHistory = os.path.join(downDirFull,"history")
-
-	#create the directories if necessary
-	if not os.path.isdir(downDirFull):
-		os.mkdir(downDirFull)
-
-	if not os.path.isdir(downDirHistory):
-		os.mkdir(downDirHistory)
-
-	for item in meta['items']:
-		#folders do not support revision
-		if item['mimeType'] != 'application/vnd.google-apps.folder':
-
-			#get revisions for this file
-			revs = driveService.revisions().list(fileId=item['id']).execute()
+		#used for tests
+		if simulateDownload is True:
+			#simulate the download by waiting 10 seconds
+			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+			return downStatus
 		
-			if len(revs['items']) >= 1:
+		#get download folder
+		downDirFullSub = os.path.join(self.downloadDir,"files")
+		
+		if not os.path.isdir(downDirFullSub):
+			os.mkdir(downDirFullSub)
+		
+		#iterate over file and write to disk
+		for item in self.metadata:
+				if 'downloadUrl' in item:
+					url = item['downloadUrl']
+				elif 'exportLinks' in item:
+					url = item['exportLinks']["application/pdf"]
+				else:
+					url = None
 
-				#create a folder for this file
-				revPath = os.path.join(downDirHistory,item['id'])
-				if not os.path.isdir(revPath):
-					os.mkdir(revPath)
-
-				#get file download
-				fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=at)
-				
-				for r in revs['items']:
-
-					if 'exportLinks' in r:
-						url = r['exportLinks']["application/pdf"]
-					elif 'downloadUrl' in r:
-						url = r['downloadUrl']
-					else:
-						url = None
-
-					if url != None:
-						resp, content = driveService._http.request(url)
+				if url != None:
+					resp, content = self.service._http.request(url)
 					
-						#if the response is affirmative
-						if resp.status == 200:
-							revItem = base64.b64encode(json.dumps(r))
-							revID = r['id']
-
-							fullName = os.path.join(revPath,item['title']+"_"+revID)
-
-							with open(fullName,"wb+") as f:
-								f.write(content)
-
-							# compute hash
-							downloadTime = timezone.now()
-							fileRevisionHash = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
-							revisionMetadataHash = crypto.rsaSignatureSHA256(
-									revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"),
-									settings.PRIV_KEY)
+					if resp.status == 200:
+						hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+item['id'])
+						fullName = os.path.join(downDirFullSub,hashFileName.hexdigest()+ "_" + item['id'])
+						
+						with open(fullName,"wb+") as f:
+							f.write(content)
+						
+						#compute hash
+						h = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
+						
+						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=self.t,fileHash=h)
+						fileDb.save()
 
 
+	def downloadHistory(self,simulateDownload = False):
+		""" Download the history for a file """
 
-							fh = FileHistory(
-								revision=revID,
-								status=1,
-								fileDownloadID=fileDownload,
-								revisionMetadata=revItem,
-								downloadTime=downloadTime,
-								fileRevisionHash=fileRevisionHash,
-								revisionMetadataHash=revisionMetadataHash
-								)
-							fh.save()
+		#used for tests
+		if simulateDownload is True:
+			#simulate the download by waiting 10 seconds
+			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
+			return downStatus
 
-	return downStatus
+		downDirHistory = os.path.join(self.downloadDir,"history")
+
+		if not os.path.isdir(downDirHistory):
+			os.mkdir(downDirHistory)
+
+		for item in self.metadata:
+			#folders do not support revision
+			if item['mimeType'] != 'application/vnd.google-apps.folder':
+
+				#get revisions for this file
+				revs = self.service.revisions().list(fileId=item['id']).execute()
+			
+				if len(revs['items']) >= 1:
+
+					#create a folder for this file
+					revPath = os.path.join(downDirHistory,item['id'])
+					if not os.path.isdir(revPath):
+						os.mkdir(revPath)
+
+					#get file download
+					fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=self.t)
+					
+					for r in revs['items']:
+
+						if 'exportLinks' in r:
+							url = r['exportLinks']["application/pdf"]
+						elif 'downloadUrl' in r:
+							url = r['downloadUrl']
+						else:
+							url = None
+
+						if url != None:
+							resp, content = self.service._http.request(url)
+						
+							#if the response is affirmative
+							if resp.status == 200:
+								revItem = base64.b64encode(json.dumps(r))
+								revID = r['id']
+
+								hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+revID)
+								fullName = os.path.join(revPath,hashFileName.hexdigest()+"_"+revID)
+
+								with open(fullName,"wb+") as f:
+									f.write(content)
+
+								# compute hash
+								downloadTime = timezone.now()
+								fileRevisionHash = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
+								revisionMetadataHash = crypto.rsaSignatureSHA256(
+										revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"),
+										settings.PRIV_KEY)
+
+								fh = FileHistory(
+									revision=revID,
+									status=1,
+									fileDownloadID=fileDownload,
+									revisionMetadata=revItem,
+									downloadTime=downloadTime,
+									fileRevisionHash=fileRevisionHash,
+									revisionMetadataHash=revisionMetadataHash
+									)
+								fh.save()
+	def downloadFileHistory(self):
+		self.downloadFiles()
+		self.downloadHistory()
+		self.d.threadStatus = constConfig.THREAD_DOWN_FH
+		self.d.save()
