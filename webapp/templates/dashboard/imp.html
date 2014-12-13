@@ -16,28 +16,37 @@ function showReportCallBack(data){
 
 {% block content %}
 
+<div class="page-header">
+	<h1>Import</h2>
+</div>
 
+<ol class="breadcrumb">
+	  <li><a href="/clouditem/">Cloud Item</a></li>
+	  <li><a href="/clouditem/{{objID}}">Cloud Item {{objID}}</a></li>
+	      <li class="active">Import</li>
+      </ol>
 
 {% if form %}
-<h2>Import a report</h2>
+<h2>Upload</h2>
+{% if parseStatus %}
+	<div id="parseStatus" class="alert alert-danger">{{parseStatus}}</div>
+{% endif %}
+
 <form method='post' action='/importer/{{objID}}/' id="upForm" enctype="multipart/form-data">
 	{% csrf_token %}
-	<table><tr>
-	{% for field in form %}
-			<td>{{ field }}</td>
-	{% endfor %}
-	</tr>	
-	<tr><td><input type='submit' value='upload' /></td></tr>
-	</tr></table>
+	<div class="form-group">
+		<label for="id_fileUp">{{ form.fileUp.label }}</label>
+		{{form.fileUp}}
+	</div>
+	<input type='submit' value='upload' class="btn btn-default" />
 </form>
 {% endif %}
 
-<div id="parseStatus">{{parseStatus}}</div>
 
 <h2>Report</h2>
 
-<table id="listReportTable">
-	<tr><td>ID</td><td>Date</td><td>IP</td><td>Parsed</td></tr>
+<table id="listReportTable" class="table">
+	<tr><th>ID</th><th>Date</th><th>IP</th><th>Parsed</th></tr>
 	
 	{% for report in repList %}
 	<tr><td><a href="javascript:void(0)" onclick="showReport('{{report.id}}','{{objID}}')">{{ report.fileName }}</a></td><td>{{ report.uploadDate }}</td><td>{{ report.uploadIP }}</td><td>{{ report.parsed }}</td></tr>
@@ -45,6 +54,6 @@ function showReportCallBack(data){
 </table>
 
 <div id="repStatus" style="display: none"></div>
-<div id="reportTable" style="display: none"></div>
+<div id="reportTable" style="display: none" class="container-fluid"></div>
 {% endblock %}
 

@@ -27,6 +27,11 @@ def showTokenDash(request,cloudItem):
 		data['objID'] = ci.id
 		data['dropAuthURL'] = oauth.dropboxAuthorizeURL()
 		data['gdriveAuthURL'] = oauth.googleAuthorizeURL()
+		res = openReport(ci)
+		if res is not None:
+			data['browsers'] = res[1]["objects"]
+		else:
+			data['browsers'] = None
 		return render_to_response("dashboard/cloud.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")

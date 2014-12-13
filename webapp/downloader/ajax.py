@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from webapp import constConfig
 from webapp.exceptionFormatter import formatException 
 import math
+from webapp.databaseInterface import DbInterface
 
 @dajaxice_register
 def submitDropboxCode(request, code, ci):
@@ -25,16 +26,6 @@ def submitDropboxCode(request, code, ci):
 def submitGoogleCode(request, code, ci):
 	""" Submit the dropbox authorization code """
 	return submitCode(request, code, ci, "google","#gStat")
-
-@dajaxice_register
-def showGoogleTokens(request, ci):
-	""" Show the token for google """
-	return showTokens(request,"google",ci,"#gStat","#googleTokenTable")
-
-@dajaxice_register
-def showDropboxTokens(request, ci):
-	""" Show the token for dropbox """
-	return showTokens(request,"dropbox",ci,"#dStat","#dropTokenTable")
 
 @dajaxice_register
 def checkDownload(request,t,i):
@@ -84,30 +75,25 @@ def checkDownload(request,t,i):
 	
 	return dajax.json()
 
-def showTokens(request, platform, ci, eID, tab):
+@dajaxice_register
+def showTokens(request,ci):
 	""" Show the tokens """
 
 	if not isAuthenticated(request):
 		return None
 
-	cloudItemID = parseAjaxParam(ci)
-	
-	dajax = Dajax()
-	cleanPlatform = strip_tags(platform)	
-	data = dict()
-
 	try:
-		#check that this user has this clouditem
-		userCloudItem = CloudItem.objects.filter(id=cloudItemID,reporterID=User.objects.get(id=request.user.id))
-		
-		if userCloudItem.count() == 1:
-			data['tknTable'] = AccessToken.objects.filter(cloudItem=CloudItem.objects.get(id=cloudItemID),serviceType=cleanPlatform)
-			data['link'] = cleanPlatform
-			data['id'] = cloudItemID
-			table = render_to_string("dashboard/tokenTable.html",data)
-			dajax.assign(tab, "innerHTML", table)
+		dajax = Dajax()
+		data = dict()
+		cloudItemObj = checkCloudItem(ci,request.user.id)
+		data['tknTable'] = DbInterface.getAccessTokenList(cloudItemObj)
+		data['id'] = cloudItemObj.id
+		table = render_to_string("dashboard/tokenTable.html",data)
+		dajax.assign("#tokenTable", "innerHTML", table)
+		dajax.assign("#tokenError", "innerHTML","")
 	except Exception as e:
-		dajax.assign(eID, "innetHTML", e)
+		dajax.assign("#tokenError", "innerHTML",formatException(e))
+		dajax.add_css_class("#tokenError",['alert','alert-danger'])
 
 	return dajax.json()
 

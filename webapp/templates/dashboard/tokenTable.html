@@ -1,11 +1,12 @@
 {% load tz %}
 
-<h3>Access Tokens</h3>
-<table>
-	<tr><td><b>ID</b></td><td><b>UID</b></td><td>Date</td></tr>	
+<table class="table table-bordered">
+	<tr><th>ID</th><th>UID</th><th>Platform</th><th>Date</th></tr>	
+
 	{% for token in tknTable %}
-	<tr><td>{{token.id}}</td><td><a href="/token/{{id}}/{{token.id}}/">{{token.userID}}</a></td><td>{{token.tokenTime|localtime}}</tr>	
+	<tr><td>{{token.id}}</td><td><a href="/token/{{id}}/{{token.id}}/">{{token.userID}}</a></td><td>{{token.serviceType}}</td><td>{{token.tokenTime|localtime}}</tr>	
 	{% empty %}
-		<tr><td colspan="3">Sorry no tokens for dropbox have been found</td></tr>
+		<tr><td colspan="3">Sorry no tokens have been found</td></tr>
 	{% endfor %}
+
 </table>

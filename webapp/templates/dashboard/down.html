@@ -59,7 +59,7 @@ The download will happen in background and notifications will appear in this pag
 	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
 	<tr><td>Credential Verified</td><td colspan=2><div id="status1">{{credVerified}}</div></td></tr>
 	<tr><td>Metadata Download</td><td colspan=2><div id="status2">{{metaWait}}</div></td></tr>
-	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td>Approximate download size (without history):<div id="fileSize"></div></td></tr>
+	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td>Approximate download size (without history):<div id="fileSize">-</div> MB</td></tr>
 	<tr><td>Download Files and History</td><td colspan=2><div id="status4">{{fileWait}}</div></td></tr>
 	<tr><td>Verification</td><td colspan=2><div id="status5">{{verificationWait}}</div></td></tr>
 </table>

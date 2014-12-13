@@ -29,11 +29,12 @@ class MapsFinder():
 
 		res = list()
 
-		for f in meta['items']:
+		for f in meta:
 			if "imageMediaMetadata" in f:
-				lat = f["imageMediaMetadata"]["location"]["latitude"]
-				lon = f["imageMediaMetadata"]["location"]["longitude"]
-				res.append({"title":f['title'],"lat":lat,"lon":lon})
+				if "location" in f["imageMediaMetadata"]:
+					lat = f["imageMediaMetadata"]["location"]["latitude"]
+					lon = f["imageMediaMetadata"]["location"]["longitude"]
+					res.append({"title":f['title'],"lat":lat,"lon":lon})
 
 		return res
 
@@ -47,9 +48,10 @@ class MapsFinder():
 			#for each file in the folder
 			for f in r['contents']:
 				if "photo_info" in f:
-					lat = f["photo_info"]["lat_long"][0]
-					lon = f["photo_info"]["lat_long"][1]
-					res.append({"title":f['path'],"lat":lat,"lon":lon})
+					if f["photo_info"]["lat_long"] is not None:
+						lat = f["photo_info"]["lat_long"][0]
+						lon = f["photo_info"]["lat_long"][1]
+						res.append({"title":f['path'],"lat":lat,"lon":lon})
 
 		return res
 
@@ -75,7 +77,7 @@ class MapsFinder():
 
 		#add main user to dict
 
-		for r in meta['items']:
+		for r in meta:
 			#search in owners and must not be a folder
 			if "owners" in r and r['mimeType'] != MimeType.objects.get(id=1340).mime:
 				#look for all owners

@@ -1,8 +1,20 @@
-import md5
+import md5,os,sys,json
+from django.conf import settings
 from downloader.models import *
+from importer.models import Upload
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
+from django.utils.dateformat import format
+from django.core.exceptions import ObjectDoesNotExist
 
+# add path for crypto
+cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
+
+if not cryptoPath in sys.path:
+	sys.path.insert(1, cryptoPath)
+	del cryptoPath
+
+import crypto
 
 def isAuthenticated(request):
 	""" Check if a user is authenticated """
@@ -34,3 +46,27 @@ def checkAccessToken(tokenID,cloudItemObj):
 
 	tknFromCi = AccessToken.objects.get(id=tokenID,cloudItem=cloudItemObj)
 	return tknFromCi
+
+def openReport(clouditem,uploadID = None):
+
+	try:
+		# get the upload
+		if uploadID is not None:
+			uploadQuery = Upload.objects.get(cloudItemID=clouditem,id=uploadID)
+		else:
+			uploadQuery = Upload.objects.get(cloudItemID=clouditem)
+
+		#build the name of the folder
+		hashFolder = crypto.sha256(uploadQuery.fileName+crypto.HASH_SEPARATOR+format(uploadQuery.uploadDate,"U")).hexdigest()
+
+		#parse with JSON
+		report = os.path.join(settings.UPLOAD_DIR,str(clouditem.id),hashFolder,uploadQuery.fileName,uploadQuery.fileName+".report")
+
+		openReport = open(report,"rb")
+		jsonReport = json.load(openReport)
+
+		return jsonReport
+	except ObjectDoesNotExist:
+		return None
+
+

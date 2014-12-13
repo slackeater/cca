@@ -64,10 +64,10 @@ def searchMetaData(request,form,tokenID,cloudItem):
 		if f.is_valid():
 			if platform == "google":
 				ga = GoogleAnalyzer(tknObj)
-				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),None,None)
 			elif platform == "dropbox":
 				d = DropboxAnalyzer(tknObj)
-				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']))
+				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),None,None)
 			
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")

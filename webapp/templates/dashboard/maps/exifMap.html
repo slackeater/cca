@@ -1,3 +1,6 @@
+
+{% if exif %}
+
 <!-- http://jsfiddle.net/doktormolle/7cu2F/ --!>
 <pre><div id="map_canvas" style="height:600px"></div></pre>
 <script type="text/javascript">
@@ -44,3 +47,7 @@ function initialize() {
 }
 
 </script>
+
+{% else %}
+<p>No images found</p>
+{% endif %}

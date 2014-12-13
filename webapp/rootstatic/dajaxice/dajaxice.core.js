@@ -26,24 +26,20 @@ var Dajaxice = {
     
     downloader: {
     
-    submitDropboxCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
-    },
-
     submitGoogleCode: function(callback_function, argv, custom_settings){
         return Dajaxice.call('downloader.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
     },
 
-    showDropboxTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.showDropboxTokens', 'POST', callback_function, argv, custom_settings);
+    submitDropboxCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
     },
 
     checkDownload: function(callback_function, argv, custom_settings){
         return Dajaxice.call('downloader.checkDownload', 'POST', callback_function, argv, custom_settings);
     },
 
-    showGoogleTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.showGoogleTokens', 'POST', callback_function, argv, custom_settings);
+    showTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('downloader.showTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 

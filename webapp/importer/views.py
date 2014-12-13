@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.utils.dateformat import format
 
 class UploadForm(forms.Form):
-	fileUp = forms.FileField(label='File')
+	fileUp = forms.FileField(label='File',widget=forms.FileInput(attrs={'class':'form-control'}))
 
 def importer(request,cloudItem):
 

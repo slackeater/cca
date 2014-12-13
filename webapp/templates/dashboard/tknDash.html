@@ -1,56 +1,75 @@
 {% extends "base.html" %}
 
-{% block menudash %}
-<script>
-
-$(document).ready(function(){
-  $("#hoverAnalyze").hover(function(){
-      pos = $(this).position()
-      $("#menuChoice").css("left",pos.left-30)
-      $("#menuChoice").fadeIn("slow");
-  },function(){
-	  setTimeout(function() {$("#menuChoice").fadeOut("slow");},5500);
-});
-});
-
-</script>
-
-
-<span id="dashMenu">
-	<span><a href="/token/{{ objID }}/{{tokenID}}/"><img src="/static/dwelling1.png" alt="Home" /></a></span>
-	<span><a href="/download/{{ objID }}/{{tokenID}}/"><img src="/static/internet43.png" alt="Cloud Downloader" /></a></span>
-	<span><a href="javascript:void(0)" ><img src="/static/timeline.png" alt="Analyze" id="hoverAnalyze" /></a></span>
-	<div id="menuChoice" style="display: none; z-index: 1; position: absolute; background-color: white; border: solid 1px grey">
-		<table id="funcList">
-			<tr><td><img src="/static/icons/table.png" /></td><td><a href="/analyse/{{ objID }}/{{tokenID}}/">Metadata</a></td></tr>
-			<tr><td><img src="/static/icons/time.png" /></td><td><a href="/timeliner/{{objID}}/{{tokenID}}/">Timelines</a></td></tr>
-			<tr><td><img src="/static/icons/table_relationship.png" /></td><td><a href="/comparator/{{objID}}/{{tokenID}}/">Verify</a></td></tr>
-			<tr><td><img src="/static/icons/world.png" /></td><td><a href="/maps/{{objID}}/{{tokenID}}/">Maps</a></td></tr>
-		</table>
-	</div>
-	<span><a href="/report/{{ objID }}/{{tokenID}}/"><img src="/static/seo2.png" alt="Report" /></a></span>
-</span>
-
-{% endblock %}
-
 {% block content %}
-<div id="right">
-	{% block rightcont %}
-	<p>Choose one of the funcionalities below:</p>
-	<table id="funcTab">
-		<tr><td><img src="/static/internet43.png" alt="Cloud Downloader" /></td><td><a href="/download/{{ objID }}/{{tokenID}}/">Download</a></td></tr>
-		<tr><td><img src="/static/timeline.png" alt="Timeline" /></td>
-			<td>
-				<table id="funcList">
-					<tr><td><img src="/static/icons/table.png" /></td><td><a href="/analyse/{{ objID }}/{{tokenID}}/">Metadata</a></td></tr>
-					<tr><td><img src="/static/icons/time.png" /></td><td><a href="/timeliner/{{objID}}/{{tokenID}}/">Timelines</a></td></tr>
-					<tr><td><img src="/static/icons/table_relationship.png" /></td><td><a href="/comparator/{{objID}}/{{tokenID}}/">Verifiy</a></td></tr>
-					<tr><td><img src="/static/icons/world.png" /></td><td><a href="/maps/{{objID}}/{{tokenID}}/">Maps</a></td></tr>
-				</table>
-		</td></tr>
-		<tr><td><img src="/static/seo2.png" alt="Report" /></td><td><a href="/report/{{ objID }}/{{tokenID}}/"> Report</a></td></tr>
-	</table>
-	{% endblock %}
-</div>
 
+	<div class="page-header">
+		<h1>Access Token "{{tokenID}}"</h1>
+	</div>
+
+	<ol class="breadcrumb">
+		<li><a href="/clouditem/">Cloud Item</a></li>
+		<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+		<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+		<li class="active">Access Token {{tokenID}}</li>
+	</ol>
+
+	<h2>Dashboard</h2>
+
+	<div class="container-fluid">
+		<div class="row" style="margin-bottom: 20px">
+			<div class="col-md-3">
+				<table class="-bordered">
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-cloud-download" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/download/{{ objID }}/{{tokenID}}/"><h3>Download</h3></a></td>
+					</tr>
+				</table>
+			</div>
+
+		</div>
+		<div class="row" style="margin-bottom: 20px">
+			<div class="col-md-3">
+				<table>
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-qrcode" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/analyse/{{ objID }}/{{tokenID}}/"><h3>Metadata</h3></a></td>
+					</tr>
+				</table>
+			</div>
+			<div class="col-md-3">
+				<table>
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-time" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/timeliner/{{objID}}/{{tokenID}}/"><h3>Timelines</h3></a></td>
+					</tr>
+				</table>
+			</div>
+			<div class="col-md-3">
+				<table>
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-ok-sign" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/comparator/{{objID}}/{{tokenID}}/"><h3>Verifiy</h3></a></td>
+					</tr>
+				</table>
+			</div>
+			<div class="col-md-3">
+				<table>
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-globe" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/maps/{{objID}}/{{tokenID}}/"><h3>Maps</h3></a></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-3">
+				<table>
+					<tr>
+						<td width="70px"><span class="glyphicon glyphicon-list-alt" style="font-size: 40pt" aria-hidden="true"></span></td>
+						<td style="text-align: center"><a href="/report/{{ objID }}/{{tokenID}}/"><h3>Report</h3></a></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
 {% endblock %}

@@ -1,14 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="right">
-	{% block rightcont %}
-	<p>Choose one of the functionalities below:</p>
-	<table id="funcTab">
-		<tr><td><img src="/static/low27.png" /></td><td><a href="/importer/{{objID}}/">Import</a></td></tr>
-		<tr><td><img src="/static/internet43.png" /></td><td><a href="/token/{{objID}}/">Chose a token</a></td></tr>
-	</table>
-	{% endblock %}
+<div class="page-header">
+	<h1>Cloud Item {{objID}}</h1>
+</div>
+
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li class="active">Cloud Item {{objID}}</li>
+</ol>
+<h3>Choose one of the functionalities below:</h3>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-6 container-fluid" style="border: solid 1px #d3d3d3">
+			<a href="/importer/{{objID}}/"><h4><img src="/static/low27.png" /> Import</h4></a>
+		</div>
+		<div class="col-md-6 container-fluid" style="border: solid 1px #d3d3d3">
+			<a href="/token/{{objID}}/"><h4><img src="/static/internet43.png" /> Choose a token</h4></a>
+		</div>
+	</div>
 </div>
 
 {% endblock %}

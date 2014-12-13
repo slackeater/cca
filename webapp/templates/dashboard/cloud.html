@@ -11,7 +11,7 @@ function dropboxAuthCode(){
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.downloader.showDropboxTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.downloader.showTokens(Dajax.process, {'ci': iVal()})
 }
 
 function googleAuthCode(){
@@ -22,7 +22,7 @@ function googleAuthCode(){
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.downloader.showGoogleTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.downloader.showTokens(Dajax.process, {'ci': iVal()})
 }
 
 
@@ -30,69 +30,90 @@ function googleCallBack(data){
 
 {% endblock %}
 
-{% block rightcont %}
+{% block content %}
 
-<h2 onclick='$("#credTab").fadeToggle("slow")'>Credentials</h2>
-<table id="credTab" style="display: none">
-	<tr><td><b>Hostname</b></td><td><b>Username</b></td><td><b>Password</b></td></tr>
+<div class="page-header">
+	<h1>Access Tokens</h1>
+</div>
+
+<ol class="breadcrumb">
+	  <li><a href="/clouditem/">Cloud Item</a></li>
+	  <li><a href="/clouditem/{{objID}}">Cloud Item {{objID}}</a></li>
+	      <li class="active">Access Token</li>
+</ol>
+<h2 onclick='$("#credTab").fadeToggle("slow")'><a href="#">Credentials</a></h2>
+<table id="credTab" class="table table-bordered" style="display: none">
+	<tr><th>Hostname</th><th>Username</th><th>Password</th></tr>
 	{% for b in browsers %}
 		{% for p in b.profiles %}
 			{% for cred in p.credentialList %}
 			<tr><td>{{ cred.hostname }}</td><td>{{ cred.username }}</td><td>{{ cred.password }}</td></tr>
 			{% endfor %}
 		{% endfor %}
+	{% empty %}
+		<tr><td colspan=3>No results have been found.</td></tr>
 	{% endfor %}
 </table>
 
-<h2>Dropbox</h2>
-<div id="dStat"></div>
-<ol>
-	<li>First login with <a target="_blank" href="{{ dropAuthURL }}">Dropbox</a></li>
-	<li>Copy the authorization code below and submit to obtain an access token
-
+<div class="row">
+	<div class="col-md-6">
+		<h2>Dropbox</h2>
+		<div class="container-fluid">
 		<form method="post">
-			{% csrf_token %}
-			<table>
-				<tr>
-					<td>Authorization Code
-					<input type="text" name="dropboxCode" id="dropCode" />
-					<input type="button" name="sub" onclick="dropboxAuthCode()" value="Submit" />
-					<img src="/static/47.GIF" style="display: none" id="loadDrop" /></td>
-				</tr>
-			</table>
+		{% csrf_token %}
+		<table class="table">
+			<tr>
+				<td>Login with <a target="_blank" href="{{ dropAuthURL }}">Dropbox</a></td><td rowspan=4 style="text-align: center"><img src="/static/drop.png" /></td>
+			</tr>
+			<tr>
+				<td><label for="dropCode">Authorization Code</label></td>
+			</tr>
+			<tr>
+				<td><input type="text" name="dropboxCode" id="dropCode" class="form-control" /></td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button" name="sub" onclick="dropboxAuthCode()" value="Submit" class="btn btn-default" />
+					<img src="/static/47.GIF" style="display: none" id="loadDrop" />
+				</td>
+			</tr>
+
+		</table>
 		</form>
-	</li>
-	<li>
-		Display the <a href="javascript:void(0)" onclick="Dajaxice.downloader.showDropboxTokens(Dajax.process,{'ci': iVal()})">tokens</a>
-	</li>
-</ol>
+		</div>
+	</div>
 
-<div id="dropTokenTable"></div>
-
-<h2>Google Drive</h2>
-<div id="gStat"></div>
-<ol>
-	<li>First login with <a target="_blank" href="{{gdriveAuthURL}}">Google Drive</a></li>
-	<li>Copy the authorization code below and submit to obtain an access token
-
+	<div class="col-md-6">
+		<h2>Google Drive</h2>
+		<div class="container-fluid">
 		<form method="post">
-			{% csrf_token %}
-			<table>
-				<tr>
-					<td>Authorization Code
-					<input type="text" name="googleCode" id="gCode" />
-					<input type="button" name="sub" onclick="googleAuthCode()" value="Submit" />
-					<img src="/static/47.GIF" style="display: none" id="loadGoogle" /></td>
-				</tr>
-			</table>	
+		{% csrf_token %}
+		<table class="table">
+			<tr>
+				<td>Login with <a target="_blank" href="{{ gdriveAuthURL }}">Google Drive</a></td><td rowspan=4 style="text-align: center"><img src="/static/google.png" /></td>
+			</tr>
+			<tr>
+				<td><label for="gCode">Authorization Code</label></td>
+			</tr>
+			<tr>
+				<td><input type="text" name="googleCode" id="gCode" class="form-control" /></td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button" name="sub" onclick="googleAuthCode()" value="Submit" class="btn btn-default" />
+					<img src="/static/47.GIF" style="display: none" id="loadGoogle" />
+				</td>
+			</tr>
+
+		</table>
 		</form>
-	</li>
-	<li>Display the <a href="javascript:void(0)" onclick="Dajaxice.downloader.showGoogleTokens(Dajax.process,{'ci': iVal()})">tokens</a></li>
-</ol>
+		</div>
+	</div>
+</div>
 
-<div id="googleTokenTable"></div>
-
-<h2>Microsoft OneDrive</h2>
+<h2><a href="javascript:void(0)" onclick="Dajaxice.downloader.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
+<div id="tokenError"></div>
+<div id="tokenTable"></div>
 
 <input type="hidden" value="{{objID}}" id="i" />
 {% endblock %}

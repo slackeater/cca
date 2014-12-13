@@ -12,8 +12,8 @@ from django import forms
 class CloudItemForm(forms.Form):
 	""" A cloud item form """
 
-	name = forms.CharField(max_length=15,label="Name")
-	description = forms.CharField(label="Description",widget=forms.Textarea)
+	name = forms.CharField(max_length=15,label="Name",widget=forms.TextInput(attrs={'class':'form-control'}))
+	description = forms.CharField(label="Description",widget=forms.Textarea(attrs={'class':'form-control'}))
 
 def cloudItem(request):
 
