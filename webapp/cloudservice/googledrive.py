@@ -9,6 +9,7 @@ from django.conf import settings
 import md5, os
 from webapp import databaseInterface
 from abstractAnalyzer import AbstractAnalyzer
+import math
 
 class GoogleAnalyzer(AbstractAnalyzer):
 
@@ -19,7 +20,8 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		""" Analyse metadata """
 		
 		stat = self.getFileStats(self.metadata)
-		return stat
+		parsedTable = render_to_string("dashboard/cloudservice/googleMetaAnalysis.html",{'stat':stat})
+		return parsedTable
 
 	def getFileStats(self,files):
 		""" Get statistics about file on google drive and documents """
@@ -49,7 +51,7 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		stat['dC'] = deletedCount
 		stat['driveF'] = driveFiles
 		stat['docsF'] = docsFiles
-		stat['driveFS'] = driveFileSize
+		stat['driveFS'] = driveFileSize/math.pow(2,20)
 		stat['mime'] = mimeType
 		
 		return stat

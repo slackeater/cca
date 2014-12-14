@@ -3,7 +3,7 @@ from dashboard.models import MimeType
 RES_CHOICES = ((0,'Deleted File'),(1,'MIME Type'),(2,'All'))
 
 class MetaSearch(forms.Form):
-	resType = forms.MultipleChoiceField(choices=RES_CHOICES, label="Type", required=True)
+	resType = forms.MultipleChoiceField(choices=RES_CHOICES, label="Type", required=True,widget=forms.SelectMultiple(attrs={'class':'form-control'}))
 
 	# Get all MIME Type
 	mimes = MimeType.objects.all().order_by('mime')
@@ -12,4 +12,4 @@ class MetaSearch(forms.Form):
 	for m in mimes:
 		mimesList.append((m.id,m.mime))
 
-	mimeType = forms.ChoiceField(choices=mimesList, label="MIME Type")
+	mimeType = forms.ChoiceField(choices=mimesList, label="MIME Type",widget=forms.Select(attrs={'class':'form-control'}))

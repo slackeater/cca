@@ -18,14 +18,19 @@ setInterval(function(){ startDownload()},2500)
 
 {% endblock %}
 
+{% block content %}
 
-{% block rightcont %}
+<div class="page-header">
+	<h1>Download</h1>
+</div>
 
-<h2>Account</h2>
-
-{{acc}}
-
-<h2>Download</h2>
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
+	<li class="active">Download</li>
+</ol>
 
 <p>The download will include:
 <ol>
@@ -43,25 +48,31 @@ The download will happen in background and notifications will appear in this pag
 
 <p>You have to provide the credentials for the TSA (Timestamping Authority) so that a signed timestamp can be generated at the end of the download process</p>
 
+<div class="container-fluid">
 <form name="d" method="POST" action="">
 	{% csrf_token %}
-	<table>
-		<tr><td>{{form.uname.label}}</td><td>{{form.uname}}</td></tr>
-		<tr><td>{{form.pwd.label}}</td><td>{{form.pwd}}</td></tr>
-		<tr><td></td><td><input type="submit" name="start" value="Download" /></td></tr>
+	<table class="table" style="width: 50%">
+		<tr><td style="text-align:center"><label for="id_uname">{{form.uname.label}}</label></td><td>{{form.uname}}</td></tr>
+		<tr><td style="text-align:center"><label for="id_pwd">{{form.pwd.label}}</label></td><td>{{form.pwd}}</td></tr>
+		<tr><td></td><td><input type="submit" name="start" value="Download" class="btn btn-default" /></td></tr>
 	</table>
 </form>
+</div>
 </p>
 
 <div id="errors">{{errors}}</div>
 
-<table id="downTable">
+<div class="panel panel-default">
+
+<div class="panel-heading">Download Process</div>
+	
+<table class="table table-bordered">
 	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
 	<tr><td>Credential Verified</td><td colspan=2><div id="status1">{{credVerified}}</div></td></tr>
 	<tr><td>Metadata Download</td><td colspan=2><div id="status2">{{metaWait}}</div></td></tr>
-	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td>Approximate download size (without history):<div id="fileSize">-</div> MB</td></tr>
+	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td><div>Approximate download size (without history):<div id="fileSize">-</div> MB</div></td></tr>
 	<tr><td>Download Files and History</td><td colspan=2><div id="status4">{{fileWait}}</div></td></tr>
 	<tr><td>Verification</td><td colspan=2><div id="status5">{{verificationWait}}</div></td></tr>
 </table>
-
+</div>
 {% endblock %}

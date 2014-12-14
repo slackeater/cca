@@ -91,6 +91,7 @@ def showTokens(request,ci):
 		table = render_to_string("dashboard/tokenTable.html",data)
 		dajax.assign("#tokenTable", "innerHTML", table)
 		dajax.assign("#tokenError", "innerHTML","")
+		dajax.add_css_class("#tokenError",[])
 	except Exception as e:
 		dajax.assign("#tokenError", "innerHTML",formatException(e))
 		dajax.add_css_class("#tokenError",['alert','alert-danger'])

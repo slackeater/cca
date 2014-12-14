@@ -14,8 +14,8 @@ from tasks import download
 # Create your views here.
 
 class TSCredentialsForm(forms.Form):
-	uname = forms.CharField(max_length=10,label="Account",required=True)
-	pwd = forms.CharField(max_length=20,label="Password",required=True,widget=forms.PasswordInput())
+	uname = forms.CharField(max_length=10,label="Account",required=True,widget=forms.TextInput(attrs={'class':'form-control'}))
+	pwd = forms.CharField(max_length=20,label="Password",required=True,widget=forms.PasswordInput(attrs={'class':'form-control'}))
 
 def showTokenDash(request,cloudItem):
 	""" Displays the dashboard and manage the menu choices """
@@ -32,6 +32,7 @@ def showTokenDash(request,cloudItem):
 			data['browsers'] = res[1]["objects"]
 		else:
 			data['browsers'] = None
+
 		return render_to_response("dashboard/cloud.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
@@ -46,6 +47,7 @@ def showTokenSelect(request,cloudItem,tokenID):
 		data['showToken'] = True
 		data['objID'] = ci.id
 		data['tokenID'] = tkn.id
+		data['acc'] = json.loads(base64.b64decode(tkn.userInfo))
 		return render_to_response("dashboard/tknDash.html", data, context_instance=RequestContext(request))
 	else:
 		return redirect("/login/")
@@ -68,8 +70,8 @@ def showDownloadDash(request,cloudItem,t):
 			data['downSize'] = "Not started"
 			data['fileWait'] = "Not started"
 			data['verificationWait'] = "Not started"
-			data['objID'] = cloudItem
-			data['tokenID'] = t
+			data['objID'] = ci.id
+			data['tokenID'] = at.id
 			data['form'] = TSCredentialsForm()
 
 			#button has been clicked

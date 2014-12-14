@@ -1,36 +1,17 @@
 <style>
 
-table#searchResult td{
-	padding: 2px;
-}
-
 img#revSpinner{
 	margin-left: 45%;
 	margin-right: 45%;
 	display: none;
 }
 
-table#searchResult{
-	padding: 4px;
-	border: solid 1px black;
-	border-collapse: collapse;
-}
-
-table#searchResult td{
-	border: solid 1px black;
-	padding: 4px;
-}
-
-tr#resHeader td{
-	font-weight: bold;
-}
-
 </style>
-<table id="searchResult">
-	<tr id="resHeader"><td colspan=2>File Name</td><td>MIME Type</td><td>Creation Time</td><td>Modified By User</td><td>Deleted</td></tr>
+<table class="table table-bordered table-striped table-hover" id="searchResult">
+	<tr id="resHeader"><th colspan=2>File Name</th><th>MIME Type</th><th>Creation Time</th><th>Modified By User</th><th>Deleted</th></tr>
 
 	{% for d in data %}
-	<tr><td><img src="/static/icons/page.png" id="{{d.id}}" /></td><td><a href="javascript:void(0)" onclick="showFile('{{d.id}}','{{platform}}')">{{d.title}}</a></td><td>{{d.mimeType}}</td><td>{{d.createdDate}}</td><td>{{d.modifiedByMeDate}}</td><td>{{d.labels.trashed}}</td></tr>
+	<tr><td>{% if d.mimeType == "application/vnd.google-apps.folder" %}<img src="/static/icons/folder.png" id="{{d.id}}" />{% else %}<img src="/static/icons/page.png" id="{{d.id}}" />{% endif %}</td><td><a href="javascript:void(0)" onclick="showFile('{{d.id}}','{{platform}}')">{{d.title}}</a></td><td>{{d.mimeType}}</td><td>{{d.createdDate}}</td><td>{{d.modifiedByMeDate}}</td><td>{{d.labels.trashed}}</td></tr>
 	{% empty %}
 	<tr><td colspan=6>Sorry no files have been found.</td></tr>
 	{% endfor %}

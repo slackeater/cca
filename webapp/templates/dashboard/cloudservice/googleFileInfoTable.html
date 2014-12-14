@@ -1,5 +1,5 @@
 <a href="javascript:void(0)" onclick="backToSearch()">Back</a>
-<table>
+<table class="table table-bordered">
 	<tr><td>File</td><td>{{item.title}} (original {{item.originalFilename}})</td></tr>
 	<tr><td>Owners</td><td>{{item.ownerNames|join:", "}}</td></tr>
 	<tr><td>Last modified by</td><td>{{item.lastModifyingUser.displayName|default:"Nobody"}} ({{item.lastModifyingUser.emailAddress|default:"Nobody"}})</td></tr>

@@ -4,44 +4,54 @@
 <script type="text/javascript" src="/static/func.js"></script>
 {% endblock %}
 
-{% block rightcont %}
+{% block content %}
 
-<h2>{{platformTitle}} Analysis</h2>
-
-<div class="analysisHead">
-	<table class="headTable"><tr>
-			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);">Metadata Analysis</a></td>
-			<td><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
-	</tr></table>
+<div class="page-header">
+	<h1>{{platformTitle}} Metadata Analysis</h1>
 </div>
 
-<div id="metaAnalysisError" style="display: none"></div>
-<div id="metaAnalysis" style="display: none"></div>
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
+	<li class="active">Google Metadata Analysis</li>
+</ol>
 
-<div class="analysisHead">
-	<table class="headTable"><tr>
-			<td><img src="/static/icons/add.png" /></td>
-			<td><a class="foldingLink" onclick="$('#metaSearchCont').fadeToggle('slow')" href="javascript:void(0);">Metadata Search</a></td>
-			<td><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></td>
-	</tr></table>
+<div class="container-fluid">
+	<table class="table">
+		<tr>
+			<td width="250px"><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);"><h3>Metadata Stats</h3></a></td>
+			<td style="text-align: center; vertical-align: middle;"><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
+		</tr>
+	</table>
+
+	<div id="metaAnalysisError" style="display: none"></div>
+	<div id="metaAnalysis" style="display: none"></div>
 </div>
 
-<div id="metaSearchCont" style="display: none">
+<div class="container-fluid">
+	<table class="table"><tr>
+			<td><a class="foldingLink" onclick="$('#metaSearchCont').fadeToggle('slow')" href="javascript:void(0);"><h3>Metadata Search</h3></a></td>
+	</tr></table>
+
+<div id="metaSearchCont" style="display: none" class="container-fluid">
 	<div id="resStatus"></div>
 	<form method="post" id="searchForm" action="">
 		{% csrf_token %}
-		<table>
-			<tr><td>{{ resForm.resType.label }}</td><td>{{ resForm.resType }}</td></tr>
-			<tr><td>{{ resForm.mimeType.label }}</td><td>{{ resForm.mimeType }}</td></tr>
-			<tr><td></td><td><input type="button" value="Search" onclick="startRes()" /></td></tr>
+		<table style="width: 50%">
+			<tr><td><label for="id_resType">{{ resForm.resType.label }}</label></td><td>{{ resForm.resType }}</td></tr>
+			<tr><td><label for="id_mimeType">{{ resForm.mimeType.label }}</label></td><td>{{ resForm.mimeType }}</td></tr>
+			<tr><td></td><td><input type="button" value="Search" onclick="startRes()" class="btn btn-default"/><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></td></tr>
 			<tr><td style="height: 20px">&nbsp;</td><td><span id="wait2" style="height: 20px; display:none;"><img src="/static/47.GIF" /></span></td></tr>
 		</table>
 	</form>
+
 	<div id="searchError" style="display: none"></div>
 	<div id="searchRes"></div>
 </div>
 
+</div>
 <input type="hidden" value="{{tokenID}}" id="t" name="t" />
 <input type="hidden" value="{{objID}}" id="i" name="i" />
 {% endblock %}
