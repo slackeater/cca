@@ -9,17 +9,17 @@ table.revision{
 
 </style>
 
-<table>
+<table class="table table-bordered">
 	<tr><td>Metadata</td></tr>
 	<tr><td>{{meta.metaID}}</td></tr>
 	<tr><td>{{meta.verificationResult}}</td></tr>
 </table>
 
 {% for f in file %}
-<table class="file"><tr><td width="50px">{{f.fID}}</td><td>{{f.fName}}</td><td width="100px">{% if f.verificationResult == True %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td></tr></table>
+<table class="file table table-bordered"><tr><td width="50px">{{f.fID}}</td><td>{{f.fName}}</td><td width="100px">{% if f.verificationResult == True %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td></tr></table>
 {% if f.history|length > 0 %}
-<table class="revision">
-	<tr><td>Revision ID</td><td>Metadata Verification</td><td>File Verification</td></tr>
+<table class="revision table table-bordered">
+	<tr><td width="75%">Revision ID</td><td>Metadata Verification</td><td>File Verification</td></tr>
 	
 	{% for h in f.history %}
 	<tr>
@@ -30,5 +30,7 @@ table.revision{
 	{% endfor %}
 </table>
 {% endif %}
+{%empty%}
+<p>No file</p>
 <br />
 {% endfor %}

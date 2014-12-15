@@ -60,21 +60,24 @@ def searchMetaData(request,form,tokenID,cloudItem):
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
 		f = MetaSearch(deserialize_form(form))
-
+		
 		if f.is_valid():
 			if platform == "google":
 				ga = GoogleAnalyzer(tknObj)
-				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),None,None)
+				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			elif platform == "dropbox":
 				d = DropboxAnalyzer(tknObj)
-				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),None,None)
+				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")
+			dajax.remove_css_class("#searchError",['alert','alert-danger'])
 		else:
 			dajax.assign("#searchError","innerHTML","Please fill all fields")
+			dajax.add_css_class("#searchError",['alert','alert-danger'])
 	except Exception as e:
 		dajax.assign("#searchError","innerHTML",formatException(e))
+		dajax.add_css_class("#searchError",['alert','alert-danger'])
 
 	return dajax.json()
 

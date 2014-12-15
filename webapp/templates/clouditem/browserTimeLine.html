@@ -1,0 +1,49 @@
+<div id="visualization" style="display: none"></div>
+
+<script type="text/javascript">
+
+function tip(elem,ev,altName){
+
+	var dec = $("<div/>").html(ev).text();
+	var obj = JSON.parse(dec)
+	var history = ""
+
+	$(elem).qtip({
+	content: {
+		title: "Properties",
+		text: "<table><tr><td><b>"+obj['timeStr']+"</b></td></tr>"+history+"</table>",
+		button: true},
+	show: 'click',
+	hide: {
+		fixed: true,
+		delay: 1000,
+		effect: function() { $(this).fadeOut(250); }
+	}
+	})
+}
+
+	// DOM element where the Timeline will be attached
+	var container = document.getElementById('visualization');
+	// Configuration for the Timeline
+	var options = {orientation: 'top'};
+
+	// Create a DataSet (allows two way data-binding)
+	var items = new vis.DataSet([
+		{% for ev in events %}
+		{
+			content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
+			start: new Date({{ev.time}})
+
+			{% if ev.trashed == "True" %}
+			,style: "background-color: darkgray"
+			{% endif %}
+		},
+		{% endfor %}
+	]);
+
+	var timeline = new vis.Timeline(container, items, options);
+
+	{% for ev in events %}
+	tip('#{{forloop.counter}}','{{ev.params}}','{{ev.altName}}')
+	{% endfor %}
+</script>

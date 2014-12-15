@@ -18,31 +18,35 @@ def formTimeliner(request,cloudItem,tokenID,form):
 	dajax = Dajax()
 	data = None
 
+	print form
 	try:
 		t = parseAjaxParam(tokenID)
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 		f = MetaSearch(deserialize_form(form))
-
 		if f.is_valid():
 			if tkn.serviceType == "google":
 				ga = GoogleTimeMaker(tkn)
-				data = ga.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],None,None)
+				data = ga.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			elif tkn.serviceType == "dropbox":
 				d = DropboxTimeMaker(tkn)
-				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],None,None)
+				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			
 			if len(data) > 0:
 				table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
 				dajax.assign("#formHistory","innerHTML",table)
 				dajax.assign("#formHistoryError","innerHTML","")
+				dajax.remove_css_class("#formHistoryError",["alert","alert-danger"])
 			else:
-				raise Exception("No data found.")
+				dajax.assign("#formHistoryError","innerHTML","No data found.")
+				dajax.add_css_class("#formHistoryError",["alert","alert-danger"])
 		else:
-			raise Exception("Invalid form")
+			dajax.assign("#formHistoryError","innerHTML","Invalid Form")
+			dajax.add_css_class("#formHistoryError",["alert","alert-danger"])
 			
 	except Exception as e:	
 		dajax.assign("#formHistoryError","innerHTML",formatException(e))
+		dajax.add_css_class("#formHistoryError",["alert","alert-danger"])
 	
 	return dajax.json()
 

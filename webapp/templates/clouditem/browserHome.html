@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+	<h1>Browser Files</h1>
+</div>
+
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li class="active">Browser Files</li>
+</ol>
+
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active"><a href="#"><h4>History Timeline</h4></a></li>
+	<li role="presentation"><a href="#"><h4>Bookmarks</h4></a></li>
+	<li role="presentation"><a href="#"><h4>Others</h4></a></li>
+</ul>
+
+<br />
+{{historyForm}}
+<!-- 
+<div class="panel panel-default">
+	<div class="panel-heading"><h3>Browser</h3></div>
+	<div class="panel-body">
+		<table class="table table-bordered">
+			{% for o in browser %}
+			<tr>
+				<th style="text-align: center" onclick="$('#browser{{forloop.counter}}').fadeToggle('slow')" >
+					{% if "Google" in o.name %}
+					<img src="/static/gchrome.png" />
+					{% elif "Firefox" in o.name %}
+					<img src="/static/Firefox.png" />
+					{% elif "Thunderbird" in o.name %}
+					<img src="/static/Thunderbird.png" />
+					{% endif %}
+				</th>
+				<th class="info" style="vertical-align: middle">{{o.name}}</th></tr>
+			<tr><td colspan=2 style="display: none" id="browser{{forloop.counter}}">
+				<table class="table table-bordered">
+					{% for p in o.profiles %}
+					<tr><th colspan=2 class="success">{{p.profileName}}</th></tr>
+					
+						{% for f in p.fileListHashes %}
+						<tr><td width="50%">{{f.path}}</td><td>{{f.hash}}</td></tr>
+						{% endfor %}
+					{% endfor %}
+				</table>
+			</td></tr>
+			{% empty %}
+			<tr><td>No browsers found.</td></tr>
+			{% endfor %}
+		</table>
+	</div>
+</div>
+-->
+
+{% endblock %}

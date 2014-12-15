@@ -1,5 +1,6 @@
 from django import forms
 from dashboard.models import MimeType
+from datetime import date
 RES_CHOICES = ((0,'Deleted File'),(1,'MIME Type'),(2,'All'))
 
 class MetaSearch(forms.Form):
@@ -13,3 +14,9 @@ class MetaSearch(forms.Form):
 		mimesList.append((m.id,m.mime))
 
 	mimeType = forms.ChoiceField(choices=mimesList, label="MIME Type",widget=forms.Select(attrs={'class':'form-control'}))
+
+	startDateYear = date.today().year
+
+	startDate = forms.DateField(initial="31/12/"+str(startDateYear-2),required=True,label="Start Date",input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp1','class':'form-control'}))
+	endDate = forms.DateField(initial="31/12/"+str(startDateYear),required=True,label="End Date",input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp2','class':'form-control'}))
+

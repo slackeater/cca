@@ -55,8 +55,8 @@ def verifyFile(request,cloudItem,tokenID):
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 
-		metaVerification = fileComparator.verifyMetadata(t)
-		downVerification = fileComparator.verifyFileDownload(t)
+		metaVerification = fileComparator.verifyMetadata(tkn)
+		downVerification = fileComparator.verifyFileDownload(tkn)
 		table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification})
 
 		dajax.assign("#verifyer","innerHTML",table)

@@ -9,7 +9,8 @@ from django.conf import settings
 import md5, os
 from webapp import databaseInterface
 from abstractAnalyzer import AbstractAnalyzer
-import math
+import math,time,strict_rfc3339
+from webapp.func import *
 
 class GoogleAnalyzer(AbstractAnalyzer):
 
@@ -61,19 +62,27 @@ class GoogleAnalyzer(AbstractAnalyzer):
 
 		searchItem = list()
 
-		# all
-		if searchType == 2:
-			searchItem = self.metadata
-		else:
-			for i in self.metadata:
-				#deleted
-				if searchType == 0:
-					if i['labels']['trashed']:
-						searchItem.append(i)
-				# mimetype
-				elif searchType == 1:
-					m = MimeType.objects.get(id=mimeType)
-					if i['mimeType'] == m.mime:
+		startDateTs = float(getTimestamp(startDate))
+		endDateTs = float(getTimestamp(endDate))
+
+		for i in self.metadata:
+
+			creationTs = strict_rfc3339.rfc3339_to_timestamp(i['createdDate'])
+			
+			#check start date
+			if creationTs >= startDateTs and creationTs <= endDateTs:
+					
+					#deleted
+					if searchType == 0:
+						if i['labels']['trashed']:
+							searchItem.append(i)
+					# mimetype
+					elif searchType == 1:
+						m = MimeType.objects.get(id=mimeType)
+						if i['mimeType'] == m.mime:
+							searchItem.append(i)
+					#all
+					elif searchType == 2:
 						searchItem.append(i)
 
 		return searchItem

@@ -102,7 +102,9 @@ class GoogleDownloader(AbstractDownloader):
 		
 		if not os.path.isdir(downDirFullSub):
 			os.mkdir(downDirFullSub)
-		
+	
+		myFile = open("/home/snake/downFIles.txt","w")
+
 		#iterate over file and write to disk
 		for item in self.metadata:
 				if 'downloadUrl' in item:
@@ -127,6 +129,12 @@ class GoogleDownloader(AbstractDownloader):
 						
 						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=self.t,fileHash=h)
 						fileDb.save()
+						myFile.write(str(vars(fileDb)))
+					elif resp.status != 200:
+						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=resp.status,tokenID=self.t,fileHash="-")
+						fileDb.save()
+						myFile.write(str(vars(fileDb)))
+
 
 
 	def downloadHistory(self,simulateDownload = False):
@@ -150,7 +158,7 @@ class GoogleDownloader(AbstractDownloader):
 				#get revisions for this file
 				revs = self.service.revisions().list(fileId=item['id']).execute()
 			
-				if len(revs['items']) >= 1:
+				if len(revs['items']) > 1:
 
 					#create a folder for this file
 					revPath = os.path.join(downDirHistory,item['id'])
@@ -158,8 +166,10 @@ class GoogleDownloader(AbstractDownloader):
 						os.mkdir(revPath)
 
 					#get file download
-					fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=self.t)
-					
+					print item['title']
+					print item['id']
+					fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=self.t,status=1)
+						
 					for r in revs['items']:
 
 						if 'exportLinks' in r:

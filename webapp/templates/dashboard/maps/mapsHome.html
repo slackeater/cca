@@ -25,24 +25,46 @@ function mailCallback(data){
 
 {% endblock %}
 
-{% block rightcont %}
+{% block content %}
 
-<h2>EXIF</h2>
+<div class="page-header">
+	<h1>Maps</h1>
+</div>
 
-<p>Display on a map the EXIF found in images and video</p>
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
+	<li class="active">Maps</li>
+</ol>
 
-<input type="button" value="Compare" onclick="exifMap()" />
-<div id="map-canvas"></div>
-<div id="exifError"></div>
-<div id="exif"></div>
 
-<h2>E-Mail relation</h2>
+<div class="container-fluid">
+<div class="panel panel-default">
+	<div class="panel-heading"><h2>EXIF</h2></div>
+	<div class="panel-body">
+		Display image/video location basing on their GPS location.
+	
+		<input type="button" value="Compare" class="btn btn-default" onclick="exifMap()" />
+		<div id="map-canvas"></div>
+		<div id="exifError"></div>
+		<div id="exif"></div>
+	</div>
+</div>
 
-<p>Create a map of relation between e-mail found</p>
+<div class="panel panel-default">
+	<div class="panel-heading"><h2>E-Mail Relation</h2></div>
+	<div class="panel-body">
+		Create a map of relation between e-mail found
 
-<input type="button" value="Compare" onclick="mailRelation()" />
-<div id="relationError"></div>
-<div id="relation"></div>
+		<input type="button" value="Compare" class="btn btn-default" onclick="mailRelation()" />
+		<div id="relationError"></div>
+		<div id="relation"></div>
+
+	</div>
+</div>
+</div>
 
 {% endblock %}
 

@@ -95,7 +95,8 @@ class MapsFinder():
 					for h in FileHistory.objects.filter(fileDownloadID=downFile):
 						historyMeta = self.decodeMetaData(h.revisionMetadata);
 						
-						if historyMeta.get("lastModifyingUser") != None:
+						if historyMeta.get("lastModifyingUser") != None and historyMeta.get("lastModifyingUser").get("emailAddress") != None:
+
 							lastModifyingEmail = historyMeta['lastModifyingUser']['emailAddress']
 					
 							if lastModifyingEmail != atEmail:

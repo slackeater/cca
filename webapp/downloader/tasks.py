@@ -6,6 +6,7 @@ from django.db import transaction
 from .googleDownloader import GoogleDownloader
 from .dropDownloader import DropboxDownloader
 from .verifier import Verifier
+from webapp.exceptionFormatter import formatException
 from webapp import constConfig
 
 @shared_task
@@ -36,5 +37,5 @@ def download(downloadDB,uname,pwd):
 
 		except Exception as e:
 			downloadDB.threadStatus = constConfig.THREAD_STOP
-			downloadDB.threadMessage = e.message
+			downloadDB.threadMessage = formatException(e)
 			downloadDB.save()

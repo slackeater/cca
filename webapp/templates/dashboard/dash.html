@@ -9,15 +9,51 @@
 	<li><a href="/clouditem/">Cloud Item</a></li>
 	<li class="active">Cloud Item {{objID}}</li>
 </ol>
-<h3>Choose one of the functionalities below:</h3>
 
-<div class="container-fluid">
-	<div class="row">
-		<div class="col-md-6 container-fluid" style="border: solid 1px #d3d3d3">
-			<a href="/importer/{{objID}}/"><h4><img src="/static/low27.png" /> Import</h4></a>
-		</div>
-		<div class="col-md-6 container-fluid" style="border: solid 1px #d3d3d3">
-			<a href="/token/{{objID}}/"><h4><img src="/static/internet43.png" /> Choose a token</h4></a>
+<div class="panel panel-default">
+	<div class="panel-heading"><h3>Cloud Item Dashboard</h3></div>
+	<div class="panel-body">
+		<div class="container-fluid">
+			<div class="row" style="margin-bottom: 20px">
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px">
+								<span class="glyphicon glyphicon-log-in" style="font-size: 40pt" aria-hidden="true"></span>
+							</td>
+							<td style="text-align: center; vertical-align: middle">
+								<h4><a href="/importer/{{objID}}/">Import</h4></a>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px">
+								<span class="glyphicon glyphicon-wrench" style="font-size: 40pt" aria-hidden="true"></span>
+							</td>
+							<td style="text-align: center; vertical-align: middle">
+								<h4><a href="/token/{{objID}}/">Access Token</h4></a>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="row" style="margin-bottom: 20px">
+				<div class="col-md-3">
+						<table>
+							<tr>
+								<td width="70px">
+									<span class="glyphicon glyphicon-compressed" style="font-size: 40pt" aria-hidden="true"></span>
+								</td>
+								<td style="text-align: center; vertical-align: middle">
+									<h4><a href="/browserfiles/{{objID}}/">Browser Files</h4></a>
+								</td>
+							</tr>
+						</table>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

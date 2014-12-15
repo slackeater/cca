@@ -12,85 +12,89 @@
 		<li><a href="/token/{{objID}}/">Access Tokens</a></li>
 		<li class="active">Access Token {{tokenID}}</li>
 	</ol>
-
-	<h2>Account</h2>
-
-	{% if "display_name" in acc %}
-		<table class="table table-bordered">
-			<tr><th>UID</th><td>{{acc.uid}}</td></tr>
-			<tr><th>Display Name</th><td>{{acc.display_name}}</td></tr>
-			<tr><th>E-Mail</th><td>{{acc.email}}</td></tr>
-			<tr><th>E-Mail Verified</th><td>{{acc.email_verified}}</td></tr>
-			<tr><th>Country</th><td>{{acc.country}}</td></tr>
-			<tr><th>Quota</th><td>{{acc.quota_info.quota}} ({{acc.quota_info.shared}} shared)</td></tr>
-		</table>
-	{% elif "family_name" in acc %}
-		<table class="table table-bordered">
-			<tr><th>ID</th><td>{{acc.id}}</td></tr>
-			<tr><th>Name</th><td>{{acc.name}}</td></tr>
-			<tr><th>Gender</th><td>{{acc.gender}}</td></tr>
-			<tr><th>E-Mail</th><td>{{acc.email}}</td></tr>
-			<tr><th>E-Mail Verified</th><td>{{acc.verified_email}}</td></tr>
-			<tr><th>Locale</th><td>{{acc.locale}}</td></tr>
-		</table>
-	{% endif %}
-
-	<h2>Dashboard</h2>
-
-	<div class="container-fluid">
-		<div class="row" style="margin-bottom: 20px">
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-cloud-download" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/download/{{ objID }}/{{tokenID}}/"><h3>Download</h3></a></td>
-					</tr>
+	
+	<div class="panel panel-default">
+		<div class="panel-heading"><h3>Account</h3></div>
+		<div class="panel-body">
+			{% if "display_name" in acc %}
+				<table class="table table-bordered">
+					<tr><th>UID</th><td>{{acc.uid}}</td></tr>
+					<tr><th>Display Name</th><td>{{acc.display_name}}</td></tr>
+					<tr><th>E-Mail</th><td>{{acc.email}}</td></tr>
+					<tr><th>E-Mail Verified</th><td>{{acc.email_verified}}</td></tr>
+					<tr><th>Country</th><td>{{acc.country}}</td></tr>
+					<tr><th>Quota</th><td>{{acc.quota_info.quota}} ({{acc.quota_info.shared}} shared)</td></tr>
 				</table>
-			</div>
-
+			{% elif "family_name" in acc %}
+				<table class="table table-bordered">
+					<tr><th>ID</th><td>{{acc.id}}</td></tr>
+					<tr><th>Name</th><td>{{acc.name}}</td></tr>
+					<tr><th>Gender</th><td>{{acc.gender}}</td></tr>
+					<tr><th>E-Mail</th><td>{{acc.email}}</td></tr>
+					<tr><th>E-Mail Verified</th><td>{{acc.verified_email}}</td></tr>
+					<tr><th>Locale</th><td>{{acc.locale}}</td></tr>
+				</table>
+			{% endif %}
 		</div>
-		<div class="row" style="margin-bottom: 20px">
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-qrcode" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/analyse/{{ objID }}/{{tokenID}}/"><h3>Metadata</h3></a></td>
-					</tr>
-				</table>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading"><h3>Token Dashboard</h3></div>
+		<div class="panel-body">
+			<div class="row" style="margin-bottom: 20px">
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-cloud-download" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/download/{{ objID }}/{{tokenID}}/"><h3>Download</h3></a></td>
+						</tr>
+					</table>
+				</div>
+
 			</div>
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-time" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/timeliner/{{objID}}/{{tokenID}}/"><h3>Timelines</h3></a></td>
-					</tr>
-				</table>
+			<div class="row" style="margin-bottom: 20px">
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-qrcode" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/analyse/{{ objID }}/{{tokenID}}/"><h3>Metadata</h3></a></td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-time" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/timeliner/{{objID}}/{{tokenID}}/"><h3>Timelines</h3></a></td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-ok-sign" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/comparator/{{objID}}/{{tokenID}}/"><h3>Verifiy</h3></a></td>
+						</tr>
+					</table>
+				</div>
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-globe" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/maps/{{objID}}/{{tokenID}}/"><h3>Maps</h3></a></td>
+						</tr>
+					</table>
+				</div>
 			</div>
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-ok-sign" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/comparator/{{objID}}/{{tokenID}}/"><h3>Verifiy</h3></a></td>
-					</tr>
-				</table>
-			</div>
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-globe" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/maps/{{objID}}/{{tokenID}}/"><h3>Maps</h3></a></td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-3">
-				<table>
-					<tr>
-						<td width="70px"><span class="glyphicon glyphicon-list-alt" style="font-size: 40pt" aria-hidden="true"></span></td>
-						<td style="text-align: center"><a href="/report/{{ objID }}/{{tokenID}}/"><h3>Report</h3></a></td>
-					</tr>
-				</table>
+			<div class="row">
+				<div class="col-md-3">
+					<table>
+						<tr>
+							<td width="70px"><span class="glyphicon glyphicon-list-alt" style="font-size: 40pt" aria-hidden="true"></span></td>
+							<td style="text-align: center"><a href="/report/{{ objID }}/{{tokenID}}/"><h3>Report</h3></a></td>
+						</tr>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>

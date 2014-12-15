@@ -70,3 +70,5 @@ def openReport(clouditem,uploadID = None):
 		return None
 
 
+def getTimestamp(date):
+	return format(date,"U")

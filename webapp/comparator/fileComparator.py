@@ -12,7 +12,6 @@ if not cryptoPath in sys.path:
 
 import crypto
 
-
 ALLOWED_MIME = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
 
 def compareTwo(revOneID,revTwoID,diffFile,downloadFolder,token):
@@ -140,12 +139,13 @@ def verifyFileDownload(token):
 
 	hList = list()
 	downloadFolder = Download.objects.get(tokenID=token).folder
-
+	print "out"
 	for f in FileDownload.objects.filter(tokenID=token):
-		
-		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",f.fileName+"_"+f.alternateName)
-
+		hashName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
+		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",hashName+"_"+f.alternateName)
+		print path
 		if f.status == 1 and os.path.isfile(path):
+			print f	
 			#first compute the hash
 			h = crypto.sha256File(path)
 
@@ -195,7 +195,8 @@ def verifyHistory(fileDownload, downloadFolder):
 		verification = crypto.verifyRSAsignatureSHA256(h,fh.revisionMetadataHash,settings.PUB_KEY)
 
 		#verification of file history 
-		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,fileDownload.fileName+"_"+fh.revision)
+		hashName = crypto.sha256(fileDownload.fileName+crypto.HASH_SEPARATOR+fh.revision).hexdigest()
+		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,hashName+"_"+fh.revision)
 
 		if os.path.isfile(path) and fh.status == 1:
 			fHash = crypto.sha256File(path)
