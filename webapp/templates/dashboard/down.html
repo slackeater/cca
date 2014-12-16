@@ -31,48 +31,53 @@ setInterval(function(){ startDownload()},2500)
 	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
 	<li class="active">Download</li>
 </ol>
-
-<p>The download will include:
-<ol>
-	<li>the metadata</li>
-	<li>the files themselves</li>
-	<li>the history of the files if any</li>
-</ol>
-
-<p>The download may take some times depending on the network speed, the load of the API service of Google/Dropbox/OneDrive and
-the size of the files.<p>
-
-<p>
-The download will happen in background and notifications will appear in this page about the status of download.
-</p>
-
-<p>You have to provide the credentials for the TSA (Timestamping Authority) so that a signed timestamp can be generated at the end of the download process</p>
-
 <div class="container-fluid">
-<form name="d" method="POST" action="">
-	{% csrf_token %}
-	<table class="table" style="width: 50%">
-		<tr><td style="text-align:center"><label for="id_uname">{{form.uname.label}}</label></td><td>{{form.uname}}</td></tr>
-		<tr><td style="text-align:center"><label for="id_pwd">{{form.pwd.label}}</label></td><td>{{form.pwd}}</td></tr>
-		<tr><td></td><td><input type="submit" name="start" value="Download" class="btn btn-default" /></td></tr>
-	</table>
-</form>
-</div>
-</p>
+	<div class="row">
+		<div class="col-md-6">
+			
+			<p>			
+			The download will include <b>the metadata, the file themselves and the history of the files if any</b>.
 
-<div id="errors">{{errors}}</div>
+			You have to provide the credentials for the Timestamping Authority so that a signed timestamp can be generated at the end of the process.</p>
+
+			<form name="d" method="POST" action="">
+				{% csrf_token %}
+				<table class="table">
+					<tr><td style="text-align:center"><label for="id_uname">{{form.uname.label}}</label></td><td>{{form.uname}}</td></tr>
+					<tr><td style="text-align:center"><label for="id_pwd">{{form.pwd.label}}</label></td><td>{{form.pwd}}</td></tr>
+					<tr><td></td><td><input type="submit" name="start" value="Download" class="btn btn-default" /></td></tr>
+				</table>
+			</form>
+		</div>
+		<div class="col-md-6">
+			<div id="errors">{{errors}}</div>
+
+			<div class="panel panel-default">
+				<div class="panel-heading">Download Status</div>
+				
+				<table class="table table-bordered">
+					<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}{{downMessage}}{%endif%}</div></td></tr>
+					<tr><td>Folder</td><td>{{down.folder}}</td></tr>
+					<tr><td>Size</td><td></td></tr>
+					<tr><td>Start Time</td><td></td></tr>
+					<tr><td>End Time</td><td></td></tr>
+				</table>
+			</div>
+		</div>
+
+	</div>
 
 <div class="panel panel-default">
 
 <div class="panel-heading">Download Process</div>
 	
 <table class="table table-bordered">
-	<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}Error{%endif%}</div></td><td><div id="thMessage">{{downMessage}}</div></td></tr>
 	<tr><td>Credential Verified</td><td colspan=2><div id="status1">{{credVerified}}</div></td></tr>
 	<tr><td>Metadata Download</td><td colspan=2><div id="status2">{{metaWait}}</div></td></tr>
 	<tr><td>Computing Download Size</td><td><div id="status3">{{downSize}}</div></td><td><div>Approximate download size (without history):<div id="fileSize">-</div> MB</div></td></tr>
 	<tr><td>Download Files and History</td><td colspan=2><div id="status4">{{fileWait}}</div></td></tr>
 	<tr><td>Verification</td><td colspan=2><div id="status5">{{verificationWait}}</div></td></tr>
 </table>
+</div>
 </div>
 {% endblock %}

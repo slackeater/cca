@@ -134,17 +134,17 @@ def computeThumbnailSize(startWidth,startHeight):
 	return int(newWidth),int(newHeight)
 
 
-def verifyFileDownload(token):
+def verifyFileDownload(token,resType):
 	""" Verify the files of a token """
 
 	hList = list()
 	downloadFolder = Download.objects.get(tokenID=token).folder
-	print "out"
+	
 	for f in FileDownload.objects.filter(tokenID=token):
 		hashName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
 		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",hashName+"_"+f.alternateName)
 		print path
-		if f.status == 1 and os.path.isfile(path):
+		if f.status == 200 and os.path.isfile(path):
 			print f	
 			#first compute the hash
 			h = crypto.sha256File(path)
@@ -154,10 +154,13 @@ def verifyFileDownload(token):
 
 			verification = crypto.verifyRSAsignatureSHA256(h,sourceSignature,settings.PUB_KEY)
 			
-			#history
-			historyVerification = verifyHistory(f,downloadFolder)
+			#history only if specified
+			if resType == 3:
+				historyVerification = verifyHistory(f,downloadFolder)
+			else:
+				historyVerification = None
 
-			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':verification,'history':historyVerification})
+			hList.append({'fID': f.id,'fName':f.fileName,'fSig':crypto.sha256(f.fileHash).hexdigest(),'verificationResult':verification,'history':historyVerification})
 		elif f.status == 2:
 			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':-1,'history': list()})
 
@@ -198,7 +201,7 @@ def verifyHistory(fileDownload, downloadFolder):
 		hashName = crypto.sha256(fileDownload.fileName+crypto.HASH_SEPARATOR+fh.revision).hexdigest()
 		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,hashName+"_"+fh.revision)
 
-		if os.path.isfile(path) and fh.status == 1:
+		if os.path.isfile(path) and fh.status == 200:
 			fHash = crypto.sha256File(path)
 			verificationFile = crypto.verifyRSAsignatureSHA256(fHash,fh.fileRevisionHash,settings.PUB_KEY)
 			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':verificationFile})

@@ -9,7 +9,7 @@ function compare(){
 }
 
 function verify(){
-	Dajaxice.comparator.verifyFile(Dajax.process,{'cloudItem':iVal(),'tokenID':tVal()})
+	Dajaxice.comparator.verifyFile(Dajax.process,{'cloudItem':iVal(),'tokenID':tVal(),'form':$("#verifyIntegrity").serialize(true)})
 }
 
 </script>
@@ -34,7 +34,16 @@ function verify(){
 	<div class="panel-heading"><h2>Integrity Verification</h2></div>
 	<div class="panel-body">
 		Verify the integrity of metadata/files/history.
-		<input type="button" value="Verify" class="btn btn-default" onclick="verify()" />
+		<form method="post" id="verifyIntegrity">
+			{% csrf_token %}
+			{% for radio in form.verificationType %}
+				<div class="radio">
+				<label>{{radio.label}}{{radio}}</label>
+				</div>
+			{% endfor %}
+			<br />
+			<input type="button" value="Verify" class="btn btn-default" onclick="verify()" />
+		</form>
 
 		<div id="verifyerError"></div>
 		<div id="verifyer"></div>
@@ -44,7 +53,7 @@ function verify(){
 <div class="panel panel-default">
 	<div class="panel-heading"><h2>Comparator</h2></div>
 	<div class="panel-body">
-
+		TODO
 
 		<input type="button" value="Compare" class="btn btn-default" onclick="compare()" />
 

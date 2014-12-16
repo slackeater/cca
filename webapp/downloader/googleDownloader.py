@@ -3,12 +3,13 @@ import base64,json,os,sys,time
 from apiclient import errors
 from django.conf import settings
 from django.utils import timezone
-from django.utils.dateformat import format
+from webapp.func import getTimestamp
 from webapp import constConfig
 import httplib2
 from oauth2client.client import OAuth2Credentials
 from apiclient.discovery import build
 from abstractDownloader import AbstractDownloader
+from django.core.exceptions import ObjectDoesNotExist
 
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -115,27 +116,31 @@ class GoogleDownloader(AbstractDownloader):
 					url = None
 
 				if url != None:
-					resp, content = self.service._http.request(url)
 					
-					if resp.status == 200:
-						hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+item['id'])
-						fullName = os.path.join(downDirFullSub,hashFileName.hexdigest()+ "_" + item['id'])
+					fileDb = None
+
+					try:
+						resp, content = self.service._http.request(url)
 						
-						with open(fullName,"wb+") as f:
-							f.write(content)
-						
-						#compute hash
-						h = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
-						
-						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=1,tokenID=self.t,fileHash=h)
+						if resp.status == 200:
+							hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+item['id'])
+							fullName = os.path.join(downDirFullSub,hashFileName.hexdigest()+ "_" + item['id'])
+							
+							with open(fullName,"wb+") as f:
+								f.write(content)
+							
+							#compute hash
+							h = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
+						else:
+							h = "-"
+
+						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=resp.status,tokenID=self.t,fileHash=h)
 						fileDb.save()
 						myFile.write(str(vars(fileDb)))
-					elif resp.status != 200:
-						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=resp.status,tokenID=self.t,fileHash="-")
+					except errors.HttpError, e:
+						#store this entry with the exception code
+						fileDb = FileDownload(fileName=item['item'],alternateName=item['id'],status=e.resp.status,tokenID=self.t,fileHash="-")
 						fileDb.save()
-						myFile.write(str(vars(fileDb)))
-
-
 
 	def downloadHistory(self,simulateDownload = False):
 		""" Download the history for a file """
@@ -155,61 +160,78 @@ class GoogleDownloader(AbstractDownloader):
 			#folders do not support revision
 			if item['mimeType'] != 'application/vnd.google-apps.folder':
 
-				#get revisions for this file
-				revs = self.service.revisions().list(fileId=item['id']).execute()
-			
-				if len(revs['items']) > 1:
+				fh = None
+				try:
+					fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=self.t,status=200)
 
-					#create a folder for this file
-					revPath = os.path.join(downDirHistory,item['id'])
-					if not os.path.isdir(revPath):
-						os.mkdir(revPath)
+					try:
+						#get revisions for this file
+						revs = self.service.revisions().list(fileId=item['id']).execute()
+					
+						if len(revs['items']) > 1:
 
-					#get file download
-					print item['title']
-					print item['id']
-					fileDownload = FileDownload.objects.get(fileName=item['title'],alternateName=item['id'],tokenID=self.t,status=1)
-						
-					for r in revs['items']:
+							#create a folder for this file
+							revPath = os.path.join(downDirHistory,item['id'])
+							if not os.path.isdir(revPath):
+								os.mkdir(revPath)
 
-						if 'exportLinks' in r:
-							url = r['exportLinks']["application/pdf"]
-						elif 'downloadUrl' in r:
-							url = r['downloadUrl']
-						else:
-							url = None
+							#get file download
+							print item['title']
+							print item['id']
+								
+							for r in revs['items']:
 
-						if url != None:
-							resp, content = self.service._http.request(url)
-						
-							#if the response is affirmative
-							if resp.status == 200:
-								revItem = base64.b64encode(json.dumps(r))
-								revID = r['id']
+								if 'exportLinks' in r:
+									url = r['exportLinks']["application/pdf"]
+								elif 'downloadUrl' in r:
+									url = r['downloadUrl']
+								else:
+									url = None
 
-								hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+revID)
-								fullName = os.path.join(revPath,hashFileName.hexdigest()+"_"+revID)
+								if url != None:
+									resp, content = self.service._http.request(url)
+								
+									revItem = base64.b64encode(json.dumps(r))
+									revID = r['id']
+									hashFileName = crypto.sha256(item['title']+crypto.HASH_SEPARATOR+revID)
+									downloadTime = timezone.now()
+									revisionMetadataHash = crypto.rsaSignatureSHA256(
+											revItem+crypto.HASH_SEPARATOR+getTimestamp(downloadTime),
+											settings.PRIV_KEY)
 
-								with open(fullName,"wb+") as f:
-									f.write(content)
+									#if the response is affirmative store the file
+									if resp.status == 200:
 
-								# compute hash
-								downloadTime = timezone.now()
-								fileRevisionHash = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
-								revisionMetadataHash = crypto.rsaSignatureSHA256(
-										revItem+crypto.HASH_SEPARATOR+format(downloadTime,"U"),
-										settings.PRIV_KEY)
+										fullName = os.path.join(revPath,hashFileName.hexdigest()+"_"+revID)
 
-								fh = FileHistory(
-									revision=revID,
-									status=1,
-									fileDownloadID=fileDownload,
-									revisionMetadata=revItem,
-									downloadTime=downloadTime,
-									fileRevisionHash=fileRevisionHash,
-									revisionMetadataHash=revisionMetadataHash
-									)
-								fh.save()
+										with open(fullName,"wb+") as f:
+											f.write(content)
+
+										# compute hash
+										fileRevisionHash = crypto.rsaSignatureSHA256(fullName,settings.PRIV_KEY,True)
+									else:
+										fileRevisionHash = "-"
+
+									fh = FileHistory(
+										revision=revID,
+										status=resp.status,
+										fileDownloadID=fileDownload,
+										revisionMetadata=revItem,
+										downloadTime=downloadTime,
+										fileRevisionHash=fileRevisionHash,
+										revisionMetadataHash=revisionMetadataHash
+										)
+				
+									fh.save()
+					# HTTP when requesting history list or downloading file
+					except errors.HttpError, e:
+						fh = FileHistory(revision="-",status=e.resp.status,fileDownloadID=fileDownload,revisionMetadata="-",fileRevisionHash="-",revisionMetadataHash="-")
+						fh.save()
+				#we cannot download the history for a file that has not been downloaded correctly
+				except ObjectDoesNotExist as e:
+					print e
+					pass
+
 	def downloadFileHistory(self):
 		self.downloadFiles()
 		self.downloadHistory()

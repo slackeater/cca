@@ -98,6 +98,7 @@ def showDownloadDash(request,cloudItem,t):
 				down.save()
 
 			if down:
+				data['down'] = down
 				data['downStatus'] = down.threadStatus
 				data['downMessage'] = down.threadMessage
 

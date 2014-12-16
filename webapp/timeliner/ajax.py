@@ -33,10 +33,14 @@ def formTimeliner(request,cloudItem,tokenID,form):
 				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			
 			if len(data) > 0:
-				table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
-				dajax.assign("#formHistory","innerHTML",table)
-				dajax.assign("#formHistoryError","innerHTML","")
-				dajax.remove_css_class("#formHistoryError",["alert","alert-danger"])
+				if len(data) > 500:
+					dajax.assign("#formHistoryError","innerHTML","Your query returned more than 500 elements. Please refine your search to avoid performance prolem with your browser.")
+					dajax.add_css_class("#formHistoryError",["alert","alert-danger"])
+				else:
+					table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
+					dajax.assign("#formHistory","innerHTML",table)
+					dajax.assign("#formHistoryError","innerHTML","")
+					dajax.remove_css_class("#formHistoryError",["alert","alert-danger"])
 			else:
 				dajax.assign("#formHistoryError","innerHTML","No data found.")
 				dajax.add_css_class("#formHistoryError",["alert","alert-danger"])

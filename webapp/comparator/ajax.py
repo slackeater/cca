@@ -9,6 +9,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags,strip_entities
 import time,sys,traceback
 from webapp import constConfig
+from forms import VerifyForm
+from dajaxice.utils import deserialize_form
 
 @dajaxice_register
 def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
@@ -43,7 +45,7 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 	return dajax.json()
 			
 @dajaxice_register
-def verifyFile(request,cloudItem,tokenID):
+def verifyFile(request,cloudItem,tokenID,form):
 
 	if not isAuthenticated(request):
 		return None
@@ -54,14 +56,30 @@ def verifyFile(request,cloudItem,tokenID):
 		t = parseAjaxParam(tokenID)
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
+		f = VerifyForm(deserialize_form(form))
 
-		metaVerification = fileComparator.verifyMetadata(tkn)
-		downVerification = fileComparator.verifyFileDownload(tkn)
-		table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification})
+		if f.is_valid():
 
-		dajax.assign("#verifyer","innerHTML",table)
-		dajax.assign("#verifyerError","innerHTML","")
+			verType = parseAjaxParam(f.cleaned_data['verificationType'])
+			metaVerification = None
+			downVerification = None
+
+			if verType == 1:
+				metaVerification = fileComparator.verifyMetadata(tkn)
+			else:
+				downVerification = fileComparator.verifyFileDownload(tkn,verType)
+
+			table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification})
+
+			dajax.assign("#verifyer","innerHTML",table)
+			dajax.assign("#verifyerError","innerHTML","")
+			dajax.remove_css_class("#verifyerError",['alert','alert-danger'])
+		else:
+			dajax.assign("#verifyer","innerHTML","")
+			dajax.assign("#verifyerError","innerHTML","Invalid Form")
+			dajax.add_css_class("#verifyerError",['alert','alert-danger'])
 	except Exception as e:
 		dajax.assign("#verifyerError","innerHTML",formatException(e))
+		dajax.add_css_class("#verifyerError",['alert','alert-danger'])
 
 	return dajax.json()

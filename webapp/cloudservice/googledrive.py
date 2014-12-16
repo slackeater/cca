@@ -58,6 +58,24 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		
 		return stat
 
+	def emailSearch(self,email):
+		""" Search through email """
+
+		res = list()
+
+		for i in self.metadata:
+			if "owners" in i and i['mimeType'] != MimeType.objects.get(id=1340).mime:
+
+				for o in i['owners']:
+
+					if o['emailAddress'] == email:
+						print "Appending"
+						res.append(i)
+
+				#TODO add history
+
+		return res
+
 	def metadataSearch(self, searchType,mimeType,startDate,endDate):
 		""" Search through metadata """
 
@@ -86,7 +104,6 @@ class GoogleAnalyzer(AbstractAnalyzer):
 					elif searchType == 2:
 						searchItem.append(i)
 	
-
 		return searchItem
 
 	def fileInfo(self, fileID):

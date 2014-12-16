@@ -28,6 +28,14 @@ function resCallBack(data){
 	$("#searchError").fadeIn("slow");
 }
 
+function startFilterSearch(start){
+	$("#wait2").fadeIn("slow");
+	$("#searchError").fadeOut("slow");
+	Dajaxice.cloudservice.searchMetaData(resCallBack, {'cloudItem': iVal(),'tokenID': tVal(), 'form': $("#emailForm").serialize(true),'start':start,'formType':'2'})
+
+}
+
+
 function showFile(id){
 	$("#searchError").fadeOut("slow");
 	Dajaxice.cloudservice.fileInfo(showCallBack,{'cloudItem': iVal(),'tokenID': tVal(), 'id': id})

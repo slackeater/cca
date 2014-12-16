@@ -20,3 +20,7 @@ class MetaSearch(forms.Form):
 	startDate = forms.DateField(initial="31/12/"+str(startDateYear-2),required=True,label="Start Date",input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp1','class':'form-control'}))
 	endDate = forms.DateField(initial="31/12/"+str(startDateYear),required=True,label="End Date",input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp2','class':'form-control'}))
 
+
+class EmailSearch(forms.Form):
+	email = forms.EmailField(label="E-Mail",widget=forms.TextInput(attrs={'class':'form-control'}))
+

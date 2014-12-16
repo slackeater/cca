@@ -9,28 +9,52 @@ table.revision{
 
 </style>
 
-<table class="table table-bordered">
-	<tr><td>Metadata</td></tr>
-	<tr><td>{{meta.metaID}}</td></tr>
-	<tr><td>{{meta.verificationResult}}</td></tr>
-</table>
+{% if meta %}
+	<table class="table table-bordered">
+		<tr><td>Metadata</td></tr>
+		<tr><td>{{meta.metaID}}</td></tr>
+		<tr><td>{{meta.verificationResult}}</td></tr>
+	</table>
+{% elif file %}
 
-{% for f in file %}
-<table class="file table table-bordered"><tr><td width="50px">{{f.fID}}</td><td>{{f.fName}}</td><td width="100px">{% if f.verificationResult == True %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td></tr></table>
-{% if f.history|length > 0 %}
-<table class="revision table table-bordered">
-	<tr><td width="75%">Revision ID</td><td>Metadata Verification</td><td>File Verification</td></tr>
-	
-	{% for h in f.history %}
-	<tr>
-		<td>{{h.revID}}</td>
-		<td>{% if h.metadataVerificationResult %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td>
-		<td>{% if h.fileVerificationResult %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td>
-	</tr>
+	<table class="file table table-bordered">
+		<tr><th>ID</th><th>File Name</th><th>Signature Hash</th><th>Verification Result</th></tr>
+	{% for f in file %}
+
+			<tr>
+				<td width="50px">{{f.fID}}</td>
+				<td>{{f.fName}}</td>
+				<td>{{f.fSig}}</td>
+				<td width="100px">{% if f.verificationResult == True %}<img src="/static/icons/accept.png" />{% else %}<img src="/static/icons/delete.png" />{% endif %}</td>
+			</tr>
+		
+		{% if f.history and f.history|length > 0 %}
+			<tr><td><table class="revision table table-bordered">
+				<tr><td width="75%">Revision ID</td><td>Metadata Verification</td><td>File Verification</td></tr>
+				
+				{% for h in f.history %}
+				<tr>
+					<td>{{h.revID}}</td>
+					<td>
+						{% if h.metadataVerificationResult %}
+							<img src="/static/icons/accept.png" />
+						{% else %}
+							<img src="/static/icons/delete.png" />
+						{% endif %}
+					</td>
+					<td>
+						{% if h.fileVerificationResult %}
+							<img src="/static/icons/accept.png" />
+						{% else %}
+							<img src="/static/icons/delete.png" />
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</table></td></tr>
+		{% endif %}
+	{%empty%}
+		<tr><td colspan=4>No file found.</td></tr>
 	{% endfor %}
-</table>
+	</table>
 {% endif %}
-{%empty%}
-<p>No file</p>
-<br />
-{% endfor %}

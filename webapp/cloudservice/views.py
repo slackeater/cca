@@ -1,6 +1,6 @@
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
-from forms import MetaSearch
+from forms import MetaSearch,EmailSearch
 from downloader.models import AccessToken
 from webapp.func import *
 
@@ -24,6 +24,7 @@ def cloudService(request, cloudItem, tokenID):
 		data['updateAnalysis'] = True
 		data['tokenID'] = tkn.id
 		data['resForm'] = MetaSearch()
+		data['emailForm'] = EmailSearch()
 	except Exception as e:
 		data['sessionError'] = e.message
 
