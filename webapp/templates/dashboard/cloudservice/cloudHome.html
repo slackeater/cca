@@ -27,7 +27,7 @@ $('#dp2').datepicker({
 	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
 	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
 	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
-	<li class="active">Google Metadata Analysis</li>
+	<li class="active">{{platformTitle}} Metadata Analysis</li>
 </ol>
 
 <div class="container-fluid">
@@ -61,7 +61,7 @@ $('#dp2').datepicker({
 				<td><label for="id_startDate">{{ resForm.startDate.label }}</label></td><td>{{ resForm.startDate }}</td>
 				<td><label for="id_endDate">&nbsp;{{ resForm.endDate.label }}</label></td><td>{{ resForm.endDate }}</td>
 			</tr>
-			<tr><td></td><td><input type="button" value="Search" onclick="startRes()" class="btn btn-default"/></td><td colspan=3><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></td></tr>
+			<tr><td></td><td><input type="button" value="Search" onclick="startRes(0)" class="btn btn-default"/></td><td colspan=3><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></td></tr>
 		</table>
 	</form>
 

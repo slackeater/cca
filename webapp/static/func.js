@@ -15,10 +15,10 @@ function analysisCallBack(data){
 
 /* === Search === */
 
-function startRes(){
+function startRes(start){
 	$("#wait2").fadeIn("slow");
 	$("#searchError").fadeOut("slow");
-	Dajaxice.cloudservice.searchMetaData(resCallBack, {'cloudItem': iVal(),'tokenID': tVal(), 'form': $("#searchForm").serialize(true)})
+	Dajaxice.cloudservice.searchMetaData(resCallBack, {'cloudItem': iVal(),'tokenID': tVal(), 'form': $("#searchForm").serialize(true),'start':start})
 }
 
 function resCallBack(data){

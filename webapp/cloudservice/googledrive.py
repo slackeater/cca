@@ -6,11 +6,12 @@ from dashboard.models import MimeType
 from downloader.models import AccessToken,FileMetadata,FileHistory
 from django.template.loader import render_to_string
 from django.conf import settings
-import md5, os
+import md5, os,time
 from webapp import databaseInterface
 from abstractAnalyzer import AbstractAnalyzer
 import math,time,strict_rfc3339
 from webapp.func import *
+import math
 
 class GoogleAnalyzer(AbstractAnalyzer):
 
@@ -84,13 +85,9 @@ class GoogleAnalyzer(AbstractAnalyzer):
 					#all
 					elif searchType == 2:
 						searchItem.append(i)
+	
 
 		return searchItem
-
-	def textualMetadataSearch(self,searchType,mimeType,startDate,endDate):
-		searchItem = self.metadataSearch(searchType,mimeType,startDate,endDate)
-		table = render_to_string("dashboard/cloudservice/googleSearchTable.html", {'data': searchItem,'platform':'google'})
-		return table
 
 	def fileInfo(self, fileID):
 		""" Get information of a file """

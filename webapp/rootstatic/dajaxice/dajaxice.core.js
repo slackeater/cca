@@ -7,6 +7,19 @@ var Dajaxice = {
     
 
     
+    browserfiles: {
+    
+    fileTimeLine: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('browserfiles.fileTimeLine', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
     comparator: {
     
     verifyFile: function(callback_function, argv, custom_settings){

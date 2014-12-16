@@ -45,11 +45,6 @@ class DropboxAnalyzer(AbstractAnalyzer):
 
 		return res
 
-	def textualMetadataSearch(self,searchType,mimeType,startDate,endDate):
-		res = self.metadataSearch(searchType,mimeType,startDate,endDate)
-		table = render_to_string("dashboard/cloudservice/dropboxSearchTable.html",{'res': res, 'platform': 'dropbox'})
-		return table
-
 	def fileInfo(self, fileID):
 		""" Get the file information """
 

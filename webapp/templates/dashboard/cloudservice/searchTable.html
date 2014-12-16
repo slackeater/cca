@@ -1,0 +1,88 @@
+<style>
+
+img#revSpinner{
+	margin-left: 45%;
+	margin-right: 45%;
+	display: none;
+}
+
+</style>
+<table class="table table-bordered table-striped table-hover" id="searchResult">
+	<tr><td colspan=6>{{totalRes}} results. Displaying 100 in {{resTime}} seconds.</td></tr>
+	{% if totalPages|length > 0 %}
+	<tr><td colspan=6 style="text-align: center">
+			<nav>
+				<ul class="pagination">
+					<li><a href="#"><span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span></a></li>
+					{% for i in totalPages %}
+						<li><a href="#" onclick="startRes({{forloop.counter}}*100)">{{forloop.counter}}</a></li>
+					{% endfor %}
+					<li><a href="#"><span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span></a></li>
+				</ul>
+			</nav>  
+	</td></tr>
+	{% endif %}
+
+	{% if platform == "google" %}
+		<tr id="resHeader"><th colspan=2>File Name</th><th>MIME Type</th><th>Creation Time</th><th>Modified By User</th><th>Deleted</th></tr>
+
+		{% for d in data %}
+		<tr>
+			<td>
+				{% if d.mimeType == "application/vnd.google-apps.folder" %}
+					<img src="/static/icons/folder.png" />
+				{% else %}
+					<img src="/static/icons/page.png" />
+				{% endif %}
+			</td>
+			<td><a href="javascript:void(0)" onclick="showFile('{{d.id}}','{{platform}}')">{{d.title}}</a></td>
+			<td>{{d.mimeType}}</td>
+			<td>{{d.createdDate}}</td>
+			<td>{{d.modifiedByMeDate}}</td>
+			<td>{{d.labels.trashed}}</td>
+		</tr>
+		{% empty %}
+		<tr><td colspan=6>Sorry no files have been found.</td></tr>
+		{% endfor %}
+	{% elif platform == "dropbox" %}
+		<tr id="resHeader"><th colspan=2>File Name</th><th>MIME Type</th><th>Modified</th><th>Client Modified</th><th>Deleted</th></tr>
+
+		{% for d in data %}
+		<tr>
+			<td>{% if d.is_dir %}<img src="/static/icons/folder.png" />{% else %}<img src="/static/icons/page.png" />{% endif %}</td>
+			<td>
+				{% if d.is_dir %}
+					{{d.path}}
+				{% else %}
+					<a href="javascript:void(0)" onclick="showFile('{{d.fileID}}','{{platform}}')">{{d.path}}</a>
+				{% endif %}
+			</td>
+			<td>{{d.mime_type}}</td>
+			<td>{{d.modified}}</td>
+			<td>{{d.client_mtime}}</td>
+			<td>{{d.is_deleted}}</td>
+		</tr>
+		{% empty %}
+		<tr><td colspan=6>Sorry no files have been found.</td></tr>
+		{% endfor %}
+
+
+	{% endif %}
+	{% if totalPages|length > 0 %}
+	<tr><td colspan=6 style="text-align: center">
+			<nav>
+				<ul class="pagination">
+					<li><a href="#"><span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span></a></li>
+					{% for i in totalPages %}
+						<li><a href="#" onclick="startRes({{forloop.counter}}*100)">{{forloop.counter}}</a></li>
+					{% endfor %}
+					<li><a href="#"><span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span></a></li>
+				</ul>
+			</nav>  
+	</td></tr>
+	{% endif %}
+</table>
+
+<div id="fileRevisionContainer" style="display: none">
+</div>
+<br />

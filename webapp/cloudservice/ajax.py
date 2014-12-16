@@ -1,5 +1,5 @@
 import googledrive, drop
-import md5,base64,sys,os,pickle,time
+import md5,base64,sys,os,pickle,time,math
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
@@ -13,6 +13,7 @@ from webapp.func import *
 from webapp.exceptionFormatter import formatException
 from googledrive import GoogleAnalyzer
 from drop import DropboxAnalyzer
+from django.template.loader import render_to_string
 
 @dajaxice_register
 def metadataAnalysis(request,tokenID,cloudItem):
@@ -46,7 +47,7 @@ def metadataAnalysis(request,tokenID,cloudItem):
 
 
 @dajaxice_register
-def searchMetaData(request,form,tokenID,cloudItem):
+def searchMetaData(request,form,tokenID,cloudItem,start):
 	""" Make a search through the metadata """
 
 	if not isAuthenticated(request):
@@ -60,15 +61,26 @@ def searchMetaData(request,form,tokenID,cloudItem):
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
 		f = MetaSearch(deserialize_form(form))
-		
+		searchStep = 100
+
 		if f.is_valid():
+			startResTime = time.time()
+
 			if platform == "google":
 				ga = GoogleAnalyzer(tknObj)
-				parsedTable = ga.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
+				res = ga.metadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			elif platform == "dropbox":
 				d = DropboxAnalyzer(tknObj)
-				parsedTable = d.textualMetadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
-			
+				res = d.metadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
+
+			#computation for pager
+			totalPages = int(math.ceil(len(res)/100))
+			resultsSlice = res[start:(start+searchStep)]
+
+			stopResTime = time.time()
+
+			parsedTable = render_to_string("dashboard/cloudservice/searchTable.html", {'data': resultsSlice,'totalPages':range(totalPages),'totalRes':len(res),'resTime': stopResTime-startResTime,'platform':platform})
+
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")
 			dajax.remove_css_class("#searchError",['alert','alert-danger'])
@@ -87,7 +99,7 @@ def fileInfo(request,tokenID,id,cloudItem):
 
 	if not isAuthenticated(request):
 		return None
-	
+
 	dajax = Dajax()
 
 
@@ -127,14 +139,14 @@ def fileRevision(request,fId,tokenID,cloudItem):
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
-		
+
 		if platform == "google":
 			ga = GoogleAnalyzer(tknObj)
 			parsedTable = ga.fileHistory(fId)
 		elif platform == "dropbox":
 			d = DropboxAnalyzer(tknObj)
 			parsedTable = d.fileHistory(fId)
-		
+
 		dajax.assign("#revisionHistory","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
 	except Exception as e:
