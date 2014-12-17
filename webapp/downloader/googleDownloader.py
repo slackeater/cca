@@ -16,7 +16,8 @@ cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
 
 if not cryptoPath in sys.path:
 	sys.path.insert(1, cryptoPath)
-	del cryptoPath
+
+del cryptoPath
 
 import crypto
 

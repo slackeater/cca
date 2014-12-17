@@ -1,12 +1,24 @@
-from downloader.models import FileMetadata, FileHistory, FileDownload
+from downloader.models import FileMetadata, FileHistory, FileDownload, Download
 from dashboard.models import MimeType
+import base64,json,sys,os,shutil
+from django.conf import settings
+from webapp.thumbnailer import Thubmnailer
 
-import base64,json
+# add path for crypto
+cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
+
+if not cryptoPath in sys.path:
+	sys.path.insert(1, cryptoPath)
+
+del cryptoPath
+
+import crypto
 
 class MapsFinder():
 
 	def __init__(self,token):
 		self.t = token
+		self.d = Download.objects.get(tokenID=self.t)
 
 	def decodeMetaData(self,metadata):
 		decodedMetadata = base64.b64decode(metadata)
@@ -34,7 +46,19 @@ class MapsFinder():
 				if "location" in f["imageMediaMetadata"]:
 					lat = f["imageMediaMetadata"]["location"]["latitude"]
 					lon = f["imageMediaMetadata"]["location"]["longitude"]
-					res.append({"title":f['title'],"lat":lat,"lon":lon})
+
+					#compute file name
+					fName = crypto.sha256(f['title']+crypto.HASH_SEPARATOR+f['id']).hexdigest()+"_"+f['id']
+
+					#copy src img to thumbnail folder
+					srcDir = os.path.join(settings.DOWNLOAD_DIR,self.d.folder,"files",fName)
+					dstDir = os.path.join(settings.DIFF_DIR,fName+".thubmnail")
+
+					#generate thumbnail
+					thumb = Thubmnailer()
+					thumb.cacheImg(srcDir,dstDir,250,250)
+
+					res.append({"title":f['title'],"lat":lat,"lon":lon,'fName': fName+".thubmnail"})
 
 		return res
 
