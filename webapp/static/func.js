@@ -1,6 +1,9 @@
 /* ==== Analysis ==== */
 
 function startMetaAnalysis(){
+	$("#metaSearchCont").hide()
+	$("#statTab").parent().addClass("active")
+	$("#searchTab").parent().removeClass("active")
 	$("#wait1").fadeIn("slow")
 	$("#metaAnalysisError").fadeOut("slow")
 	Dajaxice.cloudservice.metadataAnalysis(analysisCallBack,{'tokenID': tVal(),'cloudItem': iVal()})

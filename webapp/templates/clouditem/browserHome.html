@@ -19,7 +19,19 @@
 </ul>
 
 <br />
-{{historyForm}}
+
+{% if error != None %}
+	<div class="alert alert-danger">{{error}}</div>
+{% endif %}
+
+<form action="" method="post">
+<div class="row">
+	<div class="col-md-6">
+		{{form}}
+		<input type="submit" class="btn btn-default" value="Submit" />
+	</div>
+</div>
+</form>
 <!-- 
 <div class="panel panel-default">
 	<div class="panel-heading"><h3>Browser</h3></div>

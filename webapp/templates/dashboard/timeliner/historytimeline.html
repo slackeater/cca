@@ -1,4 +1,4 @@
-<div id="visualization" style="display: none"></div>
+<div id="visualization"></div>
 
 <script type="text/javascript">
 function showHistory(altId){
@@ -10,7 +10,7 @@ function showHistoryCallBack(data){
 	Dajax.process(data)
 		
 	if(data[0].id != "#formHistoryError"){
-		$('#visualization').fadeOut("slow")
+		$('#visualization').slideUp("slow")
 	}
 }
 
@@ -47,7 +47,7 @@ var options = {orientation: 'top'};
 var items = new vis.DataSet([
 	{% for ev in events %}
 	{
-content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
+		content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
 		start: new Date({{ev.time}})
 
 		{% if ev.trashed == "True" %}

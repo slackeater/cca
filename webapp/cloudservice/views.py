@@ -32,6 +32,7 @@ def cloudService(request, cloudItem, tokenID):
 		data['updateAnalysis'] = True
 		data['tokenID'] = tkn.id
 		data['resForm'] = MetaSearch()
+		data['btnAction'] = "startRes(0)"
 	except Exception as e:
 		data['sessionError'] = e.message
 

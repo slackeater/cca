@@ -16,8 +16,9 @@ def showTimeline(request,cloudItem,tokenID):
 		data = dict()	
 		data['objID'] = ci.id
 		data['tokenID'] = tkn.id
-		data['form'] = MetaSearch()
+		data['resForm'] = MetaSearch()
 		data['showToken'] = True
+		data['btnAction'] = "formTimeline()"
 
 		return render_to_response("dashboard/timeliner/timeHome.html",data,context_instance=RequestContext(request))
 	else:

@@ -30,61 +30,33 @@ $('#dp2').datepicker({
 	<li class="active">{{platformTitle}} Metadata Analysis</li>
 </ol>
 
-<div class="container-fluid">
-	<table class="table">
-		<tr>
-			<td width="250px"><a class="foldingLink" onclick="startMetaAnalysis()" href="javascript:void(0);"><h3>Metadata Stats</h3></a></td>
-			<td style="text-align: center; vertical-align: middle;"><img id="wait1" class="waiters" style="display: none" src="/static/47.GIF" /></td>
-		</tr>
-	</table>
 
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active"><a href="javascript:void(0)" id="searchTab"><h4>Search</h4></a></li>
+	<li role="presentation"><a href="javascript:void(0)" id="statTab"  onclick="startMetaAnalysis()"><h4>Stats</h4></a></li>
+
+</ul>
+<br />
+<div class="container-fluid" id="metaAnalysis" style="display: none">
 	<div id="metaAnalysisError" style="display: none"></div>
-	<div id="metaAnalysis" style="display: none"></div>
 </div>
 
-<div class="container-fluid">
-	<table class="table"><tr>
-			<td><a class="foldingLink" onclick="$('#metaSearchCont').fadeToggle('slow')" href="javascript:void(0);"><h3>Metadata Search</h3></a></td>
-	</tr></table>
+{% include "dashboard/cloudservice/searchForm.html" %}
 
-<div id="metaSearchCont" style="display: none" class="container-fluid">
-	<div class="row">
-	<div class="col-md-6">
-	<form method="post" id="searchForm" action="">
-		{% csrf_token %}
-		<table>
-			<tr><td colspan=3><h4>Search Type</h4></td></tr>
-			<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.0}}</span>{{resForm.email}}</div></td></tr>
-			<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.1}}</span>{{resForm.filename}}</div></td></tr>
-			<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.2}}</span>{{resForm.givenname}}</div></td></tr>
-			<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.3}}</span></div></td></tr>
-			<tr><td colspan=3><h4>Filters</h4></td></tr>
-			<tr>
-					{% for r in resForm.resType %}
-						<td>
-							<label for="id_resType">{{ r.label }}{{r}}</label>
-						</td>
-					{% endfor %}
-			</tr>
-			<tr><td colspan=3><label for="id_mimeType">{{ resForm.mimeType.label }}</label>{{ resForm.mimeType }}</td></tr>
-			<tr><td colspan=3><h4>Temporal Period</h4></td></tr>
-			<tr>
-				<td><label for="id_startDate">{{ resForm.startDate.label }}</label>{{ resForm.startDate }}</td>
-				<td><label for="id_endDate">&nbsp;{{ resForm.endDate.label }}</label>{{ resForm.endDate }}</td>
-				<td></td>
-			</tr>
-			<tr><td>&nbsp;</td></tr>
-			<tr><td colspan=3><input type="button" value="Search" onclick="startRes(0)" class="btn btn-default"/></td></tr>
-		</table>
-	</form>
-	</div>
-	<div>
-	</div><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></div>
-	<div id="searchError" style="display: none"></div>
-	<div id="searchRes"></div>
-</div>
+<div id="searchError" style="display: none"></div>
+<div id="searchRes"></div>
 
-</div>
-<input type="hidden" value="{{tokenID}}" id="t" name="t" />
-<input type="hidden" value="{{objID}}" id="i" name="i" />
+<script>
+
+$( "#searchTab" ).click(function(){
+	$("#searchTab").parent().addClass("active")
+	$("#statTab").parent().removeClass("active")
+	$("#metaAnalysis").hide();
+	$("#metaSearchCont").fadeIn("slow");
+});
+
+
+
+
+</script>
 {% endblock %}

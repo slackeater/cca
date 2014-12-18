@@ -1,0 +1,35 @@
+<div id="metaSearchCont" class="container-fluid">
+	<div class="row">
+		<div class="col-md-6">
+			<form method="post" id="searchForm" action="" >
+				{% csrf_token %}
+				<table>
+					<tr><td colspan=3><h4>Search Type</h4></td></tr>
+					<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.0}}</span>{{resForm.email}}</div></td></tr>
+					<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.1}}</span>{{resForm.filename}}</div></td></tr>
+					<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.2}}</span>{{resForm.givenname}}</div></td></tr>
+					<tr><td colspan=3><div class="input-group" style="width: 100%"><span class="input-group-addon" style="width: 25%">{{resForm.formType.3}}</span></div></td></tr>
+					<tr><td colspan=3><h4>Filters</h4></td></tr>
+					<tr>
+						{% for r in resForm.resType %}
+						<td>
+							<label for="id_resType">{{ r.label }}{{r}}</label>
+						</td>
+						{% endfor %}
+					</tr>
+					<tr><td colspan=3><label for="id_mimeType">{{ resForm.mimeType.label }}</label>{{ resForm.mimeType }}</td></tr>
+					<tr><td colspan=3><h4>Temporal Period</h4></td></tr>
+					<tr>
+						<td><label for="id_startDate">{{ resForm.startDate.label }}</label>{{ resForm.startDate }}</td>
+						<td><label for="id_endDate">&nbsp;{{ resForm.endDate.label }}</label>{{ resForm.endDate }}</td>
+						<td></td>
+					</tr>
+					<tr><td>&nbsp;</td></tr>
+					<tr><td colspan=3><input type="button" value="Search" onclick="{{btnAction}}" class="btn btn-default"/></td></tr>
+				</table>
+			</form>
+		</div>
+		<div>
+	</div><img id="wait2" class="waiters" style="display: none" src="/static/47.GIF" /></div>
+</div>
+

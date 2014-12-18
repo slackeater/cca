@@ -48,10 +48,10 @@ class GoogleTimeMaker(AbstractTimeMaker):
 		jStr = '{"timeStr":"'+displayDate+'"}'
 		return {'title': title,'time':date,'isDir':str(isDir),'trashed':trashed,'altName': altName,'params':jStr}
 
-	def formTimeLine(self,resType,mimeType,startDate,endDate):
+	def formTimeLine(self,formType,searchEmail,searchFile,searchGivenName,resType,mimeType,startDate,endDate):
 		
 		ga = GoogleAnalyzer(self.t)
-		retval = ga.metadataSearch(resType,mimeType,startDate,endDate)
+		retval = ga.metadataSearch(formType,searchEmail,searchFile,searchGivenName,resType,mimeType,startDate,endDate)
 		
 		buildList = list()
 

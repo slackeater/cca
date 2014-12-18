@@ -10,15 +10,12 @@ from droptimemaker import DropboxTimeMaker
 from webapp.exceptionFormatter import formatException
 
 @dajaxice_register
+@login_required
 def formTimeliner(request,cloudItem,tokenID,form):
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 	data = None
 
-	print form
 	try:
 		t = parseAjaxParam(tokenID)
 		ci = checkCloudItem(cloudItem,request.user.id)
@@ -27,14 +24,14 @@ def formTimeliner(request,cloudItem,tokenID,form):
 		if f.is_valid():
 			if tkn.serviceType == "google":
 				ga = GoogleTimeMaker(tkn)
-				data = ga.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
+				data = ga.formTimeLine(int(f.cleaned_data['formType'][0]),f.cleaned_data['email'],f.cleaned_data['filename'],f.cleaned_data['givenname'],int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			elif tkn.serviceType == "dropbox":
 				d = DropboxTimeMaker(tkn)
 				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			
 			if len(data) > 0:
 				if len(data) > 500:
-					dajax.assign("#formHistoryError","innerHTML","Your query returned more than 500 elements. Please refine your search to avoid performance prolem with your browser.")
+					dajax.assign("#formHistoryError","innerHTML","Your query returned more than 500 elements. Please refine your search to avoid performance problems with your browser.")
 					dajax.add_css_class("#formHistoryError",["alert","alert-danger"])
 				else:
 					table = render_to_string("dashboard/timeliner/historytimeline.html",{'events':data})	
