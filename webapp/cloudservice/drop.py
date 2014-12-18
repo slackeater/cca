@@ -1,10 +1,11 @@
 from importer.models import Upload
-import md5, json, base64, dropbox
+import md5, json, base64, dropbox, time
 from dashboard.models import MimeType
 from downloader.models import AccessToken,FileMetadata,FileHistory,FileHistory
 from django.template.loader import render_to_string
-from webapp.func import dropboxAlternateName
+from webapp.func import dropboxAlternateName,getTimestamp
 from abstractAnalyzer import AbstractAnalyzer
+from dateutil import parser
 
 
 class DropboxAnalyzer(AbstractAnalyzer):
@@ -19,30 +20,74 @@ class DropboxAnalyzer(AbstractAnalyzer):
 
 		return render_to_string("dashboard/cloudservice/metaAnalysis.html",{'dropbox': True, 'stat':stat})
 
-	def metadataSearch(self, searchType, mimeType,startDate,endDate):
+	def medatadaSearchType(self,item,searchType,searchEmail,searchFile,searchGivenName):
+
+		searchResItem = None
+
+		#e-mail
+		if searchType == 0:
+			#email search not supported with dropbox
+			pass
+		#filename
+		elif searchType == 1:
+			if searchFile in item['path']:
+				searchResItem = item
+		#givenname
+		elif searchType == 2:
+			if "modifier" in item and item['modifier'] is not None and searchGivenName in item['modifier']['display_name']:
+				searchResItem = item
+		#all
+		elif searchType == 3:
+			searchResItem = item
+
+		return searchResItem
+
+	def metadataSearchFilters(self,filterType,item,mimeType):
+
+		filterRes = None
+
+		#deleted 
+		if filterType == 0:
+			deleted = item.get("is_deleted",False)
+			
+			if deleted:
+				filterRes = item
+		#mime
+		elif filterType == 1:
+			if not item['is_dir'] and item['mime_type'] == MimeType.objects.get(id=mimeType).mime:
+				filterRes = item
+		#all
+		elif filterType == 2:
+			filterRes = item
+
+		return filterRes
+
+	def metadataSearch(self, searchType,searchEmail,searchFile,searchGivenName,filterType,mimeType,startDate,endDate):
 		""" Search over metadata """
 
 		res = list()
 
+		startDateTs = float(getTimestamp(startDate))
+		endDateTs = float(getTimestamp(endDate))
+
 		for folder in self.metadata:
 			for cnt in folder['contents']:
-				fID = {'fileID':dropboxAlternateName(cnt['path'],cnt['modified'])}
-				cnt.update(fID)
+				
+				modifiedTs = float(getTimestamp(parser.parse(cnt['modified'])))
 
-				#deleted 
-				if searchType == 0:
-					deleted = cnt.get("is_deleted",False)
-					
-					if deleted:
-						res.append(cnt)
-				#mime
-				elif searchType == 1:
-					if not cnt['is_dir'] and cnt['mime_type'] == MimeType.objects.get(id=mimeType).mime:
-						res.append(cnt)
-				#all
-				elif searchType == 2:
-					res.append(cnt)
+				if modifiedTs >= startDateTs and modifiedTs <= endDateTs:
 
+					fID = {'fileID':dropboxAlternateName(cnt['path'],cnt['modified'])}
+					cnt.update(fID)
+
+					prunedRes = self.medatadaSearchType(cnt,searchType,searchEmail,searchFile,searchGivenName)
+
+					if prunedRes != None:
+						filterRes = self.metadataSearchFilters(filterType,cnt,mimeType)
+
+						if filterRes != None:
+							res.append(filterRes)
+				
 		return res
 
 	def fileInfo(self, fileID):
