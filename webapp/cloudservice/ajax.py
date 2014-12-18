@@ -4,7 +4,7 @@ from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
 from django.utils.html import strip_tags
-from forms import MetaSearch,EmailSearch
+from forms import MetaSearch
 from django.conf import settings
 from downloader.models import AccessToken,FileDownload
 from clouditem.models import CloudItem
@@ -49,7 +49,7 @@ def metadataAnalysis(request,tokenID,cloudItem):
 
 @dajaxice_register
 @login_required
-def searchMetaData(request,form,tokenID,cloudItem,start,formType = 1):
+def searchMetaData(request,form,tokenID,cloudItem,start):
 	""" Make a search through the metadata """
 
 	dajax = Dajax()
@@ -59,37 +59,58 @@ def searchMetaData(request,form,tokenID,cloudItem,start,formType = 1):
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
 		platform = tknObj.serviceType
-
-		f = None
-
-		if int(formType) == 1:
-			f = MetaSearch(deserialize_form(form))
-		elif int(formType) == 2:
-			f = EmailSearch(deserialize_form(form))
-
-		print formType
-		print f
-
 		searchStep = 100
+		f = MetaSearch(deserialize_form(form))
 
 		if f.is_valid():
 			startResTime = time.time()
+			
+			#compute hash of the search form for the cache
+			searchHash = crypto.sha256(form).hexdigest()
+			"""searchHash = crypto.sha256(f.cleaned_data['formType'][0]+crypto.HASH_SEPARATOR+
+					f.cleaned_data['email']+crypto.HASH_SEPARATOR+
+					f.cleaned_data['filename']+crypto.HASH_SEPARATOR+
+					f.cleaned_data['givenname']+crypto.HASH_SEPARATOR+
+					f.cleaned_data['resType'][0]+crypto.HASH_SEPARATOR+
+					f.cleaned_data['mimeType']+crypto.HASH_SEPARATOR+
+					str(f.cleaned_data['startDate'])+crypto.HASH_SEPARATOR+
+					str(f.cleaned_data['endDate'])
+				).hexdigest()"""
 
-			if platform == "google":
+			if "searchCache" in request.session and request.session['searchCacheID'] == searchHash:
+				res = json.loads(request.session["searchCache"])
+			elif platform == "google":
 				ga = GoogleAnalyzer(tknObj)
 
-				if isinstance(f,MetaSearch):
-					res = ga.metadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
-				elif isinstance(f,EmailSearch):
-					print "ESEARCH"
-					res = ga.emailSearch(f.cleaned_data['email'])
+				res = ga.metadataSearch(
+						int(f.cleaned_data['formType'][0]),
+						f.cleaned_data['email'],
+						f.cleaned_data['filename'],
+						f.cleaned_data['givenname'],
+						int(f.cleaned_data['resType'][0]),
+						int(f.cleaned_data['mimeType']),
+						f.cleaned_data['startDate'],
+						f.cleaned_data['endDate']
+					)
+
+				request.session["searchCacheID"] = searchHash
+				request.session["searchCache"] = json.dumps(res)
 			elif platform == "dropbox":
 				d = DropboxAnalyzer(tknObj)
+				
+				res = d.metadataSearch(
+						int(f.cleaned_data['formType'][0]),
+						f.cleaned_data['email'],
+						f.cleaned_data['filename'],
+						f.cleaned_data['givenname'],
+						int(f.cleaned_data['resType'][0]),
+						int(f.cleaned_data['mimeType']),
+						f.cleaned_data['startDate'],
+						f.cleaned_data['endDate']
+					)
 
-				if isinstance(f,MetaSearch):
-					res = d.metadataSearch(int(f.cleaned_data['resType'][0]),int(f.cleaned_data['mimeType']),f.cleaned_data['startDate'],f.cleaned_data['endDate'])
-				else:
-					raise Exception("This kind of search is not supported for Dropbox.")
+				request.session["searchCacheID"] = searchHash
+				request.session["searchCache"] = json.dumps(res)
 
 			#computation for pager
 			totalPages = int(math.ceil(float(len(res))/100.0))

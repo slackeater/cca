@@ -58,25 +58,53 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		
 		return stat
 
-	def emailSearch(self,email):
-		""" Search through email """
+	def metadataSearchType(self,item,searchType,searchEmail,searchFile,searchGivenName):
+		
+		searchResItem = None
 
-		res = list()
+		#e-mail
+		if searchType == 0:
+			if "owners" in item and item['mimeType'] != MimeType.objects.get(id=1340).mime:
+				for o in item['owners']:
+					if o['emailAddress'] == searchEmail:
+						searchResItem = item
 
-		for i in self.metadata:
-			if "owners" in i and i['mimeType'] != MimeType.objects.get(id=1340).mime:
+			#TODO include history??
+				
+		#filename
+		elif searchType == 1:
+			if "title" in item and searchFile in item["title"]:
+				searchResItem = item
+		#givenname
+		elif searchType == 2:
+				if ("lastModifyingUserName" in item and searchGivenName in item["lastModifyingUserName"]) or ("ownerName" in item and searchGivenName in item["ownerNames"]):
+					searchResItem = item
+		#all
+		elif searchType == 3:
+			searchResItem = item
+			
+		return searchResItem
 
-				for o in i['owners']:
+	def metadataSearchFilters(self,filterType,item,mimeType):
+		
+		filterRes = None
 
-					if o['emailAddress'] == email:
-						print "Appending"
-						res.append(i)
+		#deleted
+		if filterType == 0:
+			if item['labels']['trashed']:
+				filterRes = item
+		# mimetype
+		elif filterType == 1:
+			m = MimeType.objects.get(id=mimeType)
+			if item['mimeType'] == m.mime:
+				filterRes = item
+		#all
+		elif filterType == 2:
+			filterRes = item
 
-				#TODO add history
+		return filterRes
 
-		return res
-
-	def metadataSearch(self, searchType,mimeType,startDate,endDate):
+	def metadataSearch(self,searchType,searchEmail,searchFile,searchGivenName,filterType,mimeType,startDate,endDate):
 		""" Search through metadata """
 
 		searchItem = list()
@@ -88,22 +116,16 @@ class GoogleAnalyzer(AbstractAnalyzer):
 
 			creationTs = strict_rfc3339.rfc3339_to_timestamp(i['createdDate'])
 			
-			#check start date
+			#check temporal period
 			if creationTs >= startDateTs and creationTs <= endDateTs:
-					
-					#deleted
-					if searchType == 0:
-						if i['labels']['trashed']:
-							searchItem.append(i)
-					# mimetype
-					elif searchType == 1:
-						m = MimeType.objects.get(id=mimeType)
-						if i['mimeType'] == m.mime:
-							searchItem.append(i)
-					#all
-					elif searchType == 2:
-						searchItem.append(i)
-	
+					prunedRes = self.metadataSearchType(i,searchType,searchEmail,searchFile,searchGivenName)
+
+					if prunedRes != None:
+						#now apply filters
+						filteredRes = self.metadataSearchFilters(filterType,prunedRes,mimeType)
+
+						if filteredRes != None:
+							searchItem.append(filteredRes)
 		return searchItem
 
 	def fileInfo(self, fileID):
