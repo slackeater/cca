@@ -11,7 +11,8 @@ class DropboxTimeMaker(AbstractTimeMaker):
 		AbstractTimeMaker.__init__(self,token)
 
 	def constructTimeLineItem(self,item,isHistory = False):
-
+		
+		hasHistory = False
 		trashed = False
 		date = item['modified']
 		parsedDate = list(time.strptime(date,"%a, %d %b %Y %H:%M:%S +0000"))[:6]
@@ -33,13 +34,21 @@ class DropboxTimeMaker(AbstractTimeMaker):
 		if item['is_dir']:
 			isDir = True
 
+		if not item['is_dir'] and not isHistory:
+			#check for history
+			fd = self.db.getFileDownload(self.t,altName)
+			fh = self.db.getHistoryForFile(fd)
+
+			if len(fh) > 0:
+				hasHistory = True
+
 		jStr = '{"timeStr":"'+date+'"}'
-		return {'title': title,'isDir': str(isDir),'altName':altName,'trashed':str(trashed),'time': parsedDateStr,'params': jStr}
+		return {'title': title,'isDir': str(isDir),'altName':altName,'trashed':str(trashed),'time': parsedDateStr,'params': jStr,'hasHistory':hasHistory}
 			
-	def formTimeLine(self,resType,mimeType,startDate,endDate):
+	def formTimeLine(self,formType,searchEmail,searchFilename,searchGivenName,resType,mimeType,startDate,endDate):
 
 		d = DropboxAnalyzer(self.t)
-		retval = d.metadataSearch(resType,mimeType,startDate,endDate)
+		retval = d.metadataSearch(formType,searchEmail,searchFilename,searchGivenName,resType,mimeType,startDate,endDate)
 		
 		buildItem = list()
 

@@ -144,7 +144,9 @@ def verifyFileDownload(token,resType):
 		hashName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
 		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",hashName+"_"+f.alternateName)
 		print path
-		if f.status == 200 and os.path.isfile(path):
+		isFile = os.path.isfile(path)
+		print isFile
+		if isFile:
 			print f	
 			#first compute the hash
 			h = crypto.sha256File(path)
@@ -161,8 +163,9 @@ def verifyFileDownload(token,resType):
 				historyVerification = None
 
 			hList.append({'fID': f.id,'fName':f.fileName,'fSig':crypto.sha256(f.fileHash).hexdigest(),'verificationResult':verification,'history':historyVerification})
-		elif f.status == 2:
-			hList.append({'fID': f.id,'fName':f.fileName,'verificationResult':-1,'history': list()})
+		elif not isFile:
+				hList.append({'fID': f.id,'fName':f.fileName,'fSig':"File does not exists on disk",'verificationResult':-1,'history': list()})
+
 
 	return hList
 
@@ -177,10 +180,16 @@ def verifyMetadata(token):
 	
 	#compute hash
 	h = crypto.sha256(metaFile+crypto.HASH_SEPARATOR+mTime)
+
 	#verify
 	verification = crypto.verifyRSAsignatureSHA256(h,meta.metadataHash,settings.PUB_KEY)
 
-	return ({'metaID': meta.id,'verificationResult': verification})
+	sig = crypto.rsaSignatureSHA256(metaFile+crypto.HASH_SEPARATOR+mTime,settings.PRIV_KEY)
+
+	#metadata hash
+	mSig = crypto.sha256(meta.metadataHash).hexdigest()
+
+	return ({'metaID': meta.id,'verificationResult': verification,'mSig':mSig})
 
 def verifyHistory(fileDownload, downloadFolder):
 	""" Verify file history """
@@ -189,24 +198,23 @@ def verifyHistory(fileDownload, downloadFolder):
 	
 	for fh in FileHistory.objects.filter(fileDownloadID=fileDownload):
 		#verification of revision metadata
-
 		revMeta = fh.revisionMetadata
 		revDownTime = format(fh.downloadTime,"U")
-
 		h = crypto.sha256(revMeta+crypto.HASH_SEPARATOR+revDownTime)
-		
 		verification = crypto.verifyRSAsignatureSHA256(h,fh.revisionMetadataHash,settings.PUB_KEY)
 
-		#verification of file history 
 		hashName = crypto.sha256(fileDownload.fileName+crypto.HASH_SEPARATOR+fh.revision).hexdigest()
 		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,hashName+"_"+fh.revision)
+		isPath = os.path.isfile(path)
 
-		if os.path.isfile(path) and fh.status == 200:
+		if isPath:
+			#verification of file history 
 			fHash = crypto.sha256File(path)
 			verificationFile = crypto.verifyRSAsignatureSHA256(fHash,fh.fileRevisionHash,settings.PUB_KEY)
+
 			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':verificationFile})
 		else:
-			raise Exception("File history " + path + " not found")
+			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':"File does not exists on disk"})
 
 	return hList
 

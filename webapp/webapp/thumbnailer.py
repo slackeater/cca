@@ -5,13 +5,13 @@ class Thubmnailer():
 	def cacheImg(self,imgSrc,imgDest,maxHeigth = 800, maxWidth= 600):
 		if not os.path.isfile(imgDest):
 			shutil.copy2(imgSrc,imgDest)	
-
-		#resize images
-		im = Image.open(imgDest)
-		startWidth,startHeight = im.size
-		newWidth,newHeight = self.computeThumbnailSize(startWidth, startHeight,float(maxHeigth),float(maxWidth))
-		im.thumbnail((newWidth,newHeight),Image.ANTIALIAS)
-		im.save(imgDest,"PNG")
+	
+			#resize images
+			im = Image.open(imgDest)
+			startWidth,startHeight = im.size
+			newWidth,newHeight = self.computeThumbnailSize(startWidth, startHeight,float(maxHeigth),float(maxWidth))
+			im.thumbnail((newWidth,newHeight),Image.ANTIALIAS)
+			im.save(imgDest,"PNG")
 
 	def computeThumbnailSize(self,startWidth,startHeight,maxHeight,maxWidth):
 		maxHeight = maxHeight

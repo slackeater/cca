@@ -8,6 +8,8 @@ from cloudservice.forms import MetaSearch
 from googletimemake import GoogleTimeMaker
 from droptimemaker import DropboxTimeMaker
 from webapp.exceptionFormatter import formatException
+from django.contrib.auth.decorators import login_required
+from downloader.models import FileHistory
 
 @dajaxice_register
 @login_required
@@ -27,7 +29,7 @@ def formTimeliner(request,cloudItem,tokenID,form):
 				data = ga.formTimeLine(int(f.cleaned_data['formType'][0]),f.cleaned_data['email'],f.cleaned_data['filename'],f.cleaned_data['givenname'],int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			elif tkn.serviceType == "dropbox":
 				d = DropboxTimeMaker(tkn)
-				data = d.formTimeLine(int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
+				data = d.formTimeLine(int(f.cleaned_data['formType'][0]),f.cleaned_data['email'],f.cleaned_data['filename'],f.cleaned_data['givenname'],int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
 			
 			if len(data) > 0:
 				if len(data) > 500:
@@ -52,10 +54,8 @@ def formTimeliner(request,cloudItem,tokenID,form):
 	return dajax.json()
 
 @dajaxice_register
+@login_required
 def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 	data = None

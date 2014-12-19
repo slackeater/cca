@@ -39,9 +39,19 @@ function mailCallback(data){
 	<li class="active">Maps</li>
 </ol>
 
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active">
+		<a href="javascript:void(0)" id="exifTab"><h4>EXIF</h4></a>
+	</li>
+	<li role="presentation">
+		<a href="javascript:void(0)" id="mapsTab"><h4>Relations Map</h4></a>
+	</li>
+</ul>
+
+<br />
 
 <div class="container-fluid">
-<div class="panel panel-default">
+<div class="panel panel-default" id="exifCont">
 	<div class="panel-heading"><h2>EXIF</h2></div>
 	<div class="panel-body">
 		Display image/video location basing on their GPS location.
@@ -53,8 +63,8 @@ function mailCallback(data){
 	</div>
 </div>
 
-<div class="panel panel-default">
-	<div class="panel-heading"><h2>E-Mail Relation</h2></div>
+<div class="panel panel-default" id="mapsCont" style="display:none">
+	<div class="panel-heading"><h2>Relations Map</h2></div>
 	<div class="panel-body">
 		Create a map of relation between e-mail found
 
@@ -65,6 +75,22 @@ function mailCallback(data){
 	</div>
 </div>
 </div>
+
+<script>
+$("#exifTab").click(function(){
+	$("#exifTab").parent().addClass("active");
+	$("#mapsTab").parent().removeClass("active");
+	$("#exifCont").fadeIn("slow");
+	$("#mapsCont").hide();
+});
+
+$("#mapsTab").click(function(){
+	$("#exifTab").parent().removeClass("active");
+	$("#mapsTab").parent().addClass("active");
+	$("#mapsCont").fadeIn("slow");
+	$("#exifCont").hide();
+});
+</script>
 
 {% endblock %}
 

@@ -1,7 +1,7 @@
 /* ==== Analysis ==== */
 
 function startMetaAnalysis(){
-	$("#metaSearchCont").hide()
+	$("#searchContainer").hide()
 	$("#statTab").parent().addClass("active")
 	$("#searchTab").parent().removeClass("active")
 	$("#wait1").fadeIn("slow")

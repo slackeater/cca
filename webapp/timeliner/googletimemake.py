@@ -17,6 +17,9 @@ class GoogleTimeMaker(AbstractTimeMaker):
 		
 	def constructTimeLineItem(self,item,isHistory = False):
 		""" Construct an element to be added to the timeline """
+		isDir = False
+		altName = item['id']
+		hasHistory = False
 
 		if isHistory:
 			displayDate = item['modifiedDate']
@@ -32,8 +35,14 @@ class GoogleTimeMaker(AbstractTimeMaker):
 			title = item['title']
 			trashed = str(item['labels']['trashed'])
 
-		isDir = False
-		altName = item['id']
+			#check if the file has history
+			if item['mimeType'] != "application/vnd.google-apps.folder":
+				fd = self.db.getFileDownload(self.t,altName)
+				fh = self.db.getHistoryForFile(fd)
+
+				if len(fh) > 0:
+					hasHistory = True
+
 
 		if item['mimeType'] == "application/vnd.google-apps.folder":
 			isDir = True
@@ -46,7 +55,7 @@ class GoogleTimeMaker(AbstractTimeMaker):
 		date = ",".join(map(str,dateTuple))
 
 		jStr = '{"timeStr":"'+displayDate+'"}'
-		return {'title': title,'time':date,'isDir':str(isDir),'trashed':trashed,'altName': altName,'params':jStr}
+		return {'title': title,'time':date,'isDir':str(isDir),'trashed':trashed,'altName': altName,'params':jStr,'hasHistory':hasHistory}
 
 	def formTimeLine(self,formType,searchEmail,searchFile,searchGivenName,resType,mimeType,startDate,endDate):
 		

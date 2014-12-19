@@ -13,7 +13,7 @@ function showHistoryCallBack(data){
 		$('#visualization').slideUp("slow")
 	}
 }
-
+/*
 function tip(elem,ev,altName){
 
 	var dec = $("<div/>").html(ev).text();
@@ -36,7 +36,7 @@ function tip(elem,ev,altName){
 		effect: function() { $(this).fadeOut(250); }
 	}
 	})
-}
+}*/
 
 // DOM element where the Timeline will be attached
 var container = document.getElementById('visualization');
@@ -47,7 +47,7 @@ var options = {orientation: 'top'};
 var items = new vis.DataSet([
 	{% for ev in events %}
 	{
-		content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
+content: "{%if ev.hasHistory %}<a href='javascript:void(0)' onclick='showHistory(\"{{ev.altName}}\")'><img src='/static/icons/date.png' /></a>{%endif%}<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
 		start: new Date({{ev.time}})
 
 		{% if ev.trashed == "True" %}
@@ -59,8 +59,9 @@ var items = new vis.DataSet([
 
 var timeline = new vis.Timeline(container, items, options);
 
+/*
 {% for ev in events %}
 tip('#{{forloop.counter}}','{{ev.params}}','{{ev.altName}}')
 {% endfor %}
-
+*/
 </script>

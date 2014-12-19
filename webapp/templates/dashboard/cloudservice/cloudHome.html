@@ -40,19 +40,20 @@ $('#dp2').datepicker({
 <div class="container-fluid" id="metaAnalysis" style="display: none">
 	<div id="metaAnalysisError" style="display: none"></div>
 </div>
-
+<div id="searchContainer">
 {% include "dashboard/cloudservice/searchForm.html" %}
 
 <div id="searchError" style="display: none"></div>
 <div id="searchRes"></div>
-
+</div>
 <script>
+
 
 $( "#searchTab" ).click(function(){
 	$("#searchTab").parent().addClass("active")
 	$("#statTab").parent().removeClass("active")
+	$("#searchContainer").fadeIn("slow");
 	$("#metaAnalysis").hide();
-	$("#metaSearchCont").fadeIn("slow");
 });
 
 
