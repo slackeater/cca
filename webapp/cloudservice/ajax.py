@@ -1,4 +1,3 @@
-import googledrive, drop
 import md5,base64,sys,os,pickle,time,math
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
@@ -11,17 +10,14 @@ from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from webapp.func import *
 from webapp.exceptionFormatter import formatException
-from googledrive import GoogleAnalyzer
-from drop import DropboxAnalyzer
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from webapp.metadataController import MetadataController
 
 @dajaxice_register
+@login_required
 def metadataAnalysis(request,tokenID,cloudItem):
 	""" Analyise the metadata of services """
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 
@@ -30,14 +26,9 @@ def metadataAnalysis(request,tokenID,cloudItem):
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
-		platform = tknObj.serviceType
 
-		if platform == "google":
-			ga = GoogleAnalyzer(tknObj)
-			parsedTable = ga.metadataAnalysis()
-		elif platform == "dropbox":
-			d = DropboxAnalyzer(tknObj)
-			parsedTable = d.metadataAnalysis()
+		mc = MetadataController(tknObj)
+		parsedTable = mc.metadataAnalysis()
 
 		dajax.assign("#metaAnalysis","innerHTML", parsedTable)
 		dajax.assign("#metaAnalysisError","innerHTML","")
@@ -58,7 +49,6 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
-		platform = tknObj.serviceType
 		searchStep = 100
 		f = MetaSearch(deserialize_form(form))
 
@@ -79,26 +69,9 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 
 			if "searchCache" in request.session and request.session['searchCacheID'] == searchHash:
 				res = json.loads(request.session["searchCache"])
-			elif platform == "google":
-				ga = GoogleAnalyzer(tknObj)
-
-				res = ga.metadataSearch(
-						int(f.cleaned_data['formType'][0]),
-						f.cleaned_data['email'],
-						f.cleaned_data['filename'],
-						f.cleaned_data['givenname'],
-						int(f.cleaned_data['resType'][0]),
-						int(f.cleaned_data['mimeType']),
-						f.cleaned_data['startDate'],
-						f.cleaned_data['endDate']
-					)
-
-				request.session["searchCacheID"] = searchHash
-				request.session["searchCache"] = json.dumps(res)
-			elif platform == "dropbox":
-				d = DropboxAnalyzer(tknObj)
-				
-				res = d.metadataSearch(
+			else:
+				mc = MetadataController(tknObj)
+				res = mc.metadataSearch(
 						int(f.cleaned_data['formType'][0]),
 						f.cleaned_data['email'],
 						f.cleaned_data['filename'],
@@ -118,7 +91,7 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 
 			stopResTime = time.time()
 
-			parsedTable = render_to_string("dashboard/cloudservice/searchTable.html", {'data': resultsSlice,'totalPages':range(totalPages),'totalRes':len(res),'resTime': stopResTime-startResTime,'platform':platform})
+			parsedTable = render_to_string("dashboard/cloudservice/searchTable.html", {'data': resultsSlice,'totalPages':range(totalPages),'totalRes':len(res),'resTime': stopResTime-startResTime,'platform':tknObj.serviceType})
 
 			dajax.assign("#searchRes","innerHTML",parsedTable)
 			dajax.assign("#searchError","innerHTML","")
@@ -133,11 +106,9 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 	return dajax.json()
 
 @dajaxice_register
+@login_required
 def fileInfo(request,tokenID,id,cloudItem):
 	""" Get the information of a file """
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 
@@ -146,14 +117,9 @@ def fileInfo(request,tokenID,id,cloudItem):
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
-		platform = tknObj.serviceType
 
-		if platform == "google":
-			ga = GoogleAnalyzer(tknObj)
-			parsedTable = ga.fileInfo(id)
-		elif platform == "dropbox":
-			d = DropboxAnalyzer(tknObj)
-			parsedTable = d.fileInfo(id)
+		mc = MetadataController(tknObj)
+		parsedTable = mc.fileInfo(id)
 
 		dajax.assign("#fileRevisionContainer","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")
@@ -163,27 +129,19 @@ def fileInfo(request,tokenID,id,cloudItem):
 	return dajax.json()
 
 @dajaxice_register
+@login_required
 def fileRevision(request,fId,tokenID,cloudItem):
 
-	if not isAuthenticated(request):
-		return None
-
 	dajax = Dajax()
-
 
 	try:
 		parsedTable = None
 		t = parseAjaxParam(tokenID)
 		ciChk = checkCloudItem(cloudItem,request.user.id)
 		tknObj = checkAccessToken(t,ciChk)
-		platform = tknObj.serviceType
 
-		if platform == "google":
-			ga = GoogleAnalyzer(tknObj)
-			parsedTable = ga.fileHistory(fId)
-		elif platform == "dropbox":
-			d = DropboxAnalyzer(tknObj)
-			parsedTable = d.fileHistory(fId)
+		mc = MetadataController(tknObj)
+		parsedTable = mc.fileHistory(fId)
 
 		dajax.assign("#revisionHistory","innerHTML",parsedTable)
 		dajax.assign("#searchError","innerHTML","")

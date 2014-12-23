@@ -28,6 +28,10 @@ var Dajaxice = {
 
     compareTwoFile: function(callback_function, argv, custom_settings){
         return Dajaxice.call('comparator.compareTwoFile', 'POST', callback_function, argv, custom_settings);
+    },
+
+    compareFromReport: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('comparator.compareFromReport', 'POST', callback_function, argv, custom_settings);
     }
 
 

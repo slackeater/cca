@@ -1,7 +1,11 @@
 from django.conf import settings
 from downloader.models import FileDownload,FileHistory, Download, FileMetadata
+from clouditem.models import CloudItem
 import os,subprocess,magic,sys,shutil,Image,base64
 from django.utils.dateformat import format
+from webapp.thumbnailer import Thubmnailer
+from webapp import constConfig
+from webapp.func import openReport
 
 #import crypto for hash
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -12,210 +16,146 @@ if not cryptoPath in sys.path:
 
 import crypto
 
-ALLOWED_MIME = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
+class Comparator(object):
+	""" This class is used to perform file comparison """
 
-def compareTwo(revOneID,revTwoID,diffFile,downloadFolder,token):
-	
-	finalDiffName = None
+	def __init__(self,token):
+		self.t = token
+		self.allowedMime = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
 
-	#diff file full path
-	diffPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",diffFile.alternateName)
+	def compareTwo(self,revOneID,revTwoID,altName):
+		""" Compare two revision of the same file and check for diff """
+			
+		finalDiffName = None
+		downloadFolder = Download.objects.get(tokenID=self.t,threadStatus = constConfig.THREAD_TS).folder
+		diffFile = FileDownload.objects.get(tokenID=self.t,alternateName=altName)
 
-	#get the two file
-	revOnePath = os.path.join(diffPath,diffFile.fileName+"_"+revOneID)
-	revTwoPath = os.path.join(diffPath,diffFile.fileName+"_"+revTwoID)
+		#diff file full path
+		diffPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",diffFile.alternateName)
 
-	#check if dropbox that one of the file is not the original
-	if token.serviceType == "dropbox":
-		#try to get the revision from the filedownload table
-		if diffFile.alternateName == revOneID:
-			assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",diffFile.fileName+"_"+diffFile.alternateName)
-			#overwrite revOnePath only if the path exists in the files folder, otherwise is in the deleted folder
-			if os.path.isfile(assumedPath):
-				revOnePath = assumedPath
+		#get the two file
+		nameOne = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+revOneID).hexdigest()
+		nameTwo = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+revTwoID).hexdigest()
+		revOnePath = os.path.join(diffPath,nameOne+"_"+revOneID)
+		revTwoPath = os.path.join(diffPath,nameTwo+"_"+revTwoID)
 
-		elif diffFile.alternateName == revTwoID:
-			assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",diffFile.fileName+"_"+diffFile.alternateName)
-			if os.path.isfile(assumedPath):
-				revTwoPath = assumedPath
+		#check if dropbox that one of the file is not the original
+		if self.t.serviceType == constConfig.CSP_DROPBOX:
+			#try to get the revision from the filedownload table
+			if diffFile.alternateName == revOneID:
+				assumeNameOne = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+diffFile.alternateName).hexdigest()
+				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",assumeNameOne+"_"+diffFile.alternateName)
+				#overwrite revOnePath only if the path exists in the files folder, otherwise is in the deleted folder
+				if os.path.isfile(assumedPath):
+					revOnePath = assumedPath
 
-	#check that the two path actually exists. This because the actual file in dropbox (rightmost in the file history time line) does not exists if it has been deleted. So we will have an entry in the timeline for a version of a file that does not exist.
-	if not os.path.isfile(revOnePath) or not os.path.isfile(revTwoPath):
-		raise Exception("One of the two file does not exist. (Is this a deleted file on Dropbox?)")	
+			elif diffFile.alternateName == revTwoID:
+				assumeNameTwo = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+diffFile.alternateName).hexdigest()
+				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",assumeNameTwo+"_"+diffFile.alternateName)
+				if os.path.isfile(assumedPath):
+					revTwoPath = assumedPath
 
-	#check allowed mime
-	mime = magic.Magic(mime=True)
-	mimeOne = mime.from_file(revOnePath)
-	mimeTwo = mime.from_file(revTwoPath)
+		#check that the two path actually exists. This because the actual file in dropbox (rightmost in the file history time line) does not exists if it has been deleted. So we will have an entry in the timeline for a version of a file that does not exist.
+		print revOnePath
+		print revTwoPath
+		if not os.path.isfile(revOnePath) or not os.path.isfile(revTwoPath):
+			raise Exception("One of the two file does not exist. (Is this a deleted file on Dropbox?)")	
 
-	if mimeOne not in ALLOWED_MIME or mimeTwo not in ALLOWED_MIME:
-		raise Exception("Only PDF and images are supported")
+		#check allowed mime
+		mime = magic.Magic(mime=True)
+		mimeOne = mime.from_file(revOnePath)
+		mimeTwo = mime.from_file(revTwoPath)
 
-	data = None
-	mimeList = list()
+		if mimeOne not in self.allowedMime or mimeTwo not in self.allowedMime:
+			raise Exception("Only PDF and images are supported")
 
-	if mimeOne == mimeTwo == "application/pdf":
-		resultDiffName = "diff_"+str(token.id)+"_"+revOneID+"_"+revTwoID+".pdf"
-		diffName = pdfDiff(revOnePath,revTwoPath,diffPath,resultDiffName)
-		data = {"diffName":diffName}
-		mimeList.append("application/pdf")
-	elif mimeOne and mimeTwo in ("image/jpeg","image/png","image/gif","image/bmp"):
-		hash1,hash2 = imgDiff(revOnePath,revTwoPath)
-		mimeList.append(mime.from_file(revOnePath))
-		mimeList.append(mime.from_file(revTwoPath))
+		data = None
+		mimeList = list()
 
-		#build data dictionary
-		data = {'hash1': hash1,'hash2': hash2, 'file1':diffFile.fileName+"_"+revOneID,'file2':diffFile.fileName+"_"+revTwoID} 
+		if mimeOne == mimeTwo == "application/pdf":
+			resultDiffName = "diff_"+str(self.t.id)+"_"+revOneID+"_"+revTwoID+".pdf"
+			diffName = self.pdfDiff(revOnePath,revTwoPath,diffPath,resultDiffName)
+			data = {"diffName":diffName}
+			mimeList.append("application/pdf")
+		elif mimeOne and mimeTwo in ("image/jpeg","image/png","image/gif","image/bmp"):
+			hash1,hash2 = self.imgDiff(revOnePath,revTwoPath)
+			mimeList.append(mime.from_file(revOnePath))
+			mimeList.append(mime.from_file(revTwoPath))
 
-	return {"mime": mimeList, "data": data}
+			#build data dictionary
+			data = {'hash1': hash1,'hash2': hash2, 'file1':diffFile.fileName+"_"+revOneID,'file2':diffFile.fileName+"_"+revTwoID} 
 
-def pdfDiff(pdfOne,pdfTwo,diffPath,pdfName):
+		return {"filename": diffFile.fileName,"mime": mimeList, "data": data}
 
-	resultDiffPath = os.path.join(settings.DIFF_DIR,pdfName)
 
-	#check if a diff already exists for this file
-	if os.path.isfile(resultDiffPath):
+	def pdfDiff(self,pdfOne,pdfTwo,diffPath,pdfName):
+		""" Perform the diff of two PDF """
+
+		resultDiffPath = os.path.join(settings.DIFF_DIR,pdfName)
+
+		#check if a diff already exists for this file
+		if os.path.isfile(resultDiffPath):
+			return pdfName
+
+		#generate diff
+		try:
+			subprocess.check_output(["diff-pdf","--output-diff="+resultDiffPath+"",pdfOne,pdfTwo],stderr=subprocess.STDOUT)
+		except subprocess.CalledProcessError as e:
+			#necessary because diff-pdf always exits with 1, because of the message "No protocol specified" caused by the absence of the server X, even though the diff is generated
+			if e.output.strip() != "No protocol specified":
+				raise Exception("Error computing diff of PDF")
+
 		return pdfName
 
-	#generate diff
-	try:
-		subprocess.check_output(["diff-pdf","--output-diff="+resultDiffPath+"",pdfOne,pdfTwo],stderr=subprocess.STDOUT)
-	except subprocess.CalledProcessError as e:
-		#necessary because diff-pdf always exits with 1, because of the message "No protocol specified" caused by the absence of the server X, even though the diff is generated
-		if e.output.strip() != "No protocol specified":
-			raise Exception("Error computing diff of PDF")
+	def imgDiff(self,imgOne,imgTwo):
+		""" Perform the diff of two images """
 
-	return pdfName
+		thumb = Thubmnailer()
+		hashes = list()
 
-def imgDiff(imgOne,imgTwo):
-
-	#compute an hash of each image over the content
-	hash1 = crypto.sha256File(imgOne).hexdigest()
-	hash2 = crypto.sha256File(imgTwo).hexdigest()
-
-	img1DiffPath = os.path.join(settings.DIFF_DIR,hash1+".thumbnail")
-	img2DiffPath = os.path.join(settings.DIFF_DIR,hash2+".thumbnail")
-	
-	#copy images into cache folder
-	cacheImg(imgOne,img1DiffPath)
-	cacheImg(imgTwo,img2DiffPath)
-
-	return hash1,hash2
-
-
-def cacheImg(imgSrc,imgDest):
-	if not os.path.isfile(imgDest):
-		shutil.copy2(imgSrc,imgDest)	
-
-		#resize images
-		im = Image.open(imgDest)
-		startWidth,startHeight = im.size
-		newWidth,newHeight = computeThumbnailSize(startWidth, startHeight)
-		im.thumbnail((newWidth,newHeight),Image.ANTIALIAS)
-		im.save(imgDest,"PNG")
-
-def computeThumbnailSize(startWidth,startHeight):
-	maxHeight = float(800)
-	maxWidth = float(600)
-	ratio = float(0)
-	newHeight = 0
-
-	if startWidth > maxWidth:
-		newWidth = (startWidth-(startWidth-maxWidth))
-		ratio = float(newWidth/startWidth)
-	else:
-		newWidth = startWidth
-
-	if ratio != 0:
-		newHeight = startHeight-(startHeight*ratio)
-	elif ratio == 0 and startHeight > maxHeight:
-		newHeight = (startHeight-(startHeight-maxHeight))
-
-	return int(newWidth),int(newHeight)
-
-
-def verifyFileDownload(token,resType):
-	""" Verify the files of a token """
-
-	hList = list()
-	downloadFolder = Download.objects.get(tokenID=token).folder
-	
-	for f in FileDownload.objects.filter(tokenID=token):
-		hashName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
-		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",hashName+"_"+f.alternateName)
-		print path
-		isFile = os.path.isfile(path)
-		print isFile
-		if isFile:
-			print f	
-			#first compute the hash
-			h = crypto.sha256File(path)
-
-			#now verify the hash
-			sourceSignature = f.fileHash
-
-			verification = crypto.verifyRSAsignatureSHA256(h,sourceSignature,settings.PUB_KEY)
+		#compute an hash of each image over the content
+		for img in [imgOne,imgTwo]:
+			hashImg = crypto.sha256File(img).hexdigest()
+			imgDiffPath = os.path.join(settings.DIFF_DIR,hashImg+".thumbnail")
 			
-			#history only if specified
-			if resType == 3:
-				historyVerification = verifyHistory(f,downloadFolder)
-			else:
-				historyVerification = None
+			#copy images into cache folder
+			thumb.cacheImg(img,imgDiffPath)
 
-			hList.append({'fID': f.id,'fName':f.fileName,'fSig':crypto.sha256(f.fileHash).hexdigest(),'verificationResult':verification,'history':historyVerification})
-		elif not isFile:
-				hList.append({'fID': f.id,'fName':f.fileName,'fSig':"File does not exists on disk",'verificationResult':-1,'history': list()})
+			hashes.append(hashImg)
 
+		return hashes[0],hashes[1]
 
-	return hList
+	def compareFromReport(self):
+		""" Compare the file found in the report with the ones downloaded """
 
-def verifyMetadata(token):
-	""" Verifiy the file metadata """
+		res = list()
 
-	hList = list()
-	meta = FileMetadata.objects.get(tokenID=token)
+		#get the report
+		report = openReport(self.t.cloudItem)
 
-	metaFile = meta.metadata
-	mTime = format(meta.metaTime,"U")
+		if report is not None:
+			cloudFiles = report[2]['objects']
+			
+			if cloudFiles is not None:
+				
+				for cloud in cloudFiles:
+					#check if the CSP of the token is in the report
+					if self.t.serviceType in cloud['cloudService'].lower():
+
+						#get the files of the token
+						files = FileDownload.objects.filter(tokenID=self.t)
+						downFolder = Download.objects.get(tokenID=self.t).folder
+						basePath = os.path.join(settings.DOWNLOAD_DIR,downFolder,"files")
+
+						for f in files:
+							fileName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
+							fullPath = os.path.join(basePath,fileName+"_"+f.alternateName)
+							if os.path.isfile(fullPath):
+								fileDigest = crypto.sha256File(fullPath).hexdigest()
+
+								#now check if in the report we have the same file
+								for cloudFile in cloud['files']:
 	
-	#compute hash
-	h = crypto.sha256(metaFile+crypto.HASH_SEPARATOR+mTime)
-
-	#verify
-	verification = crypto.verifyRSAsignatureSHA256(h,meta.metadataHash,settings.PUB_KEY)
-
-	sig = crypto.rsaSignatureSHA256(metaFile+crypto.HASH_SEPARATOR+mTime,settings.PRIV_KEY)
-
-	#metadata hash
-	mSig = crypto.sha256(meta.metadataHash).hexdigest()
-
-	return ({'metaID': meta.id,'verificationResult': verification,'mSig':mSig})
-
-def verifyHistory(fileDownload, downloadFolder):
-	""" Verify file history """
-
-	hList = list()
-	
-	for fh in FileHistory.objects.filter(fileDownloadID=fileDownload):
-		#verification of revision metadata
-		revMeta = fh.revisionMetadata
-		revDownTime = format(fh.downloadTime,"U")
-		h = crypto.sha256(revMeta+crypto.HASH_SEPARATOR+revDownTime)
-		verification = crypto.verifyRSAsignatureSHA256(h,fh.revisionMetadataHash,settings.PUB_KEY)
-
-		hashName = crypto.sha256(fileDownload.fileName+crypto.HASH_SEPARATOR+fh.revision).hexdigest()
-		path = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",fileDownload.alternateName,hashName+"_"+fh.revision)
-		isPath = os.path.isfile(path)
-
-		if isPath:
-			#verification of file history 
-			fHash = crypto.sha256File(path)
-			verificationFile = crypto.verifyRSAsignatureSHA256(fHash,fh.fileRevisionHash,settings.PUB_KEY)
-
-			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':verificationFile})
-		else:
-			hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':"File does not exists on disk"})
-
-	return hList
-
-	
+									if cloudFile['hash'] == fileDigest:
+										print f.alternateName
+										print fileDigest

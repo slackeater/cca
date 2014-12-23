@@ -15,6 +15,7 @@ if not cryptoPath in sys.path:
 import crypto
 
 class Verifier():
+	""" This class represent the verification process where we store and sign the evidence with a digital timestampgin service """
 
 	def __init__(self,download):
 		self.download = download
@@ -24,7 +25,8 @@ class Verifier():
 		self._pwd = None
 
 	def verifyCredentials(self,uname,pwd):
-		
+		""" Verify the credentials by loggin in to the TSA (TimeStamp Authority) service """
+
 		session = requests.Session()
 		payload = {'j_username': uname,'j_password': pwd}
 		session.get("https://www.digistamp.com/account")
@@ -42,6 +44,7 @@ class Verifier():
 			raise Exception("Credentials for the timestamp authority are invalid")	
 
 	def createZIP(self,extension = None):
+		""" Create a ZIP file """
 
 		if extension == None:
 			ext = ".zip"
@@ -64,6 +67,8 @@ class Verifier():
 		return dstPath
 
 	def verificationProcess(self):
+		""" Start a predefined list of steps in order to sign the ZIP with the TSA """
+
 		zipVer = self.createZIPtoVerify()
 
 		createTsReq = self.createTimestampRequest()
@@ -82,7 +87,7 @@ class Verifier():
 			raise Exception("A problem occured: zip cannot be created, timestamp request cannot be created or verification of timestamps failed")
 
 	def createZIPtoVerify(self):
-		""" Verify a ZIP by computing its """
+		""" Verify a ZIP by computing its signature """
 		
 		#the download has completed and there is not another ZIP verified
 		if self.download.threadStatus == constConfig.THREAD_DOWN_FH and self.download.verificationZIP == False:
@@ -100,7 +105,8 @@ class Verifier():
 			raise Exception("Download not complete or ZIP already exists.")
 
 	def createTimestampRequest(self):
-		
+		""" Create a timestamp request """
+
 		dstRequest = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".tsrequest")
 
 		try:
@@ -117,6 +123,7 @@ class Verifier():
 			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))
 
 	def timestampRequest(self):
+		""" Send the previously created timestamp request to the TSA """
 
 		self.tsResponse = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".p7s")
 	
@@ -136,6 +143,8 @@ class Verifier():
 			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))
 
 	def verifyTimestamp(self):
+		""" Verify wether the created timestamp is correct or not """
+
 		try:
 			cmdline = '%s %s' % ("openssl ts","-verify -queryfile {} -in {} -CAfile {}".format(self.tsRequest,self.tsResponse,os.path.join(settings.VERIFIED_ZIP,"digistamp.pem")))
 			subprocess.check_output(shlex.split(cmdline))

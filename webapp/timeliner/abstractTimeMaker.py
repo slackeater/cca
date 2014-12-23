@@ -20,3 +20,4 @@ class AbstractTimeMaker(object):
 	@abc.abstractmethod
 	def filehistoryTimeLine(self,alternateName):
 		return
+

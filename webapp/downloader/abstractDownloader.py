@@ -3,6 +3,8 @@ from django.conf import settings
 from verifier import Verifier
 
 class AbstractDownloader(object):
+	""" An abstract class that represent a download """
+
 	__metaclass__ = abc.ABCMeta
 	
 	def __init__(self,download,uname,pwd):
@@ -24,36 +26,44 @@ class AbstractDownloader(object):
 		self.v = Verifier(self.d)
 	
 	def verfiyCredentials(self):
+		""" Verify the credentials of the timestamp service """
 		status = self.v.verifyCredentials(self.uname,self.pwd)
 		self.d.threadStatus = status
 		self.d.save()
 
 	def verificationProcess(self):
+		""" Start the verfification process where we generate a timestamp """
 		status = self.v.verificationProcess()
 		self.d.threadStatus = status
 		self.d.save()
 
 	@abc.abstractmethod
 	def downloadFileHistory(self):
+		""" Wrapper for the download of the files and history of the files """
 		return
 
 	@abc.abstractmethod
 	def createService(self):
+		""" Create the service of the cloud provider with its API """
 		return
 
 	@abc.abstractmethod
 	def downloadMetaData(self):
+		""" Download the metadata of the account """
 		return
 
 	@abc.abstractmethod
 	def downloadFiles(self):
+		""" Download the files of the account """
 		return
 
 	@abc.abstractmethod
 	def downloadHistory(self):
+		""" Download the history of the files """
 		return
 
 	@abc.abstractmethod
 	def computeDownload(self):
+		""" Compute the download size """
 		return
 

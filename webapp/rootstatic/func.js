@@ -1,6 +1,9 @@
 /* ==== Analysis ==== */
 
 function startMetaAnalysis(){
+	$("#searchContainer").hide()
+	$("#statTab").parent().addClass("active")
+	$("#searchTab").parent().removeClass("active")
 	$("#wait1").fadeIn("slow")
 	$("#metaAnalysisError").fadeOut("slow")
 	Dajaxice.cloudservice.metadataAnalysis(analysisCallBack,{'tokenID': tVal(),'cloudItem': iVal()})
@@ -27,14 +30,6 @@ function resCallBack(data){
 	$("#searchRes").fadeIn("slow");
 	$("#searchError").fadeIn("slow");
 }
-
-function startFilterSearch(start){
-	$("#wait2").fadeIn("slow");
-	$("#searchError").fadeOut("slow");
-	Dajaxice.cloudservice.searchMetaData(resCallBack, {'cloudItem': iVal(),'tokenID': tVal(), 'form': $("#emailForm").serialize(true),'start':start,'formType':'2'})
-
-}
-
 
 function showFile(id){
 	$("#searchError").fadeOut("slow");

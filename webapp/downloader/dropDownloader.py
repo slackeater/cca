@@ -167,7 +167,7 @@ class DropboxDownloader(AbstractDownloader):
 							#get revision
 							with self.service.get_file(f['path'],revID) as revF:
 								hashName = crypto.sha256(bName+crypto.HASH_SEPARATOR+revID).hexdigest()
-								fullPath = os.path.join(revPath,bName+"_"+revID)
+								fullPath = os.path.join(revPath,hashName+"_"+revID)
 								outF = open(fullPath,"wb+")
 								outF.write(revF.read())
 								outF.close()

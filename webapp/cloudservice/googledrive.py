@@ -113,7 +113,6 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		endDateTs = float(getTimestamp(endDate))
 
 		for i in self.metadata:
-
 			creationTs = strict_rfc3339.rfc3339_to_timestamp(i['createdDate'])
 			
 			#check temporal period

@@ -37,6 +37,7 @@ class DropboxTimeMaker(AbstractTimeMaker):
 		if not item['is_dir'] and not isHistory:
 			#check for history
 			fd = self.db.getFileDownload(self.t,altName)
+
 			fh = self.db.getHistoryForFile(fd)
 
 			if len(fh) > 0:

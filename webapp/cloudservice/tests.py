@@ -73,17 +73,17 @@ class CloudserviceTestCase(TestCase):
 				url = "/dajaxice/cloudservice.searchMetaData/"
 
 				# deleted
-				payload = {'tokenID': a.id, "cloudItem": c.id,"form":"resType=0&mimeType=1090"}
+				payload = {'start':0,'tokenID': a.id, "cloudItem": c.id,"form":"email=&filename=&givenname=&formType=3&resType=2&mimeType=1090&startDate=31%2F12%2F2012&endDate=31%2F12%2F2014"}
 				data = {"argv": json.dumps(payload)}
 				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 				self.assertEquals(r.status_code,200)
-
+				print r
 				rDump = json.loads(r.content)
 				self.assertEqual(rDump[0]['id'],"#searchRes")
 				self.assertEqual(rDump[1]['val'], "")
 
 				#all
-				payload = {'tokenID': a.id, "cloudItem": c.id,"form":"resType=2&mimeType=1090"}
+				payload = {'start':0,'tokenID': a.id, "cloudItem": c.id,"form":"email=project2@osgate.org&filename=&givenname=&formType=0resType=2&mimeType=1090&startDate=31%2F12%2F2012&endDate=31%2F12%2F2014"}
 				data = {"argv": json.dumps(payload)}
 				r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 				self.assertEquals(r.status_code,200)

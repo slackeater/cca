@@ -7,7 +7,7 @@ from downloader.models import FileDownload, Download
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags,strip_entities
 import time,sys,traceback
-from mapsGenerator import MapsFinder
+from webapp.mapsController import MapsController
 
 @dajaxice_register
 def exifMap(request,cloudItem,tokenID):
@@ -22,8 +22,8 @@ def exifMap(request,cloudItem,tokenID):
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 	
-		m = MapsFinder(tkn)
-		r = m.findExif()
+		mc = MapsController(tkn)
+		r = mc.findExif()
 		
 		table = render_to_string("dashboard/maps/exifMap.html",{"exif":r})
 
@@ -49,8 +49,8 @@ def mailRelation(request,cloudItem,tokenID):
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 
-		m = MapsFinder(tkn)
-		res = m.mailRelator()
+		mc = MapsController(tkn)
+		res = mc.mailFinder()
 	
 		table = render_to_string("dashboard/maps/mailRelation.html",{'relation':res})
 

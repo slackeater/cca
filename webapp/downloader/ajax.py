@@ -16,28 +16,29 @@ from webapp import constConfig
 from webapp.exceptionFormatter import formatException 
 import math
 from webapp.databaseInterface import DbInterface
+from django.contrib.auth.decorators import login_required
 
 @dajaxice_register
+@login_required
 def submitDropboxCode(request, code, ci):
 	""" Submit the dropbox authorization code """
 	return submitCode(request, code, ci, "dropbox","#dStat")
 
 @dajaxice_register
+@login_required
 def submitGoogleCode(request, code, ci):
 	""" Submit the dropbox authorization code """
 	return submitCode(request, code, ci, "google","#gStat")
 
 @dajaxice_register
+@login_required
 def checkDownload(request,t,i):
 
-	if not isAuthenticated(request):
-		return None
-
-	tokenID = parseAjaxParam(t)
 
 	dajax = Dajax()
 
 	try:
+		tokenID = parseAjaxParam(t)
 		cloudItem  = checkCloudItem(i,request.user.id)
 		tokenQuery = checkAccessToken(t,cloudItem)
 
@@ -76,14 +77,13 @@ def checkDownload(request,t,i):
 	return dajax.json()
 
 @dajaxice_register
+@login_required
 def showTokens(request,ci):
 	""" Show the tokens """
 
-	if not isAuthenticated(request):
-		return None
+	dajax = Dajax()
 
 	try:
-		dajax = Dajax()
 		data = dict()
 		cloudItemObj = checkCloudItem(ci,request.user.id)
 		data['tknTable'] = DbInterface.getAccessTokenList(cloudItemObj)
@@ -101,15 +101,13 @@ def showTokens(request,ci):
 def submitCode(request, code, ci, platform, eID):
 	""" Get the access code from the code """
 
-	if not isAuthenticated(request):
-		return None
-
-	cloudItemID = parseAjaxParam(ci)
 
 	dajax = Dajax()
-	code = strip_tags(code)
 
 	try:
+		cloudItemID = parseAjaxParam(ci)
+		code = strip_tags(code)
+
 		if code is None:
 			raise Exception("Invalid code")
 

@@ -5,31 +5,34 @@ from webapp.func import *
 from django.template.loader import render_to_string
 import droptimemaker,googletimemake
 from cloudservice.forms import MetaSearch
-from googletimemake import GoogleTimeMaker
-from droptimemaker import DropboxTimeMaker
+from webapp.timelinerController import TimelinerController
 from webapp.exceptionFormatter import formatException
 from django.contrib.auth.decorators import login_required
-from downloader.models import FileHistory
 
 @dajaxice_register
 @login_required
 def formTimeliner(request,cloudItem,tokenID,form):
 
 	dajax = Dajax()
-	data = None
 
 	try:
 		t = parseAjaxParam(tokenID)
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
 		f = MetaSearch(deserialize_form(form))
+
 		if f.is_valid():
-			if tkn.serviceType == "google":
-				ga = GoogleTimeMaker(tkn)
-				data = ga.formTimeLine(int(f.cleaned_data['formType'][0]),f.cleaned_data['email'],f.cleaned_data['filename'],f.cleaned_data['givenname'],int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
-			elif tkn.serviceType == "dropbox":
-				d = DropboxTimeMaker(tkn)
-				data = d.formTimeLine(int(f.cleaned_data['formType'][0]),f.cleaned_data['email'],f.cleaned_data['filename'],f.cleaned_data['givenname'],int(f.cleaned_data['resType'][0]),f.cleaned_data['mimeType'],f.cleaned_data['startDate'],f.cleaned_data['endDate'])
+			tc = TimelinerController(tkn) 
+			data = tc.formTimeLine(
+					int(f.cleaned_data['formType'][0]),
+					f.cleaned_data['email'],
+					f.cleaned_data['filename'],
+					f.cleaned_data['givenname'],
+					int(f.cleaned_data['resType'][0]),
+					f.cleaned_data['mimeType'],
+					f.cleaned_data['startDate'],
+					f.cleaned_data['endDate']
+			)
 			
 			if len(data) > 0:
 				if len(data) > 500:
@@ -58,19 +61,13 @@ def formTimeliner(request,cloudItem,tokenID,form):
 def fileHistoryTimeliner(request,cloudItem,tokenID,altName):
 
 	dajax = Dajax()
-	data = None
 
 	try:
 		t = parseAjaxParam(tokenID)
 		ci = checkCloudItem(cloudItem,request.user.id)
 		tkn = checkAccessToken(t,ci)
-
-		if tkn.serviceType == "google":
-			ga = GoogleTimeMaker(tkn)
-			data = ga.filehistoryTimeLine(altName)
-		elif tkn.serviceType == "dropbox":
-			d = DropboxTimeMaker(tkn)
-			data = d.filehistoryTimeLine(altName)
+		tc = TimelinerController(tkn)
+		data = tc.fileHistoryTimeLine(altName)
 
 		#check that we have at least one item
 		if len(data) > 0:
