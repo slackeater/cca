@@ -1,0 +1,17 @@
+<table class="table table-bordered">
+	<tr><th colspan=3>File Name</th></tr>
+	{% for f in files %}
+	<tr><td colspan=3>{{f.file.fileName}}</td></tr>
+		{% for cf in f.comparableFiles %}
+			<tr class="alert alert-info">
+				<td>
+					{{cf.csp}}
+				</td>
+				<td>
+				{{cf.files.path}}
+				</td>
+				<td>{{cf.files.hash}}</td>
+			</tr>
+		{% endfor %}
+	{% endfor %}
+</table>

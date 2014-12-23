@@ -137,25 +137,31 @@ class Comparator(object):
 			cloudFiles = report[2]['objects']
 			
 			if cloudFiles is not None:
-				
-				for cloud in cloudFiles:
-					#check if the CSP of the token is in the report
-					if self.t.serviceType in cloud['cloudService'].lower():
+			
+				#compute the hash of the downloaded files:
+				#get the files of the token
+				files = FileDownload.objects.filter(tokenID=self.t)
+				downFolder = Download.objects.get(tokenID=self.t).folder
 
-						#get the files of the token
-						files = FileDownload.objects.filter(tokenID=self.t)
-						downFolder = Download.objects.get(tokenID=self.t).folder
-						basePath = os.path.join(settings.DOWNLOAD_DIR,downFolder,"files")
+				for f in files:
+					localRes = list()
+					fileName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
+					basePath = os.path.join(settings.DOWNLOAD_DIR,downFolder,"files")
+					fullPath = os.path.join(basePath,fileName+"_"+f.alternateName)
 
-						for f in files:
-							fileName = crypto.sha256(f.fileName+crypto.HASH_SEPARATOR+f.alternateName).hexdigest()
-							fullPath = os.path.join(basePath,fileName+"_"+f.alternateName)
-							if os.path.isfile(fullPath):
-								fileDigest = crypto.sha256File(fullPath).hexdigest()
+					if os.path.isfile(fullPath):
+
+						fileDigest = crypto.sha256File(fullPath).hexdigest()
+						
+						for cloud in cloudFiles:
+							#check if the CSP of the token is in the report
+							if self.t.serviceType in cloud['cloudService'].lower():
 
 								#now check if in the report we have the same file
 								for cloudFile in cloud['files']:
-	
+									
 									if cloudFile['hash'] == fileDigest:
-										print f.alternateName
-										print fileDigest
+										localRes.append({'csp':cloud['cloudService'],'files':cloudFile})				
+						res.append({'file':f,'comparableFiles':localRes})
+
+		return res

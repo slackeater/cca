@@ -90,7 +90,9 @@ def compareFromReport(request,cloudItem,tokenID):
 		tkn = checkAccessToken(t,ci)
 		
 		c = Comparator(tkn)
-		table = c.compareFromReport()
+		res = c.compareFromReport()
+
+		table = render_to_string("dashboard/comparator/comparatorCompare.html",{'files':res})
 
 		dajax.assign("#comparator","innerHTML",table)
 		dajax.assign("#comparatorError","innerHTML","")
