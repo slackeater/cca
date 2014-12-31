@@ -9,12 +9,11 @@ from django.template.loader import render_to_string
 from clouditem.models import CloudItem
 from django.contrib.auth.models import User
 from django.utils.dateformat import format
+from django.contrib.auth.decorators import login_required
 
 @dajaxice_register
+@login_required
 def showReport(request,up,ci):
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 

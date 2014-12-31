@@ -11,12 +11,12 @@ from webapp import constConfig
 
 @shared_task
 def download(downloadDB,uname,pwd):
-
+	""" This function is used to start an asynchrounous download with celery """
 	downloader = None
 	
-	if downloadDB.tokenID.serviceType == "google":
+	if downloadDB.tokenID.serviceType == constConfig.CSP_GOOGLE:
 		downloader = GoogleDownloader(downloadDB,uname,pwd)
-	elif downloadDB.tokenID.serviceType == "dropbox":
+	elif downloadDB.tokenID.serviceType == constConfig.CSP_GOOGLE:
 		downloader = DropboxDownloader(downloadDB,uname,pwd)
 
 	if downloader is not None:

@@ -1,4 +1,4 @@
-<div id="visualization" style="display: none"></div>
+<div id="visualization"></div>
 
 <script type="text/javascript">
 
@@ -31,19 +31,12 @@ function tip(elem,ev,altName){
 	var items = new vis.DataSet([
 		{% for ev in events %}
 		{
-			content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{%  if ev.isDir == "True" %}<img src='/static/icons/folder.png' />{% endif %}{{ev.title}}</a>", 
+content: "<a href='javascript:void(0)' id='{{forloop.counter}}'>{{ev.site}}</a>{% if ev.type == 'history' %}{% if ev.trans != None %}<br />{{ev.trans}}{% endif %}{%elif ev.type == 'cookie'%}<br/><img src='/static/icons/bug.png' />{% endif %}", 
 			start: new Date({{ev.time}})
-
-			{% if ev.trashed == "True" %}
-			,style: "background-color: darkgray"
-			{% endif %}
 		},
 		{% endfor %}
 	]);
 
 	var timeline = new vis.Timeline(container, items, options);
 
-	{% for ev in events %}
-	tip('#{{forloop.counter}}','{{ev.params}}','{{ev.altName}}')
-	{% endfor %}
 </script>

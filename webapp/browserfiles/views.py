@@ -8,57 +8,60 @@ from webapp.exceptionFormatter import formatException
 from django.contrib.auth.decorators import login_required
 from django import forms
 from webapp.exceptionFormatter import formatException
+from webapp import constConfig
 
+class ProfileSelectorForm(forms.Form):
 
-class HistoryTimeLineForm(forms.Form):
-
-	def __init__(self,choices, *args,**kwargs):
-		super(forms.Form,self).__init__(*args,**kwargs)
-
-		self.fields['choices'] = choices
-
-	startDateYear = date.today().year
-	
-	domainFilter = forms.CharField(label="Domain Filter",widget=forms.TextInput(attrs={'class':'form-control'}))
-
-	startDate = forms.DateField(initial="31/12/"+str(startDateYear-2),required=True,input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp1','class':'form-control'}))
-	endDate = forms.DateField(initial="31/12/"+str(startDateYear),required=True,input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp2','class':'form-control'}))
-
-
-
-@login_required
-def browserfiles(request,cloudItem):
-	
-	ci = checkCloudItem(cloudItem,request.user.id)
-	
-	report = openReport(ci)
-	browser = None
-	historyForm = None
-	error = None
-	
-	try:
+	def setChoices(self,report):
+		""" Set the choices for the profile of the browser """
 		if report is not None:
 			browser = report[1]['objects']
 
 			if browser is not None:
 				browserChoices = list()
-				i = 0
+	
 				#compute select list
 				for b in browser:
+					if "chrome" in b['name'].lower():
+						formString = constConfig.HISTORY_FORM_CHROME
+					elif "firefox" in b['name'].lower():
+						formString = constConfig.HISTORY_FORM_FF
+					elif "thunderbird" in b['name'].lower():
+						formString = constConfig.HISTORY_FORM_TH
+
 					for p in b['profiles']:
-						browserChoices.append((i,b['name']+" - "+p['profileName']))
-					i = i+1
+						formValue = str(formString)+"_"+p['profileName']	
+						browserChoices.append((formValue,b['name']+" - "+p['profileName']))
+			
+				ch = forms.ChoiceField(label="Profile",widget=forms.Select(attrs={'class':'form-control'}),choices=browserChoices)
+				self.fields['choices'] = ch
 
-				#this field can be dinamyc so we build it here
-				ch = forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}),choices=browserChoices)
 
-				historyForm = HistoryTimeLineForm(ch)
-		else:
-			error = "No report found for this cloud item"
+
+class HistoryTimeLineForm(forms.Form):
+
+	startDateYear = date.today().year
+	
+	domainFilter = forms.CharField(label="Domain Filter",required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
+
+	startDate = forms.DateField(initial="31/12/"+str(startDateYear-2),input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp1','class':'form-control'}))
+	endDate = forms.DateField(initial="31/12/"+str(startDateYear),input_formats=['%d/%m/%Y'],widget=forms.DateInput(format='%d/%m/%Y',attrs={'id':'dp2','class':'form-control'}))
+
+@login_required
+def browserfiles(request,cloudItem):
+	
+	browser = None
+	historyForm = None
+	error = None
+
+	try:
+		ci = checkCloudItem(cloudItem,request.user.id)
+		report = openReport(ci)
+		profileForm = ProfileSelectorForm()
+		profileForm.setChoices(report)
+		historyForm = HistoryTimeLineForm()
 	except Exception as e:
 		error = formatException(e)
-		
 
-	return render_to_response("clouditem/browserHome.html", {'browser':browser,'form':historyForm,'objID':ci.id,'error':error}, context_instance=RequestContext(request))
-
+	return render_to_response("clouditem/browserHome.html", {'browser':browser,'form':historyForm,'profileForm': profileForm,'objID':ci.id,'error':error}, context_instance=RequestContext(request))
 

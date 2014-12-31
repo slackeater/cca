@@ -10,6 +10,8 @@ from django.contrib.auth.models import User
 from django import forms
 import json,base64
 from tasks import download
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 
@@ -17,94 +19,57 @@ class TSCredentialsForm(forms.Form):
 	uname = forms.CharField(max_length=10,label="Account",required=True,widget=forms.TextInput(attrs={'class':'form-control'}))
 	pwd = forms.CharField(max_length=20,label="Password",required=True,widget=forms.PasswordInput(attrs={'class':'form-control'}))
 
-def showTokenDash(request,cloudItem):
-	""" Displays the dashboard and manage the menu choices """
-	data = {}
-	
-	if isAuthenticated(request):
-		ci = checkCloudItem(cloudItem,request.user.id)
-		data['showToken'] = True
-		data['objID'] = ci.id
-		data['dropAuthURL'] = oauth.dropboxAuthorizeURL()
-		data['gdriveAuthURL'] = oauth.googleAuthorizeURL()
-		res = openReport(ci)
-		if res is not None:
-			data['browsers'] = res[1]["objects"]
-		else:
-			data['browsers'] = None
-
-		return render_to_response("dashboard/cloud.html", data, context_instance=RequestContext(request))
-	else:
-		return redirect("/login/")
-
-def showTokenSelect(request,cloudItem,tokenID):
-	""" Displays the dashboard and manage the menu choices """
-	data = {}
-	
-	if isAuthenticated(request):
-		ci = checkCloudItem(cloudItem,request.user.id)
-		tkn = checkAccessToken(tokenID,ci)
-		data['showToken'] = True
-		data['objID'] = ci.id
-		data['tokenID'] = tkn.id
-		data['acc'] = json.loads(base64.b64decode(tkn.userInfo))
-		return render_to_response("dashboard/tknDash.html", data, context_instance=RequestContext(request))
-	else:
-		return redirect("/login/")
-
-@csrf_protect
+@login_required
 def showDownloadDash(request,cloudItem,t):
 	""" Displays the dashboard of the download """
 
-	if isAuthenticated(request):
-		down = None
-		data = {}
+	data = {}
 
+	try:
 		ci = checkCloudItem(cloudItem,request.user.id)
 		at = checkAccessToken(t,ci)
+		data['showToken'] = True
+		data['credVerified'] = "Not started"
+		data['metaWait'] = "Not started"
+		data['downSize'] = "Not started"
+		data['fileWait'] = "Not started"
+		data['verificationWait'] = "Not started"
+		data['objID'] = ci.id
+		data['tokenID'] = at.id
+		data['form'] = TSCredentialsForm()
 
-		try:
-			data['showToken'] = True
-			data['credVerified'] = "Not started"
-			data['metaWait'] = "Not started"
-			data['downSize'] = "Not started"
-			data['fileWait'] = "Not started"
-			data['verificationWait'] = "Not started"
-			data['objID'] = ci.id
-			data['tokenID'] = at.id
-			data['form'] = TSCredentialsForm()
+		#button has been clicked
+		if request.method == "POST":
 
-			#button has been clicked
-			if request.method == "POST":
+			subForm = TSCredentialsForm(request.POST)
 
-				subForm = TSCredentialsForm(request.POST)
-
-				if subForm.is_valid():
-					down = Download.objects.get(tokenID=at)
-					down.threadStatus = constConfig.THREAD_CLICKED
-					down.save()
-					pwd = subForm.cleaned_data['pwd']
-					account = subForm.cleaned_data['uname']
-					download.delay(down,account,pwd)
-				else:
-					raise Exception("Invalid form")
-
-			#default check to start the periodically ajax function
-			try:
-				# check to start 
+			if subForm.is_valid():
 				down = Download.objects.get(tokenID=at)
-			except Download.DoesNotExist:
-				down = Download(threadStatus=constConfig.THREAD_NOTCLICKED,tokenID=at,folder=sessionName(t))
+				down.threadStatus = constConfig.THREAD_CLICKED
 				down.save()
+				pwd = subForm.cleaned_data['pwd']
+				account = subForm.cleaned_data['uname']
 
-			if down:
-				data['down'] = down
-				data['downStatus'] = down.threadStatus
-				data['downMessage'] = down.threadMessage
+				#start the celery asynchronous task
+				download.delay(down,account,pwd)
+			else:
+				raise Exception("Invalid form")
 
-		except Exception as e:
-			data['errors'] = e.message
-		
-		return render_to_response("dashboard/down.html", data, context_instance=RequestContext(request))
-	else:
-		return redirect("/login/")
+		#default check to start the periodically ajax function
+		try:
+			# check to start 
+			down = Download.objects.get(tokenID=at)
+		except Download.DoesNotExist:
+			#store a new download that has not been clicked yet
+			down = Download(threadStatus=constConfig.THREAD_NOTCLICKED,tokenID=at,folder=sessionName(t))
+			down.save()
+
+		if down:
+			data['down'] = down
+			data['downStatus'] = down.threadStatus
+			data['downMessage'] = down.threadMessage
+
+	except Exception as e:
+		data['errors'] = e.message
+	
+	return render_to_response("dashboard/down.html", data, context_instance=RequestContext(request))

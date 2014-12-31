@@ -11,7 +11,7 @@ del cryptoPath
 import crypto
 
 class Verifier(object):
-
+	""" This class is used to perform verification on file and metadata """
 
 	def __init__(self,token):
 		self.t = token

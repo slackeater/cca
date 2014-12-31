@@ -19,6 +19,8 @@ import crypto
 class Comparator(object):
 	""" This class is used to perform file comparison """
 
+	""" This class is used to perform file comparison """
+
 	def __init__(self,token):
 		self.t = token
 		self.allowedMime = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
@@ -56,8 +58,6 @@ class Comparator(object):
 					revTwoPath = assumedPath
 
 		#check that the two path actually exists. This because the actual file in dropbox (rightmost in the file history time line) does not exists if it has been deleted. So we will have an entry in the timeline for a version of a file that does not exist.
-		print revOnePath
-		print revTwoPath
 		if not os.path.isfile(revOnePath) or not os.path.isfile(revTwoPath):
 			raise Exception("One of the two file does not exist. (Is this a deleted file on Dropbox?)")	
 

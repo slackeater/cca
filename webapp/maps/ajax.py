@@ -8,13 +8,12 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags,strip_entities
 import time,sys,traceback
 from webapp.mapsController import MapsController
+from django.contrib.auth.decorators import login_required
 
 @dajaxice_register
+@login_required
 def exifMap(request,cloudItem,tokenID):
 	
-	if not isAuthenticated(request):
-		return None
-
 	dajax = Dajax()
 
 	try:
@@ -36,11 +35,8 @@ def exifMap(request,cloudItem,tokenID):
 	
 
 @dajaxice_register
+@login_required
 def mailRelation(request,cloudItem,tokenID):
-
-
-	if not isAuthenticated(request):
-		return None
 
 	dajax = Dajax()
 

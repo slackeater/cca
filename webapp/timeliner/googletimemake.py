@@ -11,6 +11,7 @@ from abstractTimeMaker import AbstractTimeMaker
 from cloudservice.googledrive import GoogleAnalyzer
 
 class GoogleTimeMaker(AbstractTimeMaker):
+	""" This class represent a Google time maker """
 
 	def __init__(self,token):
 		AbstractTimeMaker.__init__(self,token)

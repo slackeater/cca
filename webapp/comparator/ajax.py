@@ -17,7 +17,8 @@ from comparator.fileVerifier import Verifier
 @dajaxice_register
 @login_required
 def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
-	
+	""" Compare two file by using two revisions """
+
 	dajax = Dajax()
 
 	try:
@@ -42,6 +43,7 @@ def compareTwoFile(request,revOne,revTwo,altName,cloudItem,tokenID):
 @dajaxice_register
 @login_required
 def verifyFile(request,cloudItem,tokenID,form):
+	""" Verify file and metadata """
 
 	dajax = Dajax()
 
@@ -81,6 +83,7 @@ def verifyFile(request,cloudItem,tokenID,form):
 @dajaxice_register
 @login_required
 def compareFromReport(request,cloudItem,tokenID):
+	""" Compare files using the previously imported report """
 
 	dajax = Dajax()
 

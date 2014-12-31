@@ -4,6 +4,7 @@ from downloader.models import Download
 from webapp import constConfig
 
 class AbstractMaps():
+	""" This class is used to represent an abstract maps """
 
 	__metaclass__ = abc.ABCMeta
 

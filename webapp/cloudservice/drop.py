@@ -9,6 +9,7 @@ from dateutil import parser
 
 
 class DropboxAnalyzer(AbstractAnalyzer):
+	""" This class represent a Dropbox analyzer """
 
 	def __init__(self,token):
 		AbstractAnalyzer.__init__(self,token)

@@ -17,6 +17,7 @@ del cryptoPath
 import crypto
 
 class GoogleMapper(AbstractMaps):
+	""" This class represent a Google mapper """
 
 	def __init__(self,token):
 		AbstractMaps.__init__(self,token)

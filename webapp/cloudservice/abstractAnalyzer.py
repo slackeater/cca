@@ -3,6 +3,7 @@ from webapp.databaseInterface import DbInterface
 
 
 class AbstractAnalyzer():
+	""" This class represent an abstract analyzer """
 
 	__metaclass__ = abc.ABCMeta
 
@@ -13,16 +14,20 @@ class AbstractAnalyzer():
 
 	@abc.abstractmethod
 	def metadataAnalysis(self):
+		""" Display the stats about metadata """
 		return
 
 	@abc.abstractmethod
 	def metadataSearch(self,searchType,mimeType,startDate,endDate):
+		""" Search through the metadata """
 		return
 
 	@abc.abstractmethod
 	def fileInfo(self,fileId):
+		""" Display single file information """
 		return
 
 	@abc.abstractmethod
 	def fileHistory(self,fileObject):
+		""" Display file history """
 		return

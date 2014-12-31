@@ -14,6 +14,7 @@ from webapp.func import *
 import math
 
 class GoogleAnalyzer(AbstractAnalyzer):
+	""" This class represents a Google analyzer """
 
 	def __init__(self,token):
 		AbstractAnalyzer.__init__(self,token)
@@ -77,8 +78,8 @@ class GoogleAnalyzer(AbstractAnalyzer):
 				searchResItem = item
 		#givenname
 		elif searchType == 2:
-				if ("lastModifyingUserName" in item and searchGivenName in item["lastModifyingUserName"]) or ("ownerName" in item and searchGivenName in item["ownerNames"]):
-					searchResItem = item
+			if ("lastModifyingUserName" in item and searchGivenName in item["lastModifyingUserName"]) or ("ownerName" in item and searchGivenName in item["ownerNames"]):
+				searchResItem = item
 		#all
 		elif searchType == 3:
 			searchResItem = item

@@ -5,6 +5,7 @@ from webapp.func import dropboxAlternateName
 from django.utils import timezone
 from django.utils.dateformat import format
 from webapp import constConfig
+from django.core.exceptions import ObjectDoesNotExist
 from abstractDownloader import AbstractDownloader
 
 # add path for crypto
@@ -17,6 +18,7 @@ if not cryptoPath in sys.path:
 import crypto
 
 class DropboxDownloader(AbstractDownloader):
+	""" This class represent a Dropbox downloader """
 
 	def __init__(self,download,uname,pwd):
 		AbstractDownloader.__init__(self,download,uname,pwd)
@@ -33,9 +35,10 @@ class DropboxDownloader(AbstractDownloader):
 			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
 			return downStatus
 
-		#root
+		# get root directory
 		root = self.service.metadata("/",include_deleted=True,include_media_info=True)
 
+		# get others directory
 		fileMetaData = self.recurseDropTree(root,5)
 		
 		self.metadata = fileMetaData
@@ -43,6 +46,7 @@ class DropboxDownloader(AbstractDownloader):
 		metaTime = timezone.now()
 		metaHash = crypto.rsaSignatureSHA256(meta+crypto.HASH_SEPARATOR+format(metaTime,"U"),settings.PRIV_KEY)
 
+		#store the data
 		storeFM = FileMetadata(metadata=meta,tokenID=self.t,metaTime=metaTime,metadataHash=metaHash)
 		storeFM.save()
 
@@ -50,7 +54,7 @@ class DropboxDownloader(AbstractDownloader):
 		self.d.save()
 
 	def recurseDropTree(self,folderMetadata,depth):
-		""" Recurse in each folder """
+		""" Recurse in each folder of Dropbox """
 		res = list()
 		
 		if folderMetadata['is_dir'] and depth > 0:
@@ -72,7 +76,8 @@ class DropboxDownloader(AbstractDownloader):
 			return res
 
 	def computeDownload(self):
-	
+		""" Compute download size """
+
 		totalSize = long(0)
 
 		for f in self.metadata:
@@ -117,13 +122,8 @@ class DropboxDownloader(AbstractDownloader):
 							fDb = FileDownload(fileName=bName,alternateName=altName,status=1,tokenID=self.t,fileHash=h)
 							fDb.save()
 					except dropbox.rest.ErrorResponse as e:
-						
-						if e.status == 404:
-							#file has been deleted , status=2
-							f = FileDownload(fileName=bName,alternateName=altName,status=2,tokenID=self.t)
-							f.save()
-						else:
-							raise e
+						f = FileDownload(fileName=bName,alternateName=altName,status=e.status,tokenID=self.t,fileHash="-")
+						f.save()
 
 	def downloadHistory(self,simulateDownload = False):
 		""" Download the history for dropbox """
@@ -153,41 +153,52 @@ class DropboxDownloader(AbstractDownloader):
 
 						bName = os.path.basename(path)
 						#get file download id
-						fDown = FileDownload.objects.get(fileName=bName,alternateName=altName,tokenID=self.t)
-						del rev[0]
-						
-						# create a directory to store file revision
-						revPath = os.path.join(downDirFullSub,altName)
-						if not os.path.isdir(revPath):
-							os.mkdir(revPath)
 
-						for r in rev:
-							revID = r['rev']
+						try:
+							fDown = FileDownload.objects.get(fileName=bName,alternateName=altName,tokenID=self.t,status=1)
+							del rev[0]
 							
-							#get revision
-							with self.service.get_file(f['path'],revID) as revF:
+							# create a directory to store file revision
+							revPath = os.path.join(downDirFullSub,altName)
+							if not os.path.isdir(revPath):
+								os.mkdir(revPath)
+
+							for r in rev:
+								revID = r['rev']
 								hashName = crypto.sha256(bName+crypto.HASH_SEPARATOR+revID).hexdigest()
 								fullPath = os.path.join(revPath,hashName+"_"+revID)
-								outF = open(fullPath,"wb+")
-								outF.write(revF.read())
-								outF.close()
 
-								#hash
-								rEnc = base64.b64encode(json.dumps(r))
-								downloadTime = timezone.now()
-								fileRevisionHash = crypto.rsaSignatureSHA256(fullPath,settings.PRIV_KEY,True)
-								revisionMetadataHash = crypto.rsaSignatureSHA256(rEnc+crypto.HASH_SEPARATOR+format(downloadTime,"U"),settings.PRIV_KEY)
+								try:
+									#get revision
+									with self.service.get_file(f['path'],revID) as revF:
+										outF = open(fullPath,"wb+")
+										outF.write(revF.read())
+										outF.close()
 
-								fDb = FileHistory(
-										revision=revID,
-										status=1,
-										fileDownloadID=fDown,
-										revisionMetadata=rEnc,
-										downloadTime=downloadTime,
-										revisionMetadataHash=revisionMetadataHash,
-										fileRevisionHash=fileRevisionHash
-									)
-								fDb.save()
+										#hash
+										rEnc = base64.b64encode(json.dumps(r))
+										downloadTime = timezone.now()
+										fileRevisionHash = crypto.rsaSignatureSHA256(fullPath,settings.PRIV_KEY,True)
+										revisionMetadataHash = crypto.rsaSignatureSHA256(rEnc+crypto.HASH_SEPARATOR+format(downloadTime,"U"),settings.PRIV_KEY)
+
+										fDb = FileHistory(
+												revision=revID,
+												status=1,
+												fileDownloadID=fDown,
+												revisionMetadata=rEnc,
+												downloadTime=downloadTime,
+												revisionMetadataHash=revisionMetadataHash,
+												fileRevisionHash=fileRevisionHash
+											)
+										fDb.save()
+								#when there is an error with the download of the history
+								except dropbox.rest.ErrorResponse, e:
+									fDb = FileHistory(revisionID=revID,status=e.status,fileDownload=fDown,revisionMetadata="-",fileRevisionHash="-",revisionMetadataHash="-")
+									fDb.save()
+						#we cannot download the history of a file that has not been downloaded correctly
+						except ObjectDoesNotExists as e:
+							print e
+							pass
 
 
 	def downloadFileHistory(self):

@@ -153,8 +153,6 @@ def encryptFernetFile(fileIn, key):
 	#write
 	return enc
 
-	#logger.log("Writing to " + fileOut)
-
 def decryptFernetFile(fileBytes, key):
 	""" Decrypt a file using Fernet """
 

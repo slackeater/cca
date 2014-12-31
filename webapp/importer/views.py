@@ -15,36 +15,34 @@ from webapp.func import *
 from webapp.exceptionFormatter import formatException
 from django.utils import timezone
 from django.utils.dateformat import format
+from django.contrib.auth.decorators import login_required
 
 class UploadForm(forms.Form):
 	fileUp = forms.FileField(label='File',widget=forms.FileInput(attrs={'class':'form-control'}))
 
+@login_required
 def importer(request,cloudItem):
+	""" Display the home page of the importer """
 
-	if isAuthenticated(request):
+	form = None
+	status = None
+	rep = None
+	cloudItemQuery = CloudItem.objects.get(reporterID=User.objects.get(id=request.user.id),id=cloudItem)
+
+	try:
+		if request.method == "POST":
+			form = UploadForm(request.POST, request.FILES)
+
+			if form.is_valid():
+				manageReportUpload(request,cloudItem)
 	
-		form = None
-		status = None
-		rep = None
-		cloudItemQuery = CloudItem.objects.get(reporterID=User.objects.get(id=request.user.id),id=cloudItem)
+		# get all report imported for this clouditem
+		rep = Upload.objects.filter(cloudItemID=cloudItemQuery)
+		form = UploadForm() if rep.count() == 0 else None 
+	except Exception as e:
+		status = formatException(e)
 
-		try:
-			if request.method == "POST":
-				form = UploadForm(request.POST, request.FILES)
-
-				if form.is_valid():
-					manageReportUpload(request,cloudItem)
-		
-			# get all report imported for this clouditem
-
-			rep = Upload.objects.filter(cloudItemID=cloudItemQuery)
-			form = UploadForm() if rep.count() == 0 else None 
-		except Exception as e:
-			status = formatException(e)
-
-		return render_to_response("dashboard/imp.html", {'parseStatus': status,'objID': cloudItem,'form': form, 'repList': rep}, context_instance=RequestContext(request))
-	else:
-		return redirect("/login/")
+	return render_to_response("dashboard/imp.html", {'parseStatus': status,'objID': cloudItem,'form': form, 'repList': rep}, context_instance=RequestContext(request))
 
 
 def manageReportUpload(request,cloudItem):

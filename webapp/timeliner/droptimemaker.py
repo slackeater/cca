@@ -6,6 +6,7 @@ from abstractTimeMaker import AbstractTimeMaker
 from cloudservice.drop import DropboxAnalyzer
 
 class DropboxTimeMaker(AbstractTimeMaker):
+	""" This class represent Dropbox timemaker """
 
 	def __init__(self,token):
 		AbstractTimeMaker.__init__(self,token)

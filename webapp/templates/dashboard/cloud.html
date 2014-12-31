@@ -5,24 +5,24 @@
 
 function dropboxAuthCode(){
 	$("#loadDrop").fadeIn("slow")
-	Dajaxice.downloader.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'ci':iVal()})
+	Dajaxice.tokendash.submitDropboxCode(dropCallBack, {'code':$('#dropCode').val(),'ci':iVal()})
 }
 
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.downloader.showTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.tokendash.showTokens(Dajax.process, {'ci': iVal()})
 }
 
 function googleAuthCode(){
 	$("#loadGoogle").fadeIn("slow")
-	Dajaxice.downloader.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'ci':iVal()})
+	Dajaxice.tokendash.submitGoogleCode(googleCallBack, {'code':$('#gCode').val(),'ci':iVal()})
 }
 
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.downloader.showTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.tokendash.showTokens(Dajax.process, {'ci': iVal()})
 }
 
 
@@ -111,7 +111,7 @@ function googleCallBack(data){
 	</div>
 </div>
 
-<h2><a href="javascript:void(0)" onclick="Dajaxice.downloader.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
+<h2><a href="javascript:void(0)" onclick="Dajaxice.tokendash.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
 <div id="tokenError"></div>
 <div id="tokenTable"></div>
 

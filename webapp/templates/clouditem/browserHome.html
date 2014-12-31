@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script>
+
+function historyForm(){
+	Dajaxice.browserfiles.fileTimeLine(Dajax.process,{'formHistory':$("#browserHistoryForm").serialize(true),'profileForm':$("#profileForm").serialize(true),'ci':iVal()})
+}
+
+</script>
 
 <div class="page-header">
 	<h1>Browser Files</h1>
@@ -12,10 +19,20 @@
 	<li class="active">Browser Files</li>
 </ol>
 
+<div class="row">
+	<div class="col-md-6">
+		<form method="post" id="profileForm" action="">
+		<label>{{profileForm.choices.label}}</label>
+		{{profileForm.choices}}
+		</form>
+	</div>
+</div>
+
+<br />
 <ul class="nav nav-tabs nav-justified">
-	<li role="presentation" class="active"><a href="#"><h4>History Timeline</h4></a></li>
-	<li role="presentation"><a href="#"><h4>Bookmarks</h4></a></li>
-	<li role="presentation"><a href="#"><h4>Others</h4></a></li>
+	<li role="presentation" class="active"><a href="javascript:void(0)" id="historyLink"><h4>History Timeline</h4></a></li>
+	<li role="presentation"><a href="javascript:void(0)" id="bookLink"><h4>Bookmarks</h4></a></li>
+	<li role="presentation"><a href="javascript:void(0)" id="otherLink"><h4>Others</h4></a></li>
 </ul>
 
 <br />
@@ -24,14 +41,35 @@
 	<div class="alert alert-danger">{{error}}</div>
 {% endif %}
 
-<form action="" method="post">
+<div id="historyCont">
 <div class="row">
 	<div class="col-md-6">
-		{{form}}
-		<input type="submit" class="btn btn-default" value="Submit" />
+			<form method="post" id="browserHistoryForm" action="">
+				{% csrf_token %}
+				<label>{{form.domainFilter.label}}</label>
+				{{form.domainFilter}}
+				<label>{{form.startDate.label}}</label>
+				{{form.startDate}}
+				<label>{{form.endDate.label}}</label>
+				{{form.endDate}}
+			</form>
+			<input type="button" class="btn btn-default" value="Submit" onclick="historyForm()" />
 	</div>
 </div>
-</form>
+
+<div id="historyError"></div>
+<div id="historyShow"></div>
+
+</div>
+
+<div id="bookmarkCont" style="display:none">
+book
+</div>
+
+<div id="otherCont" style="display: none">
+other
+</div>
+
 <!-- 
 <div class="panel panel-default">
 	<div class="panel-heading"><h3>Browser</h3></div>
@@ -67,5 +105,36 @@
 	</div>
 </div>
 -->
+<script>
 
+$("#historyLink").click(function(){
+	$("#historyCont").fadeIn("slow")		
+	$("#bookmarkCont").hide()
+	$("#otherCont").hide()
+	$("#historyLink").parent().addClass("active")
+	$("#bookLink").parent().removeClass("active")
+	$("#otherLink").parent().removeClass("active")
+		
+});
+
+$("#bookLink").click(function(){
+	$("#bookmarkCont").fadeIn("slow")		
+	$("#historyCont").hide()
+	$("#otherCont").hide()
+	$("#historyLink").parent().removeClass("active")
+	$("#bookLink").parent().addClass("active")
+	$("#otherLink").parent().removeClass("active")
+});
+
+$("#otherLink").click(function(){
+	$("#otherCont").fadeIn("slow")		
+	$("#bookmarkCont").hide()
+	$("#historyCont").hide()
+	$("#historyLink").parent().removeClass("active")
+	$("#bookLink").parent().removeClass("active")
+	$("#otherLink").parent().addClass("active")
+});
+
+
+</script>
 {% endblock %}

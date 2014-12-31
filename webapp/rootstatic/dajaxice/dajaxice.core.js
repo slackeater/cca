@@ -43,20 +43,8 @@ var Dajaxice = {
     
     downloader: {
     
-    submitGoogleCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
-    },
-
-    submitDropboxCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
-    },
-
     checkDownload: function(callback_function, argv, custom_settings){
         return Dajaxice.call('downloader.checkDownload', 'POST', callback_function, argv, custom_settings);
-    },
-
-    showTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('downloader.showTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -121,18 +109,14 @@ var Dajaxice = {
     
 ,
     
-    dashboard: {
+    timeliner: {
     
-    submitGoogleCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
+    formTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
     },
 
-    submitDropboxCode: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
-    },
-
-    showTokens: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('dashboard.showTokens', 'POST', callback_function, argv, custom_settings);
+    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
     }
 
 
@@ -142,14 +126,18 @@ var Dajaxice = {
     
 ,
     
-    timeliner: {
+    tokendash: {
     
-    formTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.formTimeliner', 'POST', callback_function, argv, custom_settings);
+    submitGoogleCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('tokendash.submitGoogleCode', 'POST', callback_function, argv, custom_settings);
     },
 
-    fileHistoryTimeliner: function(callback_function, argv, custom_settings){
-        return Dajaxice.call('timeliner.fileHistoryTimeliner', 'POST', callback_function, argv, custom_settings);
+    submitDropboxCode: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('tokendash.submitDropboxCode', 'POST', callback_function, argv, custom_settings);
+    },
+
+    showTokens: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('tokendash.showTokens', 'POST', callback_function, argv, custom_settings);
     }
 
 

@@ -18,13 +18,13 @@ del cryptoPath
 import crypto
 
 class DropboxMapper(AbstractMaps):
+	""" This class represent a Dropbox mapper """
 
 	def __init__(self,token):
 		AbstractMaps.__init__(self,token)
 
 	def findExif(self):
 		res = list()
-
 
 		# for each folder
 		for r in self.metadata:
@@ -51,6 +51,6 @@ class DropboxMapper(AbstractMaps):
 
 		return res
 
-
 	def mailFinder(self):
+		#not supported by drobpox 
 		return None
