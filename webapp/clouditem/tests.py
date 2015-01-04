@@ -14,9 +14,9 @@ class CloudItemTestCase(TestCase):
 
 	def test_clouditem_view_nologin(self):
 		resp = self.client.get('/clouditem/',follow=True,secure=True)
-		self.assertRedirects(resp,"/login/")
+		self.assertRedirects(resp,"/login/?next=/clouditem/")
 		resp = self.client.post('/clouditem/',follow=True,secure=True)
-		self.assertRedirects(resp,"login/")
+		self.assertRedirects(resp,"/login/?next=/clouditem/")
 
 	def test_clouditem_view_login(self):
 		
@@ -47,9 +47,9 @@ class CloudItemTestCase(TestCase):
 
 	def test_showclouditem_view_nologin(self):
 		resp = self.client.get('/clouditem/29/',follow=True,secure=True)
-		self.assertRedirects(resp,"/login/")
+		self.assertRedirects(resp,"/login/?next=/clouditem/29/")
 		resp = self.client.post('/clouditem/29/',follow=True,secure=True)
-		self.assertRedirects(resp,"login/")
+		self.assertRedirects(resp,"/login/?next=/clouditem/29/")
 	
 	def test_showclouditem_view_login(self):
 		resp = self.client.login(username="reporter",password="reporter")
@@ -57,7 +57,7 @@ class CloudItemTestCase(TestCase):
 	
 		for c in CloudItem.objects.all():
 			resp = self.client.get('/clouditem/'+str(c.id)+'/',secure=True)
-			self.assertContains(resp,"Choose one of the functionalities below:")
+			self.assertContains(resp,"Cloud Item Dashboard")
 	
 	def test_showclouditem_notexist_login(self):
 		resp = self.client.login(username="reporter",password="reporter")

@@ -1,18 +1,5 @@
-<style>
-
-table#resTab{
-	margin-left: 15%;
-	margin-right: 15%;
-	border-collapse: collapse;
-}
-
-td.resTabTitle{
-	background-color: #d3d3d3;
-}
-
-</style>
-<table id="resTab">
-	<tr><td colspan=2 align="center" class="resTabTitle"><b>Stats</b></td></tr>
+<table class="table table-bordered">
+	<tr><td colspan=2 align="center"><b>Stats</b></td></tr>
 	{% if google %}
 		<tr><td>Deleted Files</td><td>{{stat.dC}}</td></tr>
 		<tr><td>Google Drive File Count</td><td>{{stat.driveF}}</td></tr>
@@ -26,7 +13,7 @@ td.resTabTitle{
 		<tr><td><b>Deleted Dirs</b></td><td id="dD">{{stat.dD}}</td></tr>
 	{% endif %}
 
-	<tr><td colspan=2 align="center" class="resTabTitle"><b>MIME Type</b></td></tr>
+	<tr><td colspan=2 align="center"><b>MIME Type</b></td></tr>
 	
 	{% for mimeType, fCount in stat.mime.items %}
 		<tr><td><b>{{mimeType}}</b></td><td>{{fCount}}</td></tr>

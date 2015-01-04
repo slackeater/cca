@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 import json,os,urllib,base64
 from django.test.utils import override_settings
-import fileComparator
-
+from fileComparator import Comparator
+from fileVerifier import Verifier
 
 @override_settings(DOWNLOAD_DIR="/media/hd1/testDownloads/")
 class ComparatorTestCase(TestCase):
@@ -94,15 +94,16 @@ class ComparatorTestCase(TestCase):
 	def test_verifyer_filemetadata(self):
 
 		for a in AccessToken.objects.all():
-
-			res = fileComparator.verifyMetadata(a)
+			v = Verifier(a)
+			res = v.verifyMetadata()
 			self.assertTrue(res['verificationResult'])
 	
 
 	def test_verifyer_filedownload(self):
 
 		for a in AccessToken.objects.all():
-			hList = fileComparator.verifyFileDownload(a)
+			v = Verifier(a)
+			hList = v.verifyFileDownload(3)
 			
 			for i in hList:
 				f = FileDownload.objects.get(id=i['fID'])
@@ -128,12 +129,11 @@ class ComparatorTestCase(TestCase):
 		a = 2
 		
 		url = "/dajaxice/comparator.verifyFile/"
-		payload = {'tokenID': a,'cloudItem': ci}
+		payload = {'tokenID': a,'cloudItem': ci,'form': 'verificationType=3'}
 		data = {"argv": json.dumps(payload)}
 		r = self.client.post(url,data=urllib.urlencode(data),secure=True,HTTP_X_REQUESTED_WITH="XMLHttpRequest",content_type="application/x-www-form-urlencoded")
 					
 		self.assertEquals(r.status_code,200)
-
 		rDump = json.loads(r.content)
 
 		self.assertEquals(rDump[0]['id'],'#verifyer')

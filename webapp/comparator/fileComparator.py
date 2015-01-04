@@ -40,7 +40,7 @@ class Comparator(object):
 		nameTwo = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+revTwoID).hexdigest()
 		revOnePath = os.path.join(diffPath,nameOne+"_"+revOneID)
 		revTwoPath = os.path.join(diffPath,nameTwo+"_"+revTwoID)
-
+		
 		#check if dropbox that one of the file is not the original
 		if self.t.serviceType == constConfig.CSP_DROPBOX:
 			#try to get the revision from the filedownload table
