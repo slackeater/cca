@@ -5,7 +5,8 @@ import json,base64
 
 class DbInterface():
 
-	def getToken(self,id):
+	@staticmethod
+	def getToken(id):
 		return AccessToken.objects.get(id=id)
 
 	@staticmethod

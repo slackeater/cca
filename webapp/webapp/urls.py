@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     url('', include('maps.urls')),
     url('', include('browserfiles.urls')),
     url('', include('tokendash.urls')),
+    url('', include('reporter.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

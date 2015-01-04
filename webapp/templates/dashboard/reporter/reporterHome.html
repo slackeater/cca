@@ -1,0 +1,36 @@
+{% extends "dashboard/tknDash.html" %}
+
+{% block content %}
+
+<div class="page-header">
+	<h1>Report</h1>
+</div>
+
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
+	<li class="active">Report</li>
+</ol>
+
+<div class="panel panel-default">
+	<div class="panel-heading">PDF Generation</div>
+
+	<div class="panel-body">
+		Generate the report for this access token containing:
+		<ul>
+			<li>the information about this access token</li>
+			<li>the list of downloaded file with the digest of the RSA signature</li>
+			<li>the list of GPS coordinates found inside images</li>
+			<li>the list of e-mail addresses found inside the metadata of downloaded files</li>
+		</ul>
+
+		<form method="post" action="/reporter/{{objID}}/{{tokenID}}/">
+			{% csrf_token %}
+			<input type="submit" name="gen" value="Generate Report" />
+		</form>
+	</div>
+</div>
+
+{% endblock %}
