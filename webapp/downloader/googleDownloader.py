@@ -10,6 +10,7 @@ from oauth2client.client import OAuth2Credentials
 from apiclient.discovery import build
 from abstractDownloader import AbstractDownloader
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 # add path for crypto
 cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
@@ -237,4 +238,6 @@ class GoogleDownloader(AbstractDownloader):
 		self.downloadFiles()
 		self.downloadHistory()
 		self.d.threadStatus = constConfig.THREAD_DOWN_FH
+		self.d.endDownTime = timezone.now()
+		self.d.finalFileSize = self.computeFileSize(self.downloadDir)
 		self.d.save()

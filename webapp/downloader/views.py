@@ -11,6 +11,7 @@ from django import forms
 import json,base64
 from tasks import download
 from django.contrib.auth.decorators import login_required
+from webapp.exceptionFormatter import formatException
 
 
 # Create your views here.
@@ -70,6 +71,6 @@ def showDownloadDash(request,cloudItem,t):
 			data['downMessage'] = down.threadMessage
 
 	except Exception as e:
-		data['errors'] = e.message
+		data['errors'] = formatException(e)
 	
 	return render_to_response("dashboard/down.html", data, context_instance=RequestContext(request))

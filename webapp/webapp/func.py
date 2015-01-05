@@ -1,4 +1,4 @@
-import md5,os,sys,json
+import md5,os,sys,json,base64
 from django.conf import settings
 from downloader.models import *
 from importer.models import Upload
@@ -15,6 +15,10 @@ if not cryptoPath in sys.path:
 	del cryptoPath
 
 import crypto
+
+def dataDecoder(data):
+	""" Decode the data stored in the Db previously encoded with JSON + Base64 """
+	return json.loads(base64.b64decode(data))
 
 def isAuthenticated(request):
 	""" Check if a user is authenticated """

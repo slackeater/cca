@@ -29,10 +29,10 @@ class Verifier():
 
 		session = requests.Session()
 		payload = {'j_username': uname,'j_password': pwd}
-		session.get("https://www.digistamp.com/account")
+		session.get("https://www.digistamp.com/account/")
 		session.post("https://www.digistamp.com/account/j_security_check",data=payload,allow_redirects=True)
-		response = session.get("https://www.digistamp.com/account/userChoice.jsp")
-		m = re.search('Account '+str(uname),response.text)
+		response = session.get("https://www.digistamp.com/account/view/subscription/")
+		m = re.search(str(uname),response.text)
 
 		if m is not None and m.group(0):
 			#match, now logout

@@ -24,7 +24,21 @@ class AbstractDownloader(object):
 
 		self.downloadDir = downDir
 		self.v = Verifier(self.d)
-	
+
+	def computeFileSize(self,source):
+		""" Compute the total size of downloaded files http://snipplr.com/view.php?codeview&id=47686 """
+		total_size = os.path.getsize(source)
+
+		for item in os.listdir(source):
+			itempath = os.path.join(source, item)
+
+			if os.path.isfile(itempath):
+				total_size += os.path.getsize(itempath)
+			elif os.path.isdir(itempath):
+				total_size += self.computeFileSize(itempath)
+
+		return total_size
+
 	def verfiyCredentials(self):
 		""" Verify the credentials of the timestamp service """
 		status = self.v.verifyCredentials(self.uname,self.pwd)

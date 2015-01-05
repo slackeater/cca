@@ -45,6 +45,8 @@ class Download(models.Model):
 
 	tokenID = models.ForeignKey('AccessToken')
 	downTime = models.DateTimeField(default=timezone.now)
+	endDownTime = models.DateTimeField(null=True,blank=True)
+	finalFileSize = models.TextField(default="0")
 	folder = models.CharField(max_length=255,blank=True)
 	threadStatus = models.IntegerField(default="-1")
 	threadMessage = models.TextField(default="-")

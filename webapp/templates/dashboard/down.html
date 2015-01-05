@@ -1,4 +1,5 @@
 {% extends 'dashboard/tknDash.html' %}
+{% load mathfilters %}
 
 {% block js %}
 <script type="text/javascript">
@@ -31,6 +32,11 @@ setInterval(function(){ startDownload()},2500)
 	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
 	<li class="active">Download</li>
 </ol>
+
+{% if errors != None %}
+<div class="alert alert-danger">{{errors}}</div>
+{% endif %}
+
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-6">
@@ -50,17 +56,16 @@ setInterval(function(){ startDownload()},2500)
 			</form>
 		</div>
 		<div class="col-md-6">
-			<div id="errors">{{errors}}</div>
-
 			<div class="panel panel-default">
 				<div class="panel-heading">Download Status</div>
 				
 				<table class="table table-bordered">
 					<tr><td>Download status</td><td><div id="thStatus">{% if downStatus == -1 %}No download have been started.{%elif downStatus == 5 %}Download already completed.{%elif downStatus == 6 %}{{downMessage}}{%endif%}</div></td></tr>
 					<tr><td>Folder</td><td>{{down.folder}}</td></tr>
-					<tr><td>Size</td><td></td></tr>
-					<tr><td>Start Time</td><td></td></tr>
-					<tr><td>End Time</td><td></td></tr>
+					<tr><td>Size</td><td>{{down.finalFileSize|div:1048576}} MB</td></tr>
+					<tr><td>Start Time</td><td>{{down.downTime}}</td></tr>
+					<tr><td>End Time</td><td>{{down.endDownTime}}</td></tr>
+					<tr><td>DTA signature</td><td>{% if down.verified == 1 %}Yes{%else%}No{%endif%}</td></tr>
 				</table>
 			</div>
 		</div>

@@ -16,6 +16,7 @@ def generateReport(request,cloudItemID,tokenID):
 
 	ci = None
 	token = None
+	error = False
 
 	try:
 		ci = checkCloudItem(cloudItemID,request.user.id)
@@ -27,8 +28,7 @@ def generateReport(request,cloudItemID,tokenID):
 			return rg.genPDF()
 
 	except Exception as e:
-		print e
 		error = formatException(e)
 
-	return render_to_response("dashboard/reporter/reporterHome.html", {'objID':ci.id,'tokenID':token.id}, context_instance=RequestContext(request))
+	return render_to_response("dashboard/reporter/reporterHome.html", {'showToken': True,'objID':ci.id,'tokenID':token.id,'error': error}, context_instance=RequestContext(request))
 
