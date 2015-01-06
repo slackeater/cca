@@ -11,6 +11,7 @@ from webapp.exceptionFormatter import formatException
 from webapp import constConfig
 
 class ProfileSelectorForm(forms.Form):
+	""" This class represent a Form for choose a browser profile """
 
 	def setChoices(self,report):
 		""" Set the choices for the profile of the browser """
@@ -39,6 +40,7 @@ class ProfileSelectorForm(forms.Form):
 
 
 class HistoryTimeLineForm(forms.Form):
+	""" This class represent a Form used to display the history form """
 
 	startDateYear = date.today().year
 	
@@ -49,7 +51,8 @@ class HistoryTimeLineForm(forms.Form):
 
 @login_required
 def browserfiles(request,cloudItem):
-	
+	""" Displays the browser file page """
+
 	browser = None
 	historyForm = None
 	error = None

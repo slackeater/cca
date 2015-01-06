@@ -14,9 +14,9 @@ from django.contrib.auth.decorators import login_required
 from webapp.exceptionFormatter import formatException
 
 
-# Create your views here.
-
 class TSCredentialsForm(forms.Form):
+	""" This class represent the form used to log in to the timestamp service """
+
 	uname = forms.CharField(max_length=10,label="Account",required=True,widget=forms.TextInput(attrs={'class':'form-control'}))
 	pwd = forms.CharField(max_length=20,label="Password",required=True,widget=forms.PasswordInput(attrs={'class':'form-control'}))
 

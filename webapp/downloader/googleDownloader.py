@@ -11,18 +11,10 @@ from apiclient.discovery import build
 from abstractDownloader import AbstractDownloader
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
-
-# add path for crypto
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-
-del cryptoPath
-
-import crypto
+from webapp import crypto
 
 class GoogleDownloader(AbstractDownloader):
+	""" This class represent a Google downloader """
 
 	def __init__(self,download,uname,pwd):
 		AbstractDownloader.__init__(self,download,uname,pwd)
@@ -101,13 +93,11 @@ class GoogleDownloader(AbstractDownloader):
 			return downStatus
 		
 		#get download folder
-		downDirFullSub = os.path.join(self.downloadDir,"files")
+		downDirFullSub = os.path.join(self.downloadDir,constConfig.DOWNLOAD_FILES_FOLDER)
 		
 		if not os.path.isdir(downDirFullSub):
 			os.mkdir(downDirFullSub)
 	
-		myFile = open("/home/snake/downFIles.txt","w")
-
 		#iterate over file and write to disk
 		for item in self.metadata:
 				if 'downloadUrl' in item:
@@ -138,7 +128,6 @@ class GoogleDownloader(AbstractDownloader):
 
 						fileDb = FileDownload(fileName=item['title'],alternateName=item['id'],status=resp.status,tokenID=self.t,fileHash=h)
 						fileDb.save()
-						myFile.write(str(vars(fileDb)))
 					except errors.HttpError, e:
 						#store this entry with the exception code
 						fileDb = FileDownload(fileName=item['item'],alternateName=item['id'],status=e.resp.status,tokenID=self.t,fileHash="-")
@@ -153,7 +142,7 @@ class GoogleDownloader(AbstractDownloader):
 			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
 			return downStatus
 
-		downDirHistory = os.path.join(self.downloadDir,"history")
+		downDirHistory = os.path.join(self.downloadDir,constConfig.DOWNLOAD_HISTORY_FOLDER)
 
 		if not os.path.isdir(downDirHistory):
 			os.mkdir(downDirHistory)
@@ -177,10 +166,6 @@ class GoogleDownloader(AbstractDownloader):
 							if not os.path.isdir(revPath):
 								os.mkdir(revPath)
 
-							#get file download
-							print item['title']
-							print item['id']
-								
 							for r in revs['items']:
 
 								if 'exportLinks' in r:

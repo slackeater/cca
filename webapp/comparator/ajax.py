@@ -60,7 +60,7 @@ def verifyFile(request,cloudItem,tokenID,form):
 			downVerification = None
 			v = Verifier(tkn)
 
-			if verType == 1:
+			if verType == constConfig.VERIFY_CHOICE_METADATA:
 				metaVerification = v.verifyMetadata()
 			else:
 				downVerification = v.verifyFileDownload(verType)

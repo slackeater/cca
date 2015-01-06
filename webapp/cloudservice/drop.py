@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from webapp.func import dropboxAlternateName,getTimestamp
 from abstractAnalyzer import AbstractAnalyzer
 from dateutil import parser
+from webapp import constConfig
 
 
 class DropboxAnalyzer(AbstractAnalyzer):
@@ -26,19 +27,19 @@ class DropboxAnalyzer(AbstractAnalyzer):
 		searchResItem = None
 
 		#e-mail
-		if searchType == 0:
+		if searchType == constConfig.CS_SEARCH_TYPE_EMAIL:
 			#email search not supported with dropbox
 			pass
 		#filename
-		elif searchType == 1:
+		elif searchType == constConfig.CS_SEARCH_TYPE_FILENAME:
 			if searchFile in item['path']:
 				searchResItem = item
 		#givenname
-		elif searchType == 2:
+		elif searchType == constConfig.CS_SEARCH_TYPE_GIVENNAME:
 			if "modifier" in item and item['modifier'] is not None and searchGivenName in item['modifier']['display_name']:
 				searchResItem = item
 		#all
-		elif searchType == 3:
+		elif searchType == constConfig.CS_SEARCH_TYPE_ALL:
 			searchResItem = item
 
 		return searchResItem
@@ -48,17 +49,17 @@ class DropboxAnalyzer(AbstractAnalyzer):
 		filterRes = None
 
 		#deleted 
-		if filterType == 0:
+		if filterType == constConfig.CS_SEARCH_FILTER_DELETED:
 			deleted = item.get("is_deleted",False)
 			
 			if deleted:
 				filterRes = item
 		#mime
-		elif filterType == 1:
+		elif filterType == constConfig.CS_SEARCH_FILTER_MIME:
 			if not item['is_dir'] and item['mime_type'] == MimeType.objects.get(id=mimeType).mime:
 				filterRes = item
 		#all
-		elif filterType == 2:
+		elif filterType == constConfig.CS_SEARCH_FILTER_ALL:
 			filterRes = item
 
 		return filterRes

@@ -5,8 +5,6 @@ from webapp.func import isAuthenticated
 from forms import VerifyForm
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
-
 @login_required
 def comparatorView(request,cloudItem,tokenID):
 	""" Show the timeline options """

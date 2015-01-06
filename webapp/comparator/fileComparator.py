@@ -6,24 +6,13 @@ from django.utils.dateformat import format
 from webapp.thumbnailer import Thubmnailer
 from webapp import constConfig
 from webapp.func import openReport
-
-#import crypto for hash
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-	del cryptoPath
-
-import crypto
+from webapp import crypto
 
 class Comparator(object):
 	""" This class is used to perform file comparison """
 
-	""" This class is used to perform file comparison """
-
 	def __init__(self,token):
 		self.t = token
-		self.allowedMime = ("application/pdf","image/jpeg","image/png","image/gif","image/bmp")
 
 	def compareTwo(self,revOneID,revTwoID,altName):
 		""" Compare two revision of the same file and check for diff """
@@ -33,7 +22,7 @@ class Comparator(object):
 		diffFile = FileDownload.objects.get(tokenID=self.t,alternateName=altName)
 
 		#diff file full path
-		diffPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"history",diffFile.alternateName)
+		diffPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,constConfig.DOWNLOAD_HISTORY_FOLDER,diffFile.alternateName)
 
 		#get the two file
 		nameOne = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+revOneID).hexdigest()
@@ -46,14 +35,14 @@ class Comparator(object):
 			#try to get the revision from the filedownload table
 			if diffFile.alternateName == revOneID:
 				assumeNameOne = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+diffFile.alternateName).hexdigest()
-				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",assumeNameOne+"_"+diffFile.alternateName)
+				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,constConfig.DOWNLOAD_FILES_FOLDER,assumeNameOne+"_"+diffFile.alternateName)
 				#overwrite revOnePath only if the path exists in the files folder, otherwise is in the deleted folder
 				if os.path.isfile(assumedPath):
 					revOnePath = assumedPath
 
 			elif diffFile.alternateName == revTwoID:
 				assumeNameTwo = crypto.sha256(diffFile.fileName+crypto.HASH_SEPARATOR+diffFile.alternateName).hexdigest()
-				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,"files",assumeNameTwo+"_"+diffFile.alternateName)
+				assumedPath = os.path.join(settings.DOWNLOAD_DIR,downloadFolder,constConfig.DOWNLOAD_FILES_FOLDER,assumeNameTwo+"_"+diffFile.alternateName)
 				if os.path.isfile(assumedPath):
 					revTwoPath = assumedPath
 
@@ -66,18 +55,20 @@ class Comparator(object):
 		mimeOne = mime.from_file(revOnePath)
 		mimeTwo = mime.from_file(revTwoPath)
 
-		if mimeOne not in self.allowedMime or mimeTwo not in self.allowedMime:
-			raise Exception("Only PDF and images are supported")
+		if mimeOne not in constConfig.ALLOWED_MIME_TYPE or mimeTwo not in constConfig.ALLOWED_MIME_TYPE:
+			raise Exception("File type not supported")
 
 		data = None
 		mimeList = list()
-
-		if mimeOne == mimeTwo == "application/pdf":
+	
+		#pdf files
+		if mimeOne == mimeTwo == constConfig.ALLOWED_MIME_TYPE[0]:
 			resultDiffName = "diff_"+str(self.t.id)+"_"+revOneID+"_"+revTwoID+".pdf"
 			diffName = self.pdfDiff(revOnePath,revTwoPath,diffPath,resultDiffName)
 			data = {"diffName":diffName}
-			mimeList.append("application/pdf")
-		elif mimeOne and mimeTwo in ("image/jpeg","image/png","image/gif","image/bmp"):
+			mimeList.append(constConfig.ALLOWED_MIME_TYPE[0])
+		#images 	
+		elif mimeOne and mimeTwo in constConfig.ALLOWED_MIME_TYPE[1:-1]:
 			hash1,hash2 = self.imgDiff(revOnePath,revTwoPath)
 			mimeList.append(mime.from_file(revOnePath))
 			mimeList.append(mime.from_file(revTwoPath))

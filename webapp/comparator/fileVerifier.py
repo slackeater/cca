@@ -1,14 +1,7 @@
 import os,sys
 from webapp.func import *
-
-#import crypto for hash
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-del cryptoPath
-
-import crypto
+from webapp import constConfig
+from webapp import crypto
 
 class Verifier(object):
 	""" This class is used to perform verification on file and metadata """
@@ -42,7 +35,7 @@ class Verifier(object):
 				verification = crypto.verifyRSAsignatureSHA256(h,sourceSignature,settings.PUB_KEY)
 
 				#history only if specified
-				if resType == 3:
+				if resType == constConfig.VERIFY_CHOICE_FILESHISTORY:
 					historyVerification = self.verifyHistory(f)
 				else:
 					historyVerification = None

@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 @dajaxice_register
 @login_required
 def checkDownload(request,t,i):
-
+	""" Check the download status """
 
 	dajax = Dajax()
 
@@ -38,20 +38,24 @@ def checkDownload(request,t,i):
 		dajax.assign("#thMessage","innerHTML",downloadToken.threadMessage)	
 
 		if s != constConfig.THREAD_NOTCLICKED and s != constConfig.THREAD_STOP:
-			mask = {constConfig.THREAD_VERIFY_CRED: False, constConfig.THREAD_DOWN_META: False, constConfig.THREAD_COMPUTING: False,constConfig.THREAD_DOWN_FH: False, constConfig.THREAD_TS: False}
+			mask = {constConfig.THREAD_VERIFY_CRED: False, 
+				constConfig.THREAD_DOWN_META: False, 
+				constConfig.THREAD_COMPUTING: False,
+				constConfig.THREAD_DOWN_FH: False,
+				constConfig.THREAD_TS: False
+				}
 
 			#set the icons that have to use accept.png as icon
 			for key,value in mask.iteritems():
 				if key <= s:
 					mask[key] = True
 
-
 			#now that states for icon are set, assign to dajax
 			for key,value in mask.iteritems():
 				if value is True:
 					dajax.assign("#status"+str(key),"innerHTML","<img src='/static/icons/accept.png' />")
 
-					if key >= 3:
+					if key >= constConfig.THREAD_COMPUTING:
 						computeSize = float(downloadToken.downloadSize)/math.pow(2,20)
 						dajax.assign("#fileSize","innerHTML",computeSize)
 				else: 

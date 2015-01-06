@@ -7,15 +7,8 @@ from django.utils.dateformat import format
 from webapp import constConfig
 from django.core.exceptions import ObjectDoesNotExist
 from abstractDownloader import AbstractDownloader
-
-# add path for crypto
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-	del cryptoPath
-
-import crypto
+from django.utils import timezone
+from webapp import crypto
 
 class DropboxDownloader(AbstractDownloader):
 	""" This class represent a Dropbox downloader """
@@ -96,7 +89,7 @@ class DropboxDownloader(AbstractDownloader):
 			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
 			return downStatus
 
-		downDirFullSub = os.path.join(self.downloadDir, "files")
+		downDirFullSub = os.path.join(self.downloadDir, constConfig.DOWNLOAD_FILES_FOLDER)
 
 		if not os.path.isdir(downDirFullSub):
 			os.mkdir(downDirFullSub)
@@ -133,7 +126,7 @@ class DropboxDownloader(AbstractDownloader):
 			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
 			return downStatus
 
-		downDirFullSub = os.path.join(self.downloadDir,"history")
+		downDirFullSub = os.path.join(self.downloadDir,constConfig.DOWNLOAD_HISTORY_FOLDER)
 
 		if not os.path.isdir(downDirFullSub):
 			os.mkdir(downDirFullSub)
@@ -205,6 +198,8 @@ class DropboxDownloader(AbstractDownloader):
 		self.downloadFiles()
 		self.downloadHistory()
 		self.d.threadStatus = constConfig.THREAD_DOWN_FH
+		self.d.endDownTime = timezone.now()
+		self.d.finalFileSize = self.computeFileSize(self.downloadDir)
 		self.d.save()
 
 	def sharedFolder(client,at):

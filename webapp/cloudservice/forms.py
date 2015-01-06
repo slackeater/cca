@@ -1,12 +1,13 @@
 from django import forms
 from dashboard.models import MimeType
 from datetime import date
-RES_CHOICES = ((0,'Deleted File'),(1,'MIME Type'),(2,'All'))
-FORM_TYPE = ((0,'E-Mail'),(1,'File Name'),(2,'Given Name'),(3,'All'))
+from webapp import constConfig
 
 class MetaSearch(forms.Form):
-	formType = forms.ChoiceField(choices=FORM_TYPE, label="Type", required=True,widget=forms.RadioSelect)
-	resType = forms.ChoiceField(choices=RES_CHOICES, label="Type", required=True,widget=forms.RadioSelect)
+	""" This class represent the form for searchin through the metadata """
+
+	formType = forms.ChoiceField(choices=constConfig.CS_FORM_TYPE, label="Type", required=True,widget=forms.RadioSelect)
+	resType = forms.ChoiceField(choices=constConfig.CS_RES_CHOICES, label="Type", required=True,widget=forms.RadioSelect)
 
 	# Get all MIME Type
 	mimes = MimeType.objects.all().order_by('mime')

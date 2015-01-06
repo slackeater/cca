@@ -12,6 +12,7 @@ from abstractAnalyzer import AbstractAnalyzer
 import math,time,strict_rfc3339
 from webapp.func import *
 import math
+from webapp import constConfig
 
 class GoogleAnalyzer(AbstractAnalyzer):
 	""" This class represents a Google analyzer """
@@ -64,7 +65,7 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		searchResItem = None
 
 		#e-mail
-		if searchType == 0:
+		if searchType == constConfig.CS_SEARCH_TYPE_ALL:
 			if "owners" in item and item['mimeType'] != MimeType.objects.get(id=1340).mime:
 				for o in item['owners']:
 					if o['emailAddress'] == searchEmail:
@@ -73,15 +74,15 @@ class GoogleAnalyzer(AbstractAnalyzer):
 			#TODO include history??
 				
 		#filename
-		elif searchType == 1:
+		elif searchType == constConfig.CS_SEARCH_TYPE_FILENAME:
 			if "title" in item and searchFile in item["title"]:
 				searchResItem = item
 		#givenname
-		elif searchType == 2:
+		elif searchType == constConfig.CS_SEARCH_TYPE_GIVENNAME:
 			if ("lastModifyingUserName" in item and searchGivenName in item["lastModifyingUserName"]) or ("ownerName" in item and searchGivenName in item["ownerNames"]):
 				searchResItem = item
 		#all
-		elif searchType == 3:
+		elif searchType == constConfig.CS_SEARCH_TYPE_ALL:
 			searchResItem = item
 			
 		return searchResItem
@@ -91,16 +92,16 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		filterRes = None
 
 		#deleted
-		if filterType == 0:
+		if filterType == constConfig.CS_SEARCH_FILTER_DELETED:
 			if item['labels']['trashed']:
 				filterRes = item
 		# mimetype
-		elif filterType == 1:
+		elif filterType == constConfig.CS_SEARCH_FILTER_MIME:
 			m = MimeType.objects.get(id=mimeType)
 			if item['mimeType'] == m.mime:
 				filterRes = item
 		#all
-		elif filterType == 2:
+		elif filterType == constConfig.CS_SEARCH_FILTER_ALL:
 			filterRes = item
 
 		return filterRes

@@ -1,7 +1,9 @@
 from abstractBrowserFile import AbstractBrowserFile
 import os,sqlite3,urlparse,time,pytz
 from datetime import datetime,timedelta
+
 class GoogleChromeFiles(AbstractBrowserFile):
+	""" This class represent a Google Chrome file browser """
 
 	def __init__(self,folderPath,profile):
 		self.folderName = os.path.join(folderPath,"chrome-copy",profile)

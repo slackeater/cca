@@ -4,15 +4,7 @@ from subprocess import Popen, PIPE, STDOUT
 from models import Download
 from webapp import constConfig 
 import requests,shlex
-
-# add path for crypto
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-	del cryptoPath
-
-import crypto
+from webapp import crypto
 
 class Verifier():
 	""" This class represent the verification process where we store and sign the evidence with a digital timestampgin service """

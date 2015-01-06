@@ -36,7 +36,6 @@ def download(downloadDB,uname,pwd):
 				downloader.verificationProcess()	
 
 		except Exception as e:
-			print e
 			downloadDB.threadStatus = constConfig.THREAD_STOP
 			downloadDB.threadMessage = formatException(e)
 			downloadDB.save()

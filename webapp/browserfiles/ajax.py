@@ -16,6 +16,7 @@ from webapp.browserfileController import BrowserFileController
 @dajaxice_register
 @login_required
 def fileTimeLine(request,formHistory,profileForm,ci):
+	""" Call the timeline generator """
 
 	dajax = Dajax()
 
