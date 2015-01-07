@@ -61,4 +61,11 @@ table.revision{
 		<tr><td colspan=4>No file found.</td></tr>
 	{% endfor %}
 	</table>
+{% elif dta %}
+	<table class="table table-bordered">
+		<tr><th>Verification Request</th><th>Verification Response</th><th>Verification Result</th><th>ZIP Hash</th></tr>
+		<tr><td>{{dta.reqName}}</td><td>{{dta.sigName}}<a href="{{dta.downLink}}" target="_blank"> <img src="/static/icons/disk.png" /></a></td><td>{% if dta.res == True %}<img src="/static/icons/accept.png" />{%else%}<img src="/static/icons/delete.png" />{%endif%}</td><td>{{dta.zipHash}} (<b>{{dta.zipHashBase64}}</b>)</td></tr>
+	</table>
+
+
 {% endif %}

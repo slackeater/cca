@@ -2,6 +2,7 @@ from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from dajaxice.utils import deserialize_form
 from webapp.func import *
+from webapp.databaseInterface import DbInterface
 from webapp.exceptionFormatter import formatException
 from comparator.fileComparator import Comparator
 from downloader.models import FileDownload, Download
@@ -13,6 +14,9 @@ from forms import VerifyForm
 from dajaxice.utils import deserialize_form
 from django.contrib.auth.decorators import login_required
 from comparator.fileVerifier import Verifier
+from downloader.verifier import DTAVerifier
+from webapp import crypto
+import binascii
 
 @dajaxice_register
 @login_required
@@ -58,14 +62,32 @@ def verifyFile(request,cloudItem,tokenID,form):
 			verType = parseAjaxParam(f.cleaned_data['verificationType'])
 			metaVerification = None
 			downVerification = None
+			dtaVerification = None
 			v = Verifier(tkn)
 
 			if verType == constConfig.VERIFY_CHOICE_METADATA:
 				metaVerification = v.verifyMetadata()
-			else:
+			elif verType == constConfig.VERIFY_CHOICE_FILES or verType == constConfig.VERIFY_CHOICE_FILESHISTORY:
 				downVerification = v.verifyFileDownload(verType)
+			elif verType == constConfig.VERIFY_CHOICE_DTA_SIGNATURE:
+				#path of signature files
+				d = DbInterface.getDownload(tkn)
+				folderName = d.folder
+				request = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_REQUEST)
+				signature = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_SIGNATURE)
+				zipData = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_ZIP)
+				zipHash = d.verificationZIPSignatureHash
+				zipHashBase64 = binascii.b2a_base64(binascii.unhexlify(zipHash))
+				signatureDownloadPath = "/verSign/" + folderName + constConfig.EXTENSION_SIGNATURE
+				
+				if os.path.isfile(request) and os.path.isfile(signature):
+					dtaVer = DTAVerifier(None)
+					res = dtaVer.verifyTimestamp(request,signature)
+					dtaVerification = {'res':res,'zipHashBase64':zipHashBase64,'zipHash':zipHash,'downLink': signatureDownloadPath ,'reqName': os.path.join(folderName,constConfig.EXTENSION_REQUEST),'sigName':os.path.join(folderName,constConfig.EXTENSION_SIGNATURE)}
+			else:
+				raise Exception ("Invalid Verification Type")
 
-			table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification})
+			table = render_to_string("dashboard/comparator/comparatorVerify.html",{"meta":metaVerification,'file': downVerification,'dta':dtaVerification})
 
 			dajax.assign("#verifyer","innerHTML",table)
 			dajax.assign("#verifyerError","innerHTML","")

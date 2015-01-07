@@ -1,6 +1,6 @@
 import abc,os
 from django.conf import settings
-from verifier import Verifier
+from verifier import DTAVerifier
 
 class AbstractDownloader(object):
 	""" An abstract class that represent a download """
@@ -23,7 +23,7 @@ class AbstractDownloader(object):
 			os.mkdir(downDir)
 
 		self.downloadDir = downDir
-		self.v = Verifier(self.d)
+		self.v = DTAVerifier(self.d)
 
 	def computeFileSize(self,source):
 		""" Compute the total size of downloaded files http://snipplr.com/view.php?codeview&id=47686 """

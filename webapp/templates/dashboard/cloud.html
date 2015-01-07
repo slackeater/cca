@@ -41,6 +41,16 @@ function googleCallBack(data){
 	  <li><a href="/clouditem/{{objID}}">Cloud Item {{objID}}</a></li>
 	      <li class="active">Access Token</li>
 </ol>
+
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active"><a id="accessTable" href="javascript:void(0)"><h4>Access Token List</h4></a></li>
+	<li role="presentation"><a id="cspLogin" href="javascript:void(0)"><h4>CSP Login</h4></a></li>
+	<li role="presentation"><a id="creds" href="javascript:void(0)"><h4>Credentials</h4></a></li>
+</ul>
+
+<div id="tokenError"></div>
+
+<div id="credPanel" style="display: none">
 <h2 onclick='$("#credTab").fadeToggle("slow")'><a href="#">Credentials</a></h2>
 <table id="credTab" class="table table-bordered" style="display: none">
 	<tr><th>Hostname</th><th>Username</th><th>Password</th></tr>
@@ -54,8 +64,9 @@ function googleCallBack(data){
 		<tr><td colspan=3>No results have been found.</td></tr>
 	{% endfor %}
 </table>
+</div>
 
-<div class="row">
+<div class="row" id="loginPanel" style="display: none">
 	<div class="col-md-6">
 		<h2>Dropbox</h2>
 		<div class="container-fluid">
@@ -111,9 +122,44 @@ function googleCallBack(data){
 	</div>
 </div>
 
-<h2><a href="javascript:void(0)" onclick="Dajaxice.tokendash.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
-<div id="tokenError"></div>
-<div id="tokenTable"></div>
+<div id="accessPanel">
+	<h2><a href="javascript:void(0)" onclick="Dajaxice.tokendash.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
+	<div id="tokenTable"></div>
+</div>
 
 <input type="hidden" value="{{objID}}" id="i" />
+
+<script>
+$("#accessTable").click(function(){
+	$("#accessTable").parent().addClass("active");
+	$("#cspLogin").parent().removeClass("active");
+	$("#creds").parent().removeClass("active");
+	$("#loginPanel").hide()
+	$("#credPanel").hide()
+	$("#accessPanel").fadeIn("slow")
+});
+
+$("#cspLogin").click(function(){
+	$("#accessTable").parent().removeClass("active");
+	$("#cspLogin").parent().addClass("active");
+	$("#creds").parent().removeClass("active");
+	$("#loginPanel").fadeIn("slow")
+	$("#credPanel").hide()
+	$("#accessPanel").hide()
+});
+
+$("#creds").click(function(){
+	$("#accessTable").parent().removeClass("active");
+	$("#cspLogin").parent().removeClass("active");
+	$("#creds").parent().addClass("active");
+	$("#loginPanel").hide()
+	$("#credPanel").fadeIn("slow")
+	$("#accessPanel").hide()
+});
+
+
+
+</script>
+
+
 {% endblock %}

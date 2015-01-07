@@ -40,6 +40,11 @@ ALLOWED_MIME_TYPE = ("application/pdf","image/jpeg","image/png","image/gif","ima
 VERIFY_CHOICE_METADATA = 1
 VERIFY_CHOICE_FILES = 2
 VERIFY_CHOICE_FILESHISTORY = 3
+VERIFY_CHOICE_DTA_SIGNATURE = 4
 
-VERIFY_CHOICES = ((VERIFY_CHOICE_METADATA,"Metadata"),(VERIFY_CHOICE_FILES,"Files"),(VERIFY_CHOICE_FILESHISTORY,"Files+History (it can take a lot of time)"))
+VERIFY_CHOICES = ((VERIFY_CHOICE_METADATA,"Metadata"),(VERIFY_CHOICE_FILES,"Files"),(VERIFY_CHOICE_FILESHISTORY,"Files+History (it can take a lot of time)"),(VERIFY_CHOICE_DTA_SIGNATURE,"DTA Signature"))
 
+#verifier
+EXTENSION_SIGNATURE = ".p7s"
+EXTENSION_REQUEST = ".tsrequest"
+EXTENSION_ZIP = ".zip"

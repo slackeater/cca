@@ -2,7 +2,6 @@ from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from webapp.func import *
 from webapp import constConfig
-import oauth
 from models import AccessToken,Download
 from clouditem.models import CloudItem
 from django.views.decorators.csrf import csrf_protect

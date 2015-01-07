@@ -1,7 +1,7 @@
 from dajax.core import Dajax
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import MultipleObjectsReturned
-import oauth, sys, dropbox
+import sys, dropbox
 import json, base64
 from models import AccessToken,Download
 from importer.models import Upload

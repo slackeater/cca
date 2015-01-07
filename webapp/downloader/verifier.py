@@ -6,7 +6,7 @@ from webapp import constConfig
 import requests,shlex
 from webapp import crypto
 
-class Verifier():
+class DTAVerifier():
 	""" This class represent the verification process where we store and sign the evidence with a digital timestampgin service """
 
 	def __init__(self,download):
@@ -99,7 +99,7 @@ class Verifier():
 	def createTimestampRequest(self):
 		""" Create a timestamp request """
 
-		dstRequest = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".tsrequest")
+		dstRequest = os.path.join(settings.VERIFIED_ZIP,self.download.folder+constConfig.EXTENSION_REQUEST)
 
 		try:
 			cmdline = '%s %s' % ("openssl ts","-query -sha256 -digest {} -cert -no_nonce -out {}".format(self.download.verificationZIPSignatureHash,dstRequest))
@@ -117,7 +117,7 @@ class Verifier():
 	def timestampRequest(self):
 		""" Send the previously created timestamp request to the TSA """
 
-		self.tsResponse = os.path.join(settings.VERIFIED_ZIP,self.download.folder+".p7s")
+		self.tsResponse = os.path.join(settings.VERIFIED_ZIP,self.download.folder+constConfig.EXTENSION_SIGNATURE)
 	
 		try:
 			#obtain a signed timestamp
@@ -134,11 +134,18 @@ class Verifier():
 		except subprocess.CalledProcessError as e:
 			raise Exception(str(e.returncode) + " " + str(e.cmd) + " " + str(e.output))
 
-	def verifyTimestamp(self):
+	def verifyTimestamp(self,request = None, response = None):
 		""" Verify wether the created timestamp is correct or not """
 
+		if request != None and response != None:
+			req = request
+			res = response
+		else:
+			req = self.tsRequest
+			res = self.tsResponse
+
 		try:
-			cmdline = '%s %s' % ("openssl ts","-verify -queryfile {} -in {} -CAfile {}".format(self.tsRequest,self.tsResponse,os.path.join(settings.VERIFIED_ZIP,"digistamp.pem")))
+			cmdline = '%s %s' % ("openssl ts","-verify -queryfile {} -in {} -CAfile {}".format(req,res,os.path.join(settings.VERIFIED_ZIP,"digistamp.pem")))
 			subprocess.check_output(shlex.split(cmdline))
 			return True
 		except subprocess.CalledProcessError as e:

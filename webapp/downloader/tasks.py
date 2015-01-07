@@ -5,7 +5,6 @@ from downloader.models import AccessToken,Download
 from django.db import transaction
 from .googleDownloader import GoogleDownloader
 from .dropDownloader import DropboxDownloader
-from .verifier import Verifier
 from webapp.exceptionFormatter import formatException
 from webapp import constConfig
 
