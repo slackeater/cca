@@ -109,6 +109,19 @@ var Dajaxice = {
     
 ,
     
+    devicelister: {
+    
+    listdevices: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('devicelister.listdevices', 'POST', callback_function, argv, custom_settings);
+    }
+
+
+    
+    
+    }
+    
+,
+    
     timeliner: {
     
     formTimeliner: function(callback_function, argv, custom_settings){

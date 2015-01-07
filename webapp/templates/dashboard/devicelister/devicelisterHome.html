@@ -1,0 +1,46 @@
+{% extends "dashboard/tknDash.html" %}
+
+{% block js %}
+<script>
+
+function devList(){
+	Dajaxice.devicelister.listdevices(Dajax.process,{'clouditem':iVal(),'tokenID':tVal(),'form':$("#credForm").serialize(true)})
+}
+
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+	<h1>Devices</h1>
+</div>
+
+<ol class="breadcrumb">
+	<li><a href="/clouditem/">Cloud Item</a></li>
+	<li><a href="/clouditem/{{objID}}/">Cloud Item {{objID}}</a></li>
+	<li><a href="/token/{{objID}}/">Access Tokens</a></li>
+	<li><a href="/token/{{objID}}/{{tokenID}}/">Access Token {{tokenID}}</a></li>
+	<li class="active">Devices</li>
+</ol>
+
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active">
+		<a href="javascript:void(0)" id="devTab"><h4>List Devices</h4></a>
+	</li>
+</ul>
+<br />
+
+<div class="row">
+	<div class="col-md-3">
+		<form id="credForm">
+			{% csrf_token %}
+			{{credForm}}
+			<input type="button" onclick="devList()" value="Submit" class="btn btn-default"  />
+		</form>
+	</div>
+</div>
+{% endblock %}
+

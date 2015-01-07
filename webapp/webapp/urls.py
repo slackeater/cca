@@ -21,6 +21,7 @@ urlpatterns = patterns('',
     url('', include('browserfiles.urls')),
     url('', include('tokendash.urls')),
     url('', include('reporter.urls')),
+    url('', include('devicelister.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 
