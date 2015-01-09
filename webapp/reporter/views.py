@@ -23,7 +23,6 @@ def generateReport(request,cloudItemID,tokenID):
 		token = checkAccessToken(tokenID,ci)
 
 		if request.method == 'POST':
-			print "POST"
 			rg = ReportGenerator(token.id)
 			return rg.genPDF()
 

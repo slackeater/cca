@@ -2,6 +2,10 @@ import os,sys
 from webapp.func import *
 from webapp import constConfig
 from webapp import crypto
+from downloader.verifier import DTAVerifier
+import binascii
+from webapp.databaseInterface import DbInterface
+from django.conf import settings
 
 class Verifier(object):
 	""" This class is used to perform verification on file and metadata """
@@ -95,4 +99,23 @@ class Verifier(object):
 				hList.append({'hID': fh.id,'revID':fh.revision,'metadataVerificationResult': verification,'fileVerificationResult':"File does not exists on disk"})
 
 		return hList
+	
+	def verifyZIP(self):
+		""" Verify the signature and the digital timestamp """
+		
+		d = DbInterface.getDownload(self.t)
+		folderName = d.folder
 
+		#path of signature files
+		request = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_REQUEST)
+		signature = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_SIGNATURE)
+		zipData = os.path.join(settings.VERIFIED_ZIP,folderName+constConfig.EXTENSION_ZIP)
+
+		zipHash = d.verificationZIPSignatureHash
+		zipHashBase64 = binascii.b2a_base64(binascii.unhexlify(zipHash))
+		signatureDownloadPath = "/verSign/" + folderName + constConfig.EXTENSION_SIGNATURE				
+
+		if os.path.isfile(request) and os.path.isfile(signature):
+			dtaVer = DTAVerifier(None)
+			res = dtaVer.verifyTimestamp(request,signature)
+			return {'res':res,'zipHashBase64':zipHashBase64,'zipHash':zipHash,'downLink': signatureDownloadPath ,'reqName': folderName+constConfig.EXTENSION_REQUEST,'sigName':folderName+constConfig.EXTENSION_SIGNATURE}

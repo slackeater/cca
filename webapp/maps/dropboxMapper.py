@@ -37,7 +37,7 @@ class DropboxMapper(AbstractMaps):
 
 						#compute file name
 						altName = dropboxAlternateName(f['path'],f['modified'])
-						fName = crypto.sha256(f['path']+crypto.HASH_SEPARATOR+altName).hexdigest()+"_"+altName
+						fName = crypto.sha256(os.path.basename(f['path'])+crypto.HASH_SEPARATOR+altName).hexdigest()+"_"+altName
 
 						#copy src img to thumbnail folder
 						srcDir = os.path.join(settings.DOWNLOAD_DIR,self.d.folder,"files",fName)
@@ -47,7 +47,7 @@ class DropboxMapper(AbstractMaps):
 						thumb = Thubmnailer()
 						thumb.cacheImg(srcDir,dstDir,250,250)
 
-						res.append({"title":f['path'],"lat":lat,"lon":lon})
+						res.append({"title":f['path'],"lat":lat,"lon":lon,'fName':fName+".thubmnail"})
 
 		return res
 
