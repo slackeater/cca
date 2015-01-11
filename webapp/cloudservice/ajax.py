@@ -13,6 +13,7 @@ from webapp.exceptionFormatter import formatException
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from webapp.metadataController import MetadataController
+import webapp.crypto
 
 @dajaxice_register
 @login_required
