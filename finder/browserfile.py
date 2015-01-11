@@ -36,7 +36,7 @@ def fileCheckerCopy(profileDir, fileName, reportFolder):
 	""" Check if the file exists and copy it to the report folder """
 
 	wholePath = os.path.join(profileDir, fileName)
-
+	
 	if os.path.isfile(wholePath):
 		dstFile = os.path.join(reportFolder, fileName)
 		logger.log("Copying\n\t" + wholePath + "\n\t" + dstFile, "no")

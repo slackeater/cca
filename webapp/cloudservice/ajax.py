@@ -13,6 +13,7 @@ from webapp.exceptionFormatter import formatException
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from webapp.metadataController import MetadataController
+import webapp.crypto
 
 @dajaxice_register
 @login_required
@@ -54,7 +55,6 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 
 		if f.is_valid():
 			startResTime = time.time()
-			
 			#compute hash of the search form for the cache
 			searchHash = crypto.sha256(form).hexdigest()
 			"""searchHash = crypto.sha256(f.cleaned_data['formType'][0]+crypto.HASH_SEPARATOR+

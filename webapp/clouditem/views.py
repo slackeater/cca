@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, render_to_response
 from importer.models import Upload 
 from models import CloudItem
+from importer.models import Upload
 from django.template import RequestContext
 from django.utils import timezone
 from webapp.func import isAuthenticated
@@ -32,7 +33,17 @@ def cloudItem(request):
 			errors = "Invalid insertion. Please check your data."
 
 	clouds = CloudItem.objects.filter(reporterID=User.objects.get(id=request.user.id))
-	data = {'cloudItem': clouds,'form':f,'errors': errors}
+	res = list()	
+	for c in clouds:
+		hasReport = False
+		reportNumber = Upload.objects.filter(cloudItemID=c)
+
+		if len(reportNumber) == 1:
+			hasReport = True
+
+		res.append({'item': c, 'hasReport': hasReport})
+			
+	data = {'cloudItem': res,'form':f,'errors': errors}
 	return render_to_response("clouditem/clouditemHome.html", data, context_instance=RequestContext(request))
 
 @login_required
