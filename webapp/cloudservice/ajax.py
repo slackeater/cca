@@ -55,7 +55,6 @@ def searchMetaData(request,form,tokenID,cloudItem,start):
 
 		if f.is_valid():
 			startResTime = time.time()
-			
 			#compute hash of the search form for the cache
 			searchHash = crypto.sha256(form).hexdigest()
 			"""searchHash = crypto.sha256(f.cleaned_data['formType'][0]+crypto.HASH_SEPARATOR+

@@ -1,15 +1,9 @@
 import constConfig, os,sys
 from browserfiles.chromeBrowserFile import GoogleChromeFiles
+from browserfiles.firefoxBrowserFile import FirefoxFiles
 from importer.models import Upload
 from django.conf import settings
-
-cryptoPath = os.path.join(os.path.dirname(settings.BASE_DIR), "finder")
-
-if not cryptoPath in sys.path:
-	sys.path.insert(1, cryptoPath)
-del cryptoPath
-
-import crypto
+from webapp import crypto
 from webapp.func import getTimestamp
 
 
@@ -27,9 +21,19 @@ class BrowserFileController(object):
 		importPath = crypto.sha256(imp.fileName+crypto.HASH_SEPARATOR+getTimestamp(imp.uploadDate)).hexdigest()
 
 		self.filePath = os.path.join(settings.UPLOAD_DIR,str(cloudItem.id),importPath,imp.fileName)
+		
+		profile = str(browserParam.split("_",1)[1])
+	
+		#windows profile are stored with Profile\in front
+		if profile.startswith("Profile"):
+			profile = profile[9:]
 
 		if int(browserParam[0]) == constConfig.HISTORY_FORM_CHROME:
-			self.fb = GoogleChromeFiles(self.filePath,browserParam.split("_",1)[1])
+			self.fb = GoogleChromeFiles(self.filePath,profile)
+		elif int(browserParam[0]) == constConfig.HISTORY_FORM_FF:
+			self.fb = FirefoxFiles(self.filePath,profile)
+				
+
 
 	def generateTimeLine(self,domain):
 		return self.fb.generateTimeLine(domain)

@@ -34,9 +34,9 @@
 
 <div class="panel panel-default">
 	<div class="panel-heading">Cloud Item list</div>
-	<table class="table"><tr><th>ID</th><th>Name</th><th>Description</th><th>Creation Time</th></tr>
+	<table class="table"><tr><th>ID</th><th>Name</th><th>Description</th><th>Creation Time</th><th>Report</th></tr>
 	{% for i in cloudItem %}
-	<tr><td><a href="/clouditem/{{i.id}}/">{{i.id}}</a></td><td>{{i.reportName}}</td><td>{{i.desc}}</td><td>{{i.itemTime|localtime}}</td></tr>
+	<tr><td><a href="/clouditem/{{i.item.id}}/">{{i.item.id}}</a></td><td>{{i.item.reportName}}</td><td>{{i.item.desc}}</td><td>{{i.item.itemTime|localtime}}</td><td>{{i.hasReport}}</td></tr>
 	{% empty %}
 		<tr><td colspan=2>Sorry no items have been found.</td></tr>
 	{% endfor %}
