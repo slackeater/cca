@@ -65,7 +65,7 @@ class GoogleAnalyzer(AbstractAnalyzer):
 		searchResItem = None
 
 		#e-mail
-		if searchType == constConfig.CS_SEARCH_TYPE_ALL:
+		if searchType == constConfig.CS_SEARCH_TYPE_EMAIL:
 			if "owners" in item and item['mimeType'] != MimeType.objects.get(id=1340).mime:
 				for o in item['owners']:
 					if o['emailAddress'] == searchEmail:
