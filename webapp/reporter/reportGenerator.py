@@ -139,7 +139,8 @@ class ReportGenerator():
 		""" Displays information about the downloaded files """
 
 		history = []
-		
+                rowElem = list()
+
 		self.story.append(Paragraph("Downloaded Files",styles['Heading1']))
 		
 		#files
@@ -158,47 +159,47 @@ class ReportGenerator():
 				]
 
 			data.append(line)
-			history.append([f.id,DbInterface.getHistoryForFile(f)])
-		
+			
+                        hist = DbInterface.getHistoryForFile(f)
+
+                        #if we have an history
+                        if len(hist) > 0:
+
+                            #history.append([f.id,DbInterface.getHistoryForFile(f)])
+                            histData = [[Paragraph("<b>ID</b>",self.normalStyle),
+                            Paragraph("<b>Revision</b>",self.normalStyle),
+                            Paragraph("<b>Download Time</b>",self.normalStyle),
+                            Paragraph("<b>Signature</b>",self.normalStyle)
+                            ]]
+
+                            for h in hist:
+                                histData.append([
+                                Paragraph(str(h.id),self.normalStyle),
+                                Paragraph(h.revision,self.normalStyle),
+                                Paragraph(str(timezone.localtime(h.downloadTime)),self.normalStyle),
+                                Paragraph(crypto.sha256(h.fileRevisionHash).hexdigest(),self.normalStyle)
+                                ])
+
+                            histT = Table(histData, colWidths=(1.5*cm,6*cm,6*cm,6*cm))
+                            histT.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                            ('BOX', (0,0), (-1,-1), 0.25, colors.black),]))
+
+                            data.append(["",histT,"",""])
+
+                            #row to which apply the colspan
+                            rowElem.append(('BACKGROUND',(0,len(data)-1),(0,len(data)-1),colors.green))
+                            rowElem.append(('SPAN',(1,len(data)-1),(3,len(data)-1)))
+
 		t = Table(data, colWidths=(2*cm,9*cm,5*cm,8.5*cm))
-		t.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-				       ('BOX', (0,0), (-1,-1), 0.25, colors.black),
-				      ]
-				     )
-			)
+                styleParam = [('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),('BOX', (0,0), (-1,-1), 0.25, colors.black),]
+                styleParam.extend(rowElem)
+                print rowElem
+                print styleParam
+                ts = TableStyle(styleParam)
+		t.setStyle(ts)
 
 		self.story.append(t)
 		self.story.append(PageBreak())
-
-		#history
-		self.story.append(Paragraph("History",styles['Heading1']))
-
-		histData = [[Paragraph("<b>File ID</b>",self.normalStyle),
-			Paragraph("<b>ID</b>",self.normalStyle),
-			Paragraph("<b>Revision</b>",self.normalStyle),
-			Paragraph("<b>Download Time</b>",self.normalStyle),
-			Paragraph("<b>Signature Hash</b>",self.normalStyle)
-			]]
-		
-		for h in history:
-			fID = str(h[0])
-			fHist = h[1]
-			for hist in fHist:
-				histData.append([Paragraph(fID,self.normalStyle),
-						Paragraph(str(hist.id),self.normalStyle),
-						Paragraph(hist.revision,self.normalStyle),
-						Paragraph(str(timezone.localtime(hist.downloadTime)),self.normalStyle),
-						Paragraph(crypto.sha256(hist.fileRevisionHash).hexdigest(),self.normalStyle)
-						])
-
-
-		t = Table(histData, colWidths=(2*cm,1.5*cm,8*cm,5*cm,8*cm))
-		t.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-				       ('BOX', (0,0), (-1,-1), 0.25, colors.black),
-				      ]
-				     )
-			)
-		self.story.append(t)
 
 	def genPDF(self):
 		""" Generate the PDF """

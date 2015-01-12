@@ -11,7 +11,7 @@ function dropboxAuthCode(){
 function dropCallBack(data){
 	$("#loadDrop").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.tokendash.showTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.tokendash.showTokens(displayCallBack, {'ci': iVal()})
 }
 
 function googleAuthCode(){
@@ -22,7 +22,15 @@ function googleAuthCode(){
 function googleCallBack(data){
 	$("#loadGoogle").fadeOut("slow")
 	Dajax.process(data)
-	Dajaxice.tokendash.showTokens(Dajax.process, {'ci': iVal()})
+	Dajaxice.tokendash.showTokens(displayCallBack, {'ci': iVal()})
+}
+
+function displayCallBack(data){
+	Dajax.process(data)
+	$("#accessTable").parent().addClass("active")
+	$("#cspLogin").parent().removeClass("active")
+	$("#loginPanel").hide()
+	$("#accessPanel").fadeIn("slow")
 }
 
 
@@ -123,8 +131,10 @@ function googleCallBack(data){
 </div>
 
 <div id="accessPanel">
-	<h2><a href="javascript:void(0)" onclick="Dajaxice.tokendash.showTokens(Dajax.process,{'ci': iVal()})">Access Tokens</a></h2>
-	<div id="tokenTable"></div>
+	<br />
+	<div id="tokenTable">
+	{{accessTable}}
+	</div>
 </div>
 
 <input type="hidden" value="{{objID}}" id="i" />

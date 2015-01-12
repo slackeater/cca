@@ -122,7 +122,7 @@ class DTAVerifier():
 		try:
 			#obtain a signed timestamp
 			p1 = subprocess.Popen(["cat",self.tsRequest],stdout=subprocess.PIPE)
-			p2 = subprocess.Popen(["curl","-s","-S","-H","Content-Type: application/timestamp-query#","--data-binary","@-","https://{}:{}@tsa1.digistamp.com/TSA".format(self._account,self._pwd,self.tsResponse)],stdin=p1.stdout,stdout=subprocess.PIPE)
+			p2 = subprocess.Popen(["curl","-s","-S","-H","Content-Type: application/timestamp-query#","--data-binary","@-","https://{}:{}@tsa1.digistamp.com/TSA".format(self._account,self._pwd)],stdin=p1.stdout,stdout=subprocess.PIPE)
 			p1.stdout.close()
 
 			output = p2.communicate()[0]

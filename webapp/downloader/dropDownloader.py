@@ -27,6 +27,8 @@ class DropboxDownloader(AbstractDownloader):
 		if simulateDownload is True:
 			time.sleep(constConfig.TEST_THREAD_SLEEP_TIME)
 			return downStatus
+		
+		self.d.downTime = timezone.now()
 
 		# get root directory
 		root = self.service.metadata("/",include_deleted=True,include_media_info=True)
