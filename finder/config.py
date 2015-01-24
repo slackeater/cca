@@ -4,7 +4,7 @@ UNAME = getpass.getuser()
 OP_SYS = platform.system()
 WIN_APPDATA = "C:\\Users\\" + UNAME + "\\AppData\\"
 
-if UNAME is "root":
+if UNAME == "root":
 	LINUX_HOME = "/root/"
 else:
 	LINUX_HOME = "/home/" + UNAME + "/"
