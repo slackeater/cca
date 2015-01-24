@@ -37,23 +37,37 @@ def init(reportPathUser):
 def browserFinder(reportPath):
 	""" Run the finder for the browsers """
 
+	browserPackList = list()
+
 	# find passwords and browser files
-	chromeReportFolder = os.path.join(reportPath, config.GCHROME_COPY_FOLDER)
-	logger.log("Chrome Profile Folder: " + chromeReportFolder)
-	os.mkdir(chromeReportFolder)
-	chrome = browserfile.chromeFinder(chromeReportFolder)
 
-	ffReportFolder = os.path.join(reportPath, config.FF_COPY_FOLDER)
-	logger.log("Firefox Profile Folder: " + ffReportFolder)
-	os.mkdir(ffReportFolder)
-	ffList = browserfile.firefoxFinder(ffReportFolder)
+	try:
+		chromeReportFolder = os.path.join(reportPath, config.GCHROME_COPY_FOLDER)
+		logger.log("Chrome Profile Folder: " + chromeReportFolder)
+		os.mkdir(chromeReportFolder)
+		chrome = browserfile.chromeFinder(chromeReportFolder)
+		browserPackList.append(chrome)
+	except Exception as e:
+		logger.error(e)
 
-	thReportFolder = os.path.join(reportPath, config.TH_COPY_FOLDER)
-	logger.log("Thunderbird Profile Folder: " + thReportFolder)
-	os.mkdir(thReportFolder)
-	thList = browserfile.thunderbirdFinder(thReportFolder)
+	try:	
+		ffReportFolder = os.path.join(reportPath, config.FF_COPY_FOLDER)
+		logger.log("Firefox Profile Folder: " + ffReportFolder)
+		os.mkdir(ffReportFolder)
+		ffList = browserfile.firefoxFinder(ffReportFolder)
+		browserPackList.append(ffList)
+	except Exception as e:
+		logger.error(e)
 
-	browserPackList = [chrome, ffList, thList]
+	try:
+		thReportFolder = os.path.join(reportPath, config.TH_COPY_FOLDER)
+		logger.log("Thunderbird Profile Folder: " + thReportFolder)
+		os.mkdir(thReportFolder)
+		thList = browserfile.thunderbirdFinder(thReportFolder)
+		browserPackList.append(thList)
+	except Exception as e:
+		logger.error(e)
+
 	return browserPackList
 
 def cloudFinder():

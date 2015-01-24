@@ -69,15 +69,12 @@ def chromeFinder(reportFolder):
 	gchromeVersion = "Google Chrome"
 
 	# get chrome version
-	try:
-		if(config.OP_SYS == "Windows"):
-			gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
-			gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
-		elif(config.OP_SYS == "Linux"):
-			gchromeVersionToParse = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
-			gchromeVersion = subprocess.check_output([gchromeVersionToParse, " --version"]).strip(" \n")
-	except Exception as e:
-		logger.error(e)
+	if(config.OP_SYS == "Windows"):
+		gchromeVersionToParse = subprocess.check_output('reg query "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome" /v DisplayVersion', shell=True)
+		gchromeVersion = "Google Chrome " + gchromeVersionToParse.split("\r\n")[2].split("    ")[-1]
+	elif(config.OP_SYS == "Linux"):
+		gchromeVersionToParse = subprocess.check_output(["which", config.GCHROME_EXEC_LINUX]).strip(" \n")
+		gchromeVersion = subprocess.check_output([gchromeVersionToParse, " --version"]).strip(" \n")
 
 	logger.log("\n", "no")
 	logger.log("===> Beginning scan of " + config.GCHROME_PROFILE + " <===")
@@ -160,9 +157,9 @@ def mozillaFinder(mozProfile, reportFolder):
 	browserDict["profiles"] = objProfiles
 	return browserDict
 
-
 def thunderbirdFinder(reportFolder):
 	""" Thudnerbird wrapper for mozillaFinder """
+	
 	res = mozillaFinder(config.TH_PROFILE, reportFolder)
 	res['name'] = mozillaVersionFinder("thunderbird")
 	resPrinter(res["profiles"])
@@ -170,6 +167,7 @@ def thunderbirdFinder(reportFolder):
 
 def firefoxFinder(reportFolder):
 	""" Firefox wrapper for mozillaFinder """
+	
 	res = mozillaFinder(config.FF_PROFILE, reportFolder)
 	res['name'] = mozillaVersionFinder("firefox")
 	resPrinter(res["profiles"])
