@@ -13,30 +13,6 @@ from django.test.utils import override_settings
 from django.conf import settings
 from verifier import Verifier
 
-class DownloaderThreadTestCase(TransactionTestCase):
-
-	def test_downloader_full(self):
-
-		#google and dropbox token
-		tList = [1,2]
-
-		for tokenID in tList:
-			t = ThreadManager(tokenID,True)
-			instance = t.download(None,None)
-			instance.join()
-
-			#check all different steps
-			statusList = t.statusList
-			self.assertEquals(constConfig.THREAD_INIT,statusList[0].threadStatus)
-			self.assertEquals(constConfig.THREAD_DOWN,statusList[1].threadStatus)
-			self.assertEquals(constConfig.THREAD_PHASE_1,statusList[2].threadStatus)
-			self.assertEquals(constConfig.THREAD_PHASE_2,statusList[3].threadStatus)
-			self.assertEquals(constConfig.THREAD_PHASE_3,statusList[4].threadStatus)
-
-			#database status should be 3, everything has been downloaded
-			dStatus = Download.objects.get(tokenID=AccessToken.objects.get(id=tokenID))
-			self.assertEquals(constConfig.THREAD_PHASE_3,dStatus.threadStatus)
-
 class DownloaderTestCase(TestCase):
 
 	def login(self):

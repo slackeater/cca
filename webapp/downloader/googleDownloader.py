@@ -35,6 +35,8 @@ class GoogleDownloader(AbstractDownloader):
 			return downStatus
 		
 		#download
+		self.d.downTime = timezone.now()
+		
 		result = []
 		page_token = None
 

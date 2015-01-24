@@ -10,38 +10,65 @@
 	  <li class="active">Cloud Item</li>
 </ol>
 
-<div onclick='$("#addCloudItem").fadeToggle("slow")'><h2><a href="#"><img src="/static/icons/add.png" /> New Cloud Item</a></h2></div>
+<ul class="nav nav-tabs nav-justified">
+	<li role="presentation" class="active"><a href="javascript:void(0)" id="listCloud"><h4>Cloud Items</h4></a></li>
+	<li role="presentation"><a href="javascript:void(0)" id="addCloud"><h4>Add New</h4></a></li>
+</ul>
+
+<br />
+
 {% if errors != "" %}
 <div class="alert alert-danger">{{errors}}</div>
 {% endif %}
 
-<div id="addCloudItem" class="container-fluid" style="display: none">
-<form action="" method="POST" role="form">
-	{% csrf_token %}
-	
-	<div class="form-group">
-		<label for="id_name">{{form.name.label}}</label>
-		{{form.name}}
-	</div>
+<div id="addPanel" style="display:none">
+	<div class="row"><div class="col-md-6">
+	<form action="" method="POST" role="form">
+		{% csrf_token %}
+		
+		<div class="form-group">
+			<label for="id_name">{{form.name.label}}</label>
+			{{form.name}}
+		</div>
 
-	<div class="form-group">
-		<label for="id_description">{{form.description.label}}</label>
-		{{form.description}}
-	</div>
-	<input type="submit" name="sub" class="btn btn-default"value="Insert" />
-</form>
+		<div class="form-group">
+			<label for="id_description">{{form.description.label}}</label>
+			{{form.description}}
+		</div>
+		<input type="submit" name="sub" class="btn btn-default"value="Insert" />
+	</form>
+	</div></div>
 </div>
 
-<div class="panel panel-default">
-	<div class="panel-heading">Cloud Item list</div>
-	<table class="table"><tr><th>ID</th><th>Name</th><th>Description</th><th>Creation Time</th><th>Report</th></tr>
-	{% for i in cloudItem %}
-	<tr><td><a href="/clouditem/{{i.item.id}}/">{{i.item.id}}</a></td><td>{{i.item.reportName}}</td><td>{{i.item.desc}}</td><td>{{i.item.itemTime|localtime}}</td><td>{{i.hasReport}}</td></tr>
-	{% empty %}
-		<tr><td colspan=2>Sorry no items have been found.</td></tr>
-	{% endfor %}
-	</table>
+<div id="listPanel">
+	<div class="panel panel-default">
+		<div class="panel-heading">Cloud Item list</div>
+		<table class="table"><tr><th>ID</th><th>Name</th><th>Description</th><th>Creation Time</th><th>Report</th></tr>
+		{% for i in cloudItem %}
+		<tr><td><a href="/clouditem/{{i.item.id}}/">{{i.item.id}}</a></td><td>{{i.item.reportName}}</td><td>{{i.item.desc}}</td><td>{{i.item.itemTime|localtime}}</td><td>{{i.hasReport}}</td></tr>
+		{% empty %}
+			<tr><td colspan=2>Sorry no items have been found.</td></tr>
+		{% endfor %}
+		</table>
+	</div>
 </div>
 
+<script>
+
+$("#listCloud").click(function(){
+	$("#listCloud").parent().addClass("active")
+	$("#addCloud").parent().removeClass("active")
+	$("#listPanel").fadeIn("slow")
+	$("#addPanel").hide()
+});
+
+$("#addCloud").click(function(){
+	$("#addCloud").parent().addClass("active")
+	$("#listCloud").parent().removeClass("active")
+	$("#listPanel").hide()
+	$("#addPanel").fadeIn("slow")
+});
+
+</script>
 
 {% endblock %}
