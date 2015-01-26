@@ -49,6 +49,9 @@ class Comparator(object):
 		#check that the two path actually exists. This because the actual file in dropbox (rightmost in the file history time line) does not exists if it has been deleted. So we will have an entry in the timeline for a version of a file that does not exist.
 		if not os.path.isfile(revOnePath) or not os.path.isfile(revTwoPath):
 			raise Exception("One of the two file does not exist. (Is this a deleted file on Dropbox?)")	
+                
+                print revOnePath
+                print revTwoPath
 
 		#check allowed mime
 		mime = magic.Magic(mime=True)

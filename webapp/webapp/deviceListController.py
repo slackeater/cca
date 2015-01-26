@@ -1,5 +1,6 @@
 import constConfig
 from devicelister.googleDeviceLister import GoogleDeviceLister
+from devicelister.dropboxDeviceLister import DropboxDeviceLister
 
 class DeviceListController(object):
 
@@ -10,7 +11,7 @@ class DeviceListController(object):
 		if token.serviceType == constConfig.CSP_GOOGLE:
 			self.csp = GoogleDeviceLister(token,email,pwd)
 		elif token.serviceType == constConfig.CSP_DROPBOX:
-			pass
+                        self.csp = DropboxDeviceLister(token,email,pwd)
 
 	def listDevices(self):
 		self.csp.connect()

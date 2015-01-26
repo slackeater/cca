@@ -29,6 +29,18 @@ function iVal(){
 function tVal(){
 	return document.getElementById("t").value
 }
+
+$(function(){
+	$('#dp1').datepicker({
+			format: 'dd/mm/yyyy'
+	});
+
+	$('#dp2').datepicker({
+			format: 'dd/mm/yyyy'
+	});
+
+});
+
 </script>
 
 {% block js %}{% endblock %}
