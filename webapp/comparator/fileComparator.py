@@ -14,6 +14,29 @@ class Comparator(object):
 	def __init__(self,token):
 		self.t = token
 
+        def displaySingle(self,title,altName,downAltName,fileFolder):
+            """ Display a single file """ 
+            
+            if fileFolder == "file":
+                f = constConfig.DOWNLOAD_FILES_FOLDER
+            elif fileFolder == "history":
+                f = os.path.join(constConfig.DOWNLOAD_HISTORY_FOLDER,downAltName)
+            
+            name = crypto.sha256(title+crypto.HASH_SEPARATOR+altName).hexdigest() + "_" + altName
+            downloadFolder = Download.objects.get(tokenID=self.t,threadStatus = constConfig.THREAD_TS).folder
+            fullPath = os.path.join(settings.DOWNLOAD_DIR, downloadFolder,f,name)
+            
+            print os.path.isfile(fullPath)
+            print fullPath
+
+            mime = magic.Magic(mime=True)
+            mimeType = mime.from_file(fullPath)
+
+            if mimeType in constConfig.ALLOWED_MIME_TYPE[1:-1]:
+                t = Thubmnailer()
+                t.cacheImg(fullPath,os.path.join(settings.DIFF_DIR,name+".thumbnail"))
+                return {'name': "/diff/"+name+".thumbnail"}
+
 	def compareTwo(self,revOneID,revTwoID,altName):
 		""" Compare two revision of the same file and check for diff """
 			

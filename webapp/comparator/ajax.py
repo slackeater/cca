@@ -112,3 +112,30 @@ def compareFromReport(request,cloudItem,tokenID):
 		dajax.add_css_class("#comparator",['alert','alert-danger'])
 
 	return dajax.json()
+
+@dajaxice_register
+@login_required
+def displaySingle(request,cloudItem,tokenID,title,altName,downAltName,fileType):
+	""" Compare files using the previously imported report """
+
+	dajax = Dajax()
+
+	try:
+		t = parseAjaxParam(tokenID)
+		ci = checkCloudItem(cloudItem,request.user.id)
+		tkn = checkAccessToken(t,ci)
+		
+                c = Comparator(tkn)
+                res = c.displaySingle(title,altName,downAltName,fileType)
+		table = render_to_string("dashboard/timeliner/singleViewer.html",res)
+                dajax.assign("#comparator","innerHTML",table)
+		dajax.assign("#comparatorError","innerHTML","")
+	except Exception as e:
+		dajax.assign("#comparatorError","innerHTML",formatException(e))
+		dajax.add_css_class("#comparator",['alert','alert-danger'])
+
+	return dajax.json()
+
+
+
+

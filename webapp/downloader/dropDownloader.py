@@ -187,11 +187,11 @@ class DropboxDownloader(AbstractDownloader):
 											)
 										fDb.save()
 								#when there is an error with the download of the history
-								except dropbox.rest.ErrorResponse, e:
-									fDb = FileHistory(revisionID=revID,status=e.status,fileDownload=fDown,revisionMetadata="-",fileRevisionHash="-",revisionMetadataHash="-")
+								except dropbox.rest.ErrorResponse as e:
+									fDb = FileHistory(revision=revID,status=e.status,fileDownloadID=fDown,revisionMetadata="-",fileRevisionHash="-",revisionMetadataHash="-")
 									fDb.save()
 						#we cannot download the history of a file that has not been downloaded correctly
-						except ObjectDoesNotExists as e:
+						except ObjectDoesNotExist as e:
 							print e
 							pass
 

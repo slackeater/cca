@@ -32,6 +32,10 @@ var Dajaxice = {
 
     compareFromReport: function(callback_function, argv, custom_settings){
         return Dajaxice.call('comparator.compareFromReport', 'POST', callback_function, argv, custom_settings);
+    },
+
+    displaySingle: function(callback_function, argv, custom_settings){
+        return Dajaxice.call('comparator.displaySingle', 'POST', callback_function, argv, custom_settings);
     }
 
 

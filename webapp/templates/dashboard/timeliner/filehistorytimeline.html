@@ -60,6 +60,10 @@ function tip(elem,ev){
 	})
 }
 
+function displayFile(title,altName,downAltName){
+	Dajaxice.comparator.displaySingle(diffCallBack,{'tokenID': tVal(),'cloudItem': iVal(),'title':title,'altName':altName,'downAltName':downAltName,'fileType':'history'})
+}
+
 
   // DOM element where the Timeline will be attached
   var container = document.getElementById('visualizationFileHistory');
@@ -68,7 +72,7 @@ function tip(elem,ev){
     var items = new vis.DataSet([
 		    {% for ev in events %}
 		    {id: "{{ev.altName}}", 
-			content: "<a href='javascript:void(0)' id='fh-{{forloop.counter}}'>{{ev.title}}</a>"
+			    content: "<a href='javascript:void(0)' id='fh-{{forloop.counter}}' onclick=\"displayFile('{{ev.title}}','{{ev.altName}}','{{altName}}')\">{{ev.title}}</a>"
 		    
 		    , start: new Date({{ev.time}})},
 		    {% endfor %}
@@ -81,7 +85,7 @@ function tip(elem,ev){
   var timeline = new vis.Timeline(container, items, options);
 
 	{% for ev in events %}
-		tip('#fh-{{forloop.counter}}','{{ev.params}}')
+		//tip('#fh-{{forloop.counter}}','{{ev.params}}')
 	{% endfor %}
 
 	timeline.on("select", function(properties){
@@ -91,6 +95,7 @@ function tip(elem,ev){
 				$("#comparatorLoader").fadeIn("slow")
 				Dajaxice.comparator.compareTwoFile(diffCallBack,{'tokenID': tVal(),'cloudItem': iVal(),'revOne':properties.items[0],'revTwo':properties.items[1],'altName':'{{altName}}'})
 			}
+
 	});
 </script>
 
