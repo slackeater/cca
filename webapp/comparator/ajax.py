@@ -127,6 +127,7 @@ def displaySingle(request,cloudItem,tokenID,title,altName,downAltName,fileType):
 		
                 c = Comparator(tkn)
                 res = c.displaySingle(title,altName,downAltName,fileType)
+                res.update({'imgMimes':constConfig.ALLOWED_MIME_TYPE[1:-1]})
 		table = render_to_string("dashboard/timeliner/singleViewer.html",res)
                 dajax.assign("#comparator","innerHTML",table)
 		dajax.assign("#comparatorError","innerHTML","")

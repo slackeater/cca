@@ -17,7 +17,7 @@ class Comparator(object):
         def displaySingle(self,title,altName,downAltName,fileFolder):
             """ Display a single file """ 
             
-            if fileFolder == "file":
+            if fileFolder == "file" or altName == downAltName:
                 f = constConfig.DOWNLOAD_FILES_FOLDER
             elif fileFolder == "history":
                 f = os.path.join(constConfig.DOWNLOAD_HISTORY_FOLDER,downAltName)
@@ -35,7 +35,14 @@ class Comparator(object):
             if mimeType in constConfig.ALLOWED_MIME_TYPE[1:-1]:
                 t = Thubmnailer()
                 t.cacheImg(fullPath,os.path.join(settings.DIFF_DIR,name+".thumbnail"))
-                return {'name': "/diff/"+name+".thumbnail"}
+                return {'name': name,'mime':mimeType}
+            elif mimeType == constConfig.ALLOWED_MIME_TYPE[0]:
+                dest = os.path.join(settings.DIFF_DIR,name)
+               
+                if not os.path.isfile(dest):
+                    shutil.copy(fullPath, dest)
+
+                return {'name': name, 'mime':constConfig.ALLOWED_MIME_TYPE[0]}
 
 	def compareTwo(self,revOneID,revTwoID,altName):
 		""" Compare two revision of the same file and check for diff """
@@ -119,7 +126,8 @@ class Comparator(object):
 			subprocess.check_output(["diff-pdf","--output-diff="+resultDiffPath+"",pdfOne,pdfTwo],stderr=subprocess.STDOUT)
 		except subprocess.CalledProcessError as e:
 			#necessary because diff-pdf always exits with 1, because of the message "No protocol specified" caused by the absence of the server X, even though the diff is generated
-			if e.output.strip() != "No protocol specified":
+                        print e
+			if e.output.strip() != "":
 				raise Exception("Error computing diff of PDF")
 
 		return pdfName

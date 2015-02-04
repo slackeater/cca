@@ -61,6 +61,7 @@ function tip(elem,ev){
 }
 
 function displayFile(title,altName,downAltName){
+	$("#comparatorLoader").fadeIn("slow")
 	Dajaxice.comparator.displaySingle(diffCallBack,{'tokenID': tVal(),'cloudItem': iVal(),'title':title,'altName':altName,'downAltName':downAltName,'fileType':'history'})
 }
 
